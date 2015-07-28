@@ -4,9 +4,7 @@ import hudson.maven.MavenBuild;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.maven.reporters.SurefireAggregatedReport;
-import hudson.maven.reporters.SurefireReport;
 import hudson.model.AbstractBuild;
-import hudson.tasks.junit.SuiteResult;
 import hudson.tasks.test.TestResult;
 
 
