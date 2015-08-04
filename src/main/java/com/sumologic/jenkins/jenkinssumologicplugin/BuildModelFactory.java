@@ -20,7 +20,6 @@ public class BuildModelFactory {
       MavenModuleSetBuildModel mBuildModel = new MavenModuleSetBuildModel();
       BuildModelFactory.populateGeneric(mBuildModel, build);
       MavenModuleSetBuild mbuild = (MavenModuleSetBuild) build;
-      //mBuildModel.setScm(mbuild.get);
       SurefireAggregatedReport surefireAggregatedReport = mbuild.getAction(SurefireAggregatedReport.class);
       mBuildModel.setTotalTestCount(surefireAggregatedReport.getTotalCount());
       mBuildModel.setFailedTestCount(surefireAggregatedReport.getFailCount());
@@ -38,9 +37,6 @@ public class BuildModelFactory {
       MavenBuild mbuild = (MavenBuild) build;
       MavenModuleBuildModel mBuildModel = new MavenModuleBuildModel();
       BuildModelFactory.populateGeneric(mBuildModel, mbuild);
-/*      for(SuiteResult result: mbuild.getAction(SurefireReport.class).getResult().getSuites()) {
-
-      }*/
       buildModel = mBuildModel;
     } else {
       buildModel = new BuildModel();
