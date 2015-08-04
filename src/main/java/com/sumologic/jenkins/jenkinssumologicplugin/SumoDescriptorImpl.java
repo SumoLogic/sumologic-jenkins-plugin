@@ -11,11 +11,11 @@ import org.kohsuke.stapler.StaplerRequest;
 * Created by deven on 7/8/15.
 */
 @Extension
-public final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+public final class SumoDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
   private String url = "";
 
-  public DescriptorImpl() {
+  public SumoDescriptorImpl() {
     super(SumoBuildNotifier.class);
     load();
   }

@@ -55,11 +55,10 @@ public class BuildModelFactory {
 
     buildModel.setName(build.getProject().getDisplayName());
     buildModel.setNumber(build.getNumber());
-    buildModel.setDuration( build.getStartTimeInMillis() - build.getTimeInMillis());
+    buildModel.setDuration( System.currentTimeMillis() - build.getStartTimeInMillis());
     buildModel.setStart(build.getStartTimeInMillis());
     buildModel.setResult(build.getResult().toString());
     buildModel.setHudsonVersion(build.getHudsonVersion());
-    buildModel.setScm(build.getChangeSet().toString());
 
   }
 }

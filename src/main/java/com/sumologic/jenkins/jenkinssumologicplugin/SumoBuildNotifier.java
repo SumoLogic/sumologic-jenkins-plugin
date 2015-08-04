@@ -24,9 +24,6 @@ public class SumoBuildNotifier extends Notifier {
 
   private final static Logger LOG = Logger.getLogger(SumoBuildNotifier.class.getName());
 
-  private int connectionTimeout = 1000;
-  private int socketTimeout = 60000;
-
   private HttpClient httpClient = null;
 
   @DataBoundConstructor
@@ -42,8 +39,8 @@ public class SumoBuildNotifier extends Notifier {
   }
 
   @Override
-  public DescriptorImpl getDescriptor() {
-    return (DescriptorImpl) super.getDescriptor();
+  public SumoDescriptorImpl getDescriptor() {
+    return (SumoDescriptorImpl) super.getDescriptor();
   }
 
 
@@ -63,7 +60,7 @@ public class SumoBuildNotifier extends Notifier {
     }
 
     String json = gson.toJson(BuildModelFactory.generateBuildModelFor(build));
-    //listener.getLogger().println("Uploading build status to sumologic: " + json);
+    listener.getLogger().println("Uploading build status to sumologic: " + json);
 
     PostMethod post = null;
     try {
