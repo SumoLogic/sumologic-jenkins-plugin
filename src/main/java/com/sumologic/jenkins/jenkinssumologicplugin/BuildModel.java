@@ -10,8 +10,8 @@ public class BuildModel {
   protected String name, hudsonVersion, scm, result;
   protected int number;
   protected long start_time, duration;
-  
-  BuildModel(AbstractBuild build){
+
+  BuildModel(AbstractBuild build) {
     this.name = build.getProject().getDisplayName();
     this.duration = build.getTimeInMillis();
     this.start_time = build.getStartTimeInMillis();

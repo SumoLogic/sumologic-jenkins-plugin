@@ -11,18 +11,18 @@ public class MavenModuleSetBuildModel extends BuildModel {
   int totalTestCount, failedTestCount, skippedTestCount;
   List<String> failedTests = null;
 
+  public MavenModuleSetBuildModel() {
+    super();
+    modules = new ArrayList<MavenModuleBuildModel>();
+    failedTests = new ArrayList<String>();
+  }
+
   public List<MavenModuleBuildModel> getModules() {
     return modules;
   }
 
   public void setModules(List<MavenModuleBuildModel> modules) {
     this.modules = modules;
-  }
-
-  public MavenModuleSetBuildModel() {
-    super();
-    modules = new ArrayList<MavenModuleBuildModel>();
-    failedTests = new ArrayList<String>();
   }
 
   public void addModule(MavenModuleBuildModel buildModel) {

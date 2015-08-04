@@ -8,8 +8,8 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
-* Created by deven on 7/8/15.
-*/
+ * Created by deven on 7/8/15.
+ */
 @Extension
 public final class SumoDescriptorImpl extends BuildStepDescriptor<Publisher> {
 

@@ -3,7 +3,6 @@ package com.sumologic.jenkins.jenkinssumologicplugin;
 import com.google.gson.Gson;
 import hudson.Launcher;
 import hudson.model.*;
-import hudson.model.BuildListener;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
@@ -27,9 +26,20 @@ public class SumoBuildNotifier extends Notifier {
   private HttpClient httpClient = null;
 
   @DataBoundConstructor
-  public SumoBuildNotifier(){
+  public SumoBuildNotifier() {
     super();
 
+  }
+
+  @SuppressWarnings("unchecked")
+  public static SumoBuildNotifier getNotifier(AbstractProject project) {
+    Map<Descriptor<Publisher>, Publisher> map = project.getPublishersList().toMap();
+    for (Publisher publisher : map.values()) {
+      if (publisher instanceof SumoBuildNotifier) {
+        return (SumoBuildNotifier) publisher;
+      }
+    }
+    return null;
   }
 
   @Override
@@ -43,13 +53,12 @@ public class SumoBuildNotifier extends Notifier {
     return (SumoDescriptorImpl) super.getDescriptor();
   }
 
-
   @Override
   public BuildStepMonitor getRequiredMonitorService() {
     return BuildStepMonitor.NONE;
   }
 
-  protected void send (AbstractBuild build, TaskListener listener) {
+  protected void send(AbstractBuild build, TaskListener listener) {
     httpClient = new HttpClient();
     String url = getDescriptor().getUrl();
     Gson gson = new Gson();
@@ -75,21 +84,12 @@ public class SumoBuildNotifier extends Notifier {
       post.releaseConnection();
     } catch (IOException e) {
       LOG.warning(String.format("Could not send log to Sumo Logic: %s", e.toString()));
-      try { post.abort(); } catch (Exception ignore) {}
-    }
-
-  }
-
-
-  @SuppressWarnings("unchecked")
-  public static SumoBuildNotifier getNotifier(AbstractProject project) {
-    Map<Descriptor<Publisher>, Publisher> map = project.getPublishersList().toMap();
-    for (Publisher publisher : map.values()) {
-      if (publisher instanceof SumoBuildNotifier) {
-        return (SumoBuildNotifier) publisher;
+      try {
+        post.abort();
+      } catch (Exception ignore) {
       }
     }
-    return null;
+
   }
 
 

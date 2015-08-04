@@ -3,33 +3,24 @@ package com.sumologic.jenkins.jenkinssumologicplugin;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.Shell;
-import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
-import org.apache.http.RequestLine;
 import org.apache.http.localserver.LocalTestServer;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestHandler;
-import org.apache.http.util.EntityUtils;
 import org.junit.*;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
-import java.io.InputStream;
-
-import static org.junit.Assert.*;
-
 public class SumoBuildNotifierTest {
-  private LocalTestServer server = null;
-
-  @Mock
-  HttpRequestHandler handler;
-
   @Rule
   public JenkinsRule j = new JenkinsRule();
+  @Mock
+  HttpRequestHandler handler;
+  private LocalTestServer server = null;
   private String serverUrl;
 
 

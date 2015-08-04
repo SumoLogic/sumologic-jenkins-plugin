@@ -3,10 +3,11 @@ package com.sumologic.jenkins.jenkinssumologicplugin;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Result;
-import org.hamcrest.core.*;
+import org.hamcrest.core.StringContains;
 import org.junit.Test;
 import org.mockito.Mockito;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertThat;
 
 public class BuildModelFactoryTest {
 
