@@ -23,8 +23,6 @@ public class SumoBuildNotifier extends Notifier {
 
   private final static Logger LOG = Logger.getLogger(SumoBuildNotifier.class.getName());
 
-  private HttpClient httpClient = null;
-
   @DataBoundConstructor
   public SumoBuildNotifier() {
     super();
@@ -59,7 +57,7 @@ public class SumoBuildNotifier extends Notifier {
   }
 
   protected void send(AbstractBuild build, TaskListener listener) {
-    httpClient = new HttpClient();
+    HttpClient httpClient = new HttpClient();
     String url = getDescriptor().getUrl();
     Gson gson = new Gson();
 
