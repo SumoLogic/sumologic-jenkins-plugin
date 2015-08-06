@@ -18,6 +18,9 @@ import java.util.logging.Logger;
 
 /**
  * Created by deven on 7/6/15.
+ *
+ * This publisher will push build metadata to a Sumologic HTTP collector.
+ *
  */
 public class SumoBuildNotifier extends Notifier {
 

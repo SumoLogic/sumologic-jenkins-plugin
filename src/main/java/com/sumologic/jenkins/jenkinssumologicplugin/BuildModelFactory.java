@@ -12,6 +12,9 @@ import java.util.Map;
 
 /**
  * Created by deven on 7/11/15.
+ *
+ * Factory class providing static methods to convert builds to a convenient DTO as an intermediate
+ * step to json serialization.
  */
 public class BuildModelFactory {
   public static final BuildModel generateBuildModelFor(AbstractBuild build) {
