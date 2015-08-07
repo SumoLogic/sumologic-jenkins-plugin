@@ -24,11 +24,13 @@ public class BuildModelFactory {
       BuildModelFactory.populateGeneric(mBuildModel, build);
       MavenModuleSetBuild mbuild = (MavenModuleSetBuild) build;
       SurefireAggregatedReport surefireAggregatedReport = mbuild.getAction(SurefireAggregatedReport.class);
-      mBuildModel.setTotalTestCount(surefireAggregatedReport.getTotalCount());
-      mBuildModel.setFailedTestCount(surefireAggregatedReport.getFailCount());
-      mBuildModel.setSkippedTestCount(surefireAggregatedReport.getSkipCount());
-      for (TestResult result : surefireAggregatedReport.getFailedTests()) {
-        mBuildModel.addFailedTest(result.getDisplayName());
+      if(surefireAggregatedReport != null){
+        mBuildModel.setTotalTestCount(surefireAggregatedReport.getTotalCount());
+        mBuildModel.setFailedTestCount(surefireAggregatedReport.getFailCount());
+        mBuildModel.setSkippedTestCount(surefireAggregatedReport.getSkipCount());
+        for (TestResult result : surefireAggregatedReport.getFailedTests()) {
+          mBuildModel.addFailedTest(result.getDisplayName());
+        }
       }
       Map<MavenModule, MavenBuild> modules = mbuild.getModuleLastBuilds();
 
