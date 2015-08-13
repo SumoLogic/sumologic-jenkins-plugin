@@ -15,7 +15,7 @@
   <f:section title="Sumologic Jenkins plugin">
     <f:entry
         title="Sumologic http collector url"
-        field="sumourl"
+        field="url"
         description="Input url for http collector endpoint.">
       <f:textbox name="sumoplugin.url"/>
     </f:entry>
