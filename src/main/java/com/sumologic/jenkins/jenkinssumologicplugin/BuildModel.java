@@ -3,6 +3,9 @@ package com.sumologic.jenkins.jenkinssumologicplugin;
 import com.google.gson.Gson;
 import hudson.model.AbstractBuild;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by deven on 7/10/15.
  */
@@ -10,6 +13,7 @@ public class BuildModel {
   protected String name, hudsonVersion, scm, result;
   protected int number;
   protected long start_time, duration;
+  protected List<String> causes;
 
   BuildModel(AbstractBuild build) {
     this.name = build.getProject().getDisplayName();
@@ -32,7 +36,7 @@ public class BuildModel {
   }
 
   public BuildModel() {
-
+    this.causes = new ArrayList<String>();
   }
 
   public String toJson() {
@@ -95,5 +99,13 @@ public class BuildModel {
 
   public void setDuration(long duration) {
     this.duration = duration;
+  }
+
+  public void addCause(String cause){
+    this.causes.add(cause);
+  }
+
+  public List<String> getCauses(){
+    return this.causes;
   }
 }

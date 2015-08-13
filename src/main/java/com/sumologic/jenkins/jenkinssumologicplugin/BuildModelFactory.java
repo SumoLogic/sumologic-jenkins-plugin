@@ -5,8 +5,11 @@ import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.maven.reporters.SurefireAggregatedReport;
 import hudson.model.AbstractBuild;
+import hudson.model.Cause;
+import hudson.model.CauseAction;
 import hudson.tasks.test.TestResult;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -58,7 +61,13 @@ public class BuildModelFactory {
     buildModel.setDuration(System.currentTimeMillis() - build.getStartTimeInMillis());
     buildModel.setStart(build.getStartTimeInMillis());
     buildModel.setResult(build.getResult().toString());
-    buildModel.setHudsonVersion(build.getHudsonVersion());
+
+
+    List<Cause> causes = build.getCauses();
+
+    for(Cause cause : causes){
+      buildModel.addCause(cause.getShortDescription());
+    }
 
   }
 }
