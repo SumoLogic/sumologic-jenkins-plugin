@@ -62,6 +62,7 @@ public class ModelFactory {
     buildModel.setStart(build.getStartTimeInMillis());
     buildModel.setResult(build.getResult().toString());
     buildModel.setHudsonVersion(build.getHudsonVersion());
+    buildModel.setDescription(build.getDescription());
 
   }
 

@@ -7,7 +7,7 @@ import hudson.model.AbstractBuild;
  * Created by deven on 7/10/15.
  */
 public class BuildModel {
-  protected String name, hudsonVersion, scm, result;
+  protected String name, hudsonVersion, scm, result, description;
   protected int number;
   protected long start_time, duration;
 
@@ -95,5 +95,9 @@ public class BuildModel {
 
   public void setDuration(long duration) {
     this.duration = duration;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
   }
 }
