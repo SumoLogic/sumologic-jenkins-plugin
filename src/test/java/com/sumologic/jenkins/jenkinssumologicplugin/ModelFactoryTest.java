@@ -9,7 +9,7 @@ import org.mockito.Mockito;
 
 import static org.junit.Assert.assertThat;
 
-public class BuildModelFactoryTest {
+public class ModelFactoryTest {
 
   @Test
   public void testGenerateBuildModelForAbstractBuild() throws Exception {
@@ -31,7 +31,7 @@ public class BuildModelFactoryTest {
 
     String jsonExpected = "{\"name\":\"MockJob\",\"hudsonVersion\":\"1.51010.1111\",\"result\":\"SUCCESS\",\"number\":101,\"start_time\":0,\"duration\":";
 
-    String json = BuildModelFactory.generateBuildModelFor(build).toJson();
+    String json = ModelFactory.generateBuildModelFor(build).toJson();
 
     assertThat(json, new StringContains(jsonExpected));
   }

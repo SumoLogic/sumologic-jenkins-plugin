@@ -2,6 +2,7 @@ package com.sumologic.jenkins.jenkinssumologicplugin;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.TaskListener;
 import hudson.tasks.Shell;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
@@ -36,6 +37,7 @@ public class SumoBuildNotifierTest {
 
     // report how to access the server
     System.out.println("LocalTestServer available at " + serverUrl);
+    j.get(SumoDescriptorImpl.class).setUrl(serverUrl);
 
   }
 
@@ -47,7 +49,7 @@ public class SumoBuildNotifierTest {
   }
 
   @Test
-  public void testSend() throws Exception {
+  public void testSendBuildData() throws Exception {
     ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
     j.get(SumoDescriptorImpl.class).setUrl(serverUrl);
     FreeStyleProject project = j.createFreeStyleProject();
@@ -65,6 +67,25 @@ public class SumoBuildNotifierTest {
     HttpEntityEnclosingRequest request = (HttpEntityEnclosingRequest) captor.getValue();
 
 
-    Assert.assertEquals("Wrong length message.", BuildModelFactory.generateBuildModelFor(build).toJson().length(), request.getEntity().getContentLength());
+    Assert.assertEquals("Wrong length message.", ModelFactory.generateBuildModelFor(build).toJson().length(), request.getEntity().getContentLength());
+  }
+
+  @Test
+  public void testSendJenkinsData() throws Exception {
+    ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
+    SumoPeriodicPublisher publisher = new SumoPeriodicPublisher();
+    publisher.execute(Mockito.mock(TaskListener.class));
+
+    Mockito.verify(handler).handle(
+        captor.capture(),
+        Mockito.isA(HttpResponse.class),
+        Mockito.isA(HttpContext.class));
+
+    HttpEntityEnclosingRequest request = (HttpEntityEnclosingRequest) captor.getValue();
+
+    Assert.assertEquals("Wrong length message.", ModelFactory.generateJenkinsModelFor(j.getInstance()).toJson().length(), request.getEntity().getContentLength());
+
+
+
   }
 }

@@ -69,7 +69,7 @@ public class SumoBuildNotifier extends Notifier {
       return;
     }
 
-    String json = gson.toJson(BuildModelFactory.generateBuildModelFor(build));
+    String json = gson.toJson(ModelFactory.generateBuildModelFor(build));
     listener.getLogger().println("Uploading build status to sumologic: " + json);
 
     PostMethod post = null;
