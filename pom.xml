@@ -8,18 +8,17 @@
     <artifactId>plugin</artifactId>
     <version>1.596.2</version>
   </parent>
-  <groupId>com.sumologic.jenkins</groupId>
-  <artifactId>jenkins-sumologic-plugin</artifactId>
+  <artifactId>sumologic-publisher</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
-  <name>Sumologic Plugin</name>
+  <name>Sumologic Publisher</name>
   <description>Sumologic Plugin</description>
   <url>https://wiki.jenkins-ci.org/display/JENKINS/TODO+Plugin</url>
   <licenses>
     <license>
-      <name>MIT License</name>
-      <url>http://opensource.org/licenses/MIT</url>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
     </license>
   </licenses>
 
@@ -31,13 +30,11 @@
     </developer>
   </developers>
 
-  <!-- Assuming you want to host on @jenkinsci:
   <scm>
     <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
     <url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
   </scm>
-   -->
 
   <dependencies>
     <dependency>
