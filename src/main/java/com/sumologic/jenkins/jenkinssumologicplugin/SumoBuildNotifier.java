@@ -1,6 +1,7 @@
 package com.sumologic.jenkins.jenkinssumologicplugin;
 
 import com.google.gson.Gson;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.ModelFactory;
 import hudson.Launcher;
 import hudson.model.*;
 import hudson.tasks.BuildStepMonitor;
@@ -29,7 +30,6 @@ public class SumoBuildNotifier extends Notifier {
   @DataBoundConstructor
   public SumoBuildNotifier() {
     super();
-
   }
 
   @SuppressWarnings("unchecked")

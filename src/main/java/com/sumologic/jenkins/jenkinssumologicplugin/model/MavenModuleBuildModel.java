@@ -1,4 +1,4 @@
-package com.sumologic.jenkins.jenkinssumologicplugin;
+package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
 /**
  * Created by deven on 7/11/15.

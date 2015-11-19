@@ -1,4 +1,4 @@
-package com.sumologic.jenkins.jenkinssumologicplugin;
+package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenModule;

@@ -1,5 +1,6 @@
 package com.sumologic.jenkins.jenkinssumologicplugin;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.model.ModelFactory;
 import hudson.Extension;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
