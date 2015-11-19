@@ -66,7 +66,7 @@ public class ModelFactory {
 
   }
 
-  protected static JenkinsModel generateJenkinsModelFor(Jenkins jenkins) {
+  public static JenkinsModel generateJenkinsModelFor(Jenkins jenkins) {
     Queue queue = jenkins.getQueue();
     final Queue.Item[] items = queue.getItems();
     int queueLength = items.length;
