@@ -1,4 +1,4 @@
-package com.sumologic.jenkins.jenkinssumologicplugin;
+package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenModule;
@@ -20,40 +20,6 @@ import java.util.Map;
  * step to json serialization.
  */
 public class ModelFactory {
-  public static BuildModel generateBuildModelFor(AbstractBuild build) {
-    BuildModel buildModel = null;
-    if (build instanceof MavenModuleSetBuild) {
-      MavenModuleSetBuildModel mBuildModel = new MavenModuleSetBuildModel();
-      ModelFactory.populateGeneric(mBuildModel, build);
-      MavenModuleSetBuild mbuild = (MavenModuleSetBuild) build;
-      SurefireAggregatedReport surefireAggregatedReport = mbuild.getAction(SurefireAggregatedReport.class);
-      if(surefireAggregatedReport != null){
-        mBuildModel.setTotalTestCount(surefireAggregatedReport.getTotalCount());
-        mBuildModel.setFailedTestCount(surefireAggregatedReport.getFailCount());
-        mBuildModel.setSkippedTestCount(surefireAggregatedReport.getSkipCount());
-        for (TestResult result : surefireAggregatedReport.getFailedTests()) {
-          mBuildModel.addFailedTest(result.getDisplayName());
-        }
-      }
-      Map<MavenModule, MavenBuild> modules = mbuild.getModuleLastBuilds();
-
-      for (MavenBuild module : modules.values()) {
-        mBuildModel.addModule((MavenModuleBuildModel) generateBuildModelFor(module));
-      }
-      buildModel = mBuildModel;
-    } else if (build instanceof MavenBuild) {
-      MavenBuild mbuild = (MavenBuild) build;
-      MavenModuleBuildModel mBuildModel = new MavenModuleBuildModel();
-      ModelFactory.populateGeneric(mBuildModel, mbuild);
-      buildModel = mBuildModel;
-    } else {
-      buildModel = new BuildModel();
-      ModelFactory.populateGeneric(buildModel, build);
-    }
-
-    return buildModel;
-  }
-
   protected static void populateGeneric(BuildModel buildModel, AbstractBuild build) {
 
     buildModel.setName(build.getProject().getDisplayName());
@@ -66,7 +32,7 @@ public class ModelFactory {
 
   }
 
-  protected static JenkinsModel generateJenkinsModelFor(Jenkins jenkins) {
+  public static JenkinsModel createJenkinsModel(Jenkins jenkins) {
     Queue queue = jenkins.getQueue();
     final Queue.Item[] items = queue.getItems();
     int queueLength = items.length;
@@ -93,5 +59,39 @@ public class ModelFactory {
     SlaveModel slaveModel = new SlaveModel(jenkins.getComputers().length - 1, jenkins.getNumExecutors(), numFreeExecutors);
 
     return new JenkinsModel(queueModel, slaveModel, jenkins.getDescription());
+  }
+
+  public static BuildModel createBuildModel(AbstractBuild build) {
+    BuildModel buildModel = null;
+    if (build instanceof MavenModuleSetBuild) {
+      MavenModuleSetBuildModel mBuildModel = new MavenModuleSetBuildModel();
+      ModelFactory.populateGeneric(mBuildModel, build);
+      MavenModuleSetBuild mbuild = (MavenModuleSetBuild) build;
+      SurefireAggregatedReport surefireAggregatedReport = mbuild.getAction(SurefireAggregatedReport.class);
+      if(surefireAggregatedReport != null){
+        mBuildModel.setTotalTestCount(surefireAggregatedReport.getTotalCount());
+        mBuildModel.setFailedTestCount(surefireAggregatedReport.getFailCount());
+        mBuildModel.setSkippedTestCount(surefireAggregatedReport.getSkipCount());
+        for (TestResult result : surefireAggregatedReport.getFailedTests()) {
+          mBuildModel.addFailedTest(result.getDisplayName());
+        }
+      }
+      Map<MavenModule, MavenBuild> modules = mbuild.getModuleLastBuilds();
+
+      for (MavenBuild module : modules.values()) {
+        mBuildModel.addModule((MavenModuleBuildModel) createBuildModel(module));
+      }
+      buildModel = mBuildModel;
+    } else if (build instanceof MavenBuild) {
+      MavenBuild mbuild = (MavenBuild) build;
+      MavenModuleBuildModel mBuildModel = new MavenModuleBuildModel();
+      ModelFactory.populateGeneric(mBuildModel, mbuild);
+      buildModel = mBuildModel;
+    } else {
+      buildModel = new BuildModel();
+      ModelFactory.populateGeneric(buildModel, build);
+    }
+
+    return buildModel;
   }
 }

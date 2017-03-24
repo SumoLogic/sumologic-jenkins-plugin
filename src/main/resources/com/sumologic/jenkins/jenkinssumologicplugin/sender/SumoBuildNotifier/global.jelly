@@ -19,5 +19,17 @@
         description="Input url for http collector endpoint.">
       <f:textbox name="sumoplugin.url"/>
     </f:entry>
+    <f:entry
+        title="Max log lines per batch sent to Sumologic."
+        field="maxLines"
+        description="0 for no batching, -1 for one request per build.">
+      <f:textbox name="sumoplugin.maxLines" default="200"/>
+    </f:entry>
+    <f:entry
+        title="Enable automated output annotation with timestamps."
+        field="timestampingEnabled"
+        description="Check for automated timstamps at the beggining of every log line.">
+      <f:checkbox name="sumoplugin.timestampingEnabled" default="true"/>
+    </f:entry>
   </f:section>
 </j:jelly>

@@ -1,5 +1,6 @@
 package com.sumologic.jenkins.jenkinssumologicplugin;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.model.ModelFactory;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Result;
@@ -31,7 +32,7 @@ public class ModelFactoryTest {
 
     String jsonExpected = "{\"name\":\"MockJob\",\"hudsonVersion\":\"1.51010.1111\",\"result\":\"SUCCESS\",\"number\":101,\"start_time\":0,\"duration\":";
 
-    String json = ModelFactory.generateBuildModelFor(build).toJson();
+    String json = ModelFactory.createBuildModel(build).toJson();
 
     assertThat(json, new StringContains(jsonExpected));
   }
