@@ -1,6 +1,5 @@
 package com.sumologic.jenkins.jenkinssumologicplugin;
 
-import com.sumologic.jenkins.jenkinssumologicplugin.sender.SumoBuildNotifier;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.tasks.BuildStepDescriptor;

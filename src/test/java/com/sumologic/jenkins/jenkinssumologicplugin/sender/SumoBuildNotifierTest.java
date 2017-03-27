@@ -1,6 +1,7 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
+import com.sumologic.jenkins.jenkinssumologicplugin.SumoBuildNotifier;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.ModelFactory;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
