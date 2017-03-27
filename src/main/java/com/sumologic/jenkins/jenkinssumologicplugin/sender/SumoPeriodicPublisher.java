@@ -35,7 +35,7 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
 
     String url = PluginDescriptorImpl.getInstance().getUrl();
 
-    logSender.sendLogs(url, logs.getBytes(), "status", "periodic");
+    logSender.sendLogs(url, logs.getBytes(), "periodic", "jenkinsStatus");
   }
 
   @Override

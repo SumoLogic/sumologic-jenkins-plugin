@@ -84,7 +84,7 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
     currentLines = 0;
 
     try {
-      logSender.sendLogs(url, lines, jobName, jobNumber);
+      logSender.sendLogs(url, lines, jobName + jobNumber, "jenkinsStatus");
     }
     catch (Exception e)
     {

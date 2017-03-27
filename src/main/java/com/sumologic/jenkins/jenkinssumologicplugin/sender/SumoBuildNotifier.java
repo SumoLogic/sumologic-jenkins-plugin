@@ -67,7 +67,7 @@ public class SumoBuildNotifier extends Notifier {
     String projectName = build.getProject().getDisplayName();
 
     LOG.info("Uploading build status to sumologic: " + json);
-    logSender.sendLogs(getDescriptor().getUrl(), json.getBytes(), projectName, "status");
+    logSender.sendLogs(getDescriptor().getUrl(), json.getBytes(), projectName, "jenkinsStatus");
   }
 
 
