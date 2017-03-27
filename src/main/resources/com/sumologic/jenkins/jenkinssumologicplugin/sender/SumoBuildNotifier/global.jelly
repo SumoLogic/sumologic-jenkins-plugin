@@ -12,18 +12,24 @@
     tags they use. Views are always organized according to its owner class,
     so it should be straightforward to find them.
   -->
-  <f:section title="Sumologic Jenkins plugin">
+  <f:section title="Sumo Logic Jenkins plugin">
     <f:entry
-        title="Sumologic http collector url"
+        title="Sumo Logic http collector url."
         field="url"
         description="Input url for http collector endpoint.">
       <f:textbox name="sumoplugin.url"/>
     </f:entry>
     <f:entry
-        title="Max log lines per batch sent to Sumologic."
+            title="Sumo Logic portal name."
+            field="queryPortal"
+            description="Portal for querying data. Default: service.sumologic.com">
+          <f:textbox name="sumoplugin.queryPortal" default="service.sumologic.com"/>
+        </f:entry>
+    <f:entry
+        title="Max log lines per batch sent to Sumo Logic."
         field="maxLines"
         description="0 for no batching, -1 for one request per build.">
-      <f:textbox name="sumoplugin.maxLines" default="200"/>
+      <f:textbox name="sumoplugin.maxLines" default="2000"/>
     </f:entry>
     <f:entry
         title="Enable automated output annotation with timestamps."

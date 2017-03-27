@@ -1,6 +1,7 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
+import com.sumologic.jenkins.jenkinssumologicplugin.integration.SearchAction;
 import hudson.Extension;
 import hudson.console.ConsoleLogFilter;
 import hudson.model.AbstractBuild;
@@ -16,6 +17,8 @@ public class LogListener extends ConsoleLogFilter {
   @Override
   public OutputStream decorateLogger(AbstractBuild abstractBuild, OutputStream outputStream)
     throws IOException, InterruptedException {
+
+    abstractBuild.addAction(new SearchAction(abstractBuild));
 
     SumologicOutputStream stream = new SumologicOutputStream(
         outputStream, abstractBuild, PluginDescriptorImpl.getInstance());

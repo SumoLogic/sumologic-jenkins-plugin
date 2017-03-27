@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 public class SumologicOutputStream extends LineTransformationOutputStream {
 
   private static final Logger LOGGER = Logger.getLogger(SumologicOutputStream.class.getName());
+  private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS ZZZZ");
 
   private LogSender logSender;
   private OutputStream wrappedStream;
@@ -54,7 +55,8 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
 
   @Override
   protected void eol(byte[] bytes, int i) throws IOException {
-    String timeStampStr = "[" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS ZZZZ").format(new Date()) + "] ";
+
+    String timeStampStr = "[" + DATE_FORMAT.format(new Date()) + "] ";
     byte[] timestampBytes = timeStampStr.getBytes();
     buffer.append(timestampBytes, 0, timestampBytes.length);
     buffer.append(bytes, 0, i);
@@ -66,25 +68,23 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
     wrappedStream.write(bytes, 0, i);
     currentLines++;
 
-    wrappedStream.flush();
-
     if (currentLines >= maxLinesPerBatch) {
       flushBuffer();
     }
 
   }
 
-  private void flushBuffer(){
+  private synchronized void flushBuffer(){
     if (currentLines <= 0) {
       return;
     }
 
-    ByteArrayBuffer old = buffer;
-    buffer = new ByteArrayBuffer(1);
+    byte[] lines = buffer.toByteArray();
+    buffer.clear();
     currentLines = 0;
 
     try {
-      logSender.sendLogs(url, old.toByteArray(), jobName, jobNumber);
+      logSender.sendLogs(url, lines, jobName, jobNumber);
     }
     catch (Exception e)
     {

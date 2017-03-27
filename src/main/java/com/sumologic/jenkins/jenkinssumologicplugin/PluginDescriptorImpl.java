@@ -20,9 +20,10 @@ import java.net.URL;
 @Extension
 public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
-  private String url = "";
+  private String collectorUrl = "";
+  private String maxLines = "2000";
+  private String queryPortal = "service.sumologic.com";
   private boolean timestampingEnabled = true;
-  private String maxLines = "200";
 
   public PluginDescriptorImpl() {
     super(SumoBuildNotifier.class);
@@ -47,7 +48,8 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
   @Override
   public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
 
-    url = formData.getString("url");
+    collectorUrl = formData.getString("url");
+    queryPortal = formData.getString("queryPortal");
     maxLines = formData.getString("maxLines");
     timestampingEnabled = formData.getBoolean("timestampingEnabled");
 
@@ -89,12 +91,12 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
 
   public String getUrl() {
-    return url;
+    return collectorUrl;
   }
 
   public void setUrl(String url) {
 
-   this.url = url;
+   this.collectorUrl = url;
   }
 
   public boolean isTimestampingEnabled() {
@@ -122,5 +124,13 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
     }
 
     return value;
+  }
+
+  public String getQueryPortal() {
+    return queryPortal;
+  }
+
+  public void setQueryPortal (String queryPortal) {
+    this.queryPortal = queryPortal;
   }
 }
