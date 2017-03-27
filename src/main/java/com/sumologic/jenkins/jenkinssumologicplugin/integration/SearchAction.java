@@ -16,6 +16,7 @@ import java.util.Date;
 public class SearchAction implements Action {
 
   private final String URL_TEMPLATE = "https://%s/ui/index.html?reason=st#section/search/@%d,%d@%s";
+  private final int MILLIS_IN_MINUTE = 1000 * 60;
   private AbstractBuild build;
 
   public SearchAction(AbstractBuild build)
@@ -35,7 +36,7 @@ public class SearchAction implements Action {
 
   @Override
   public String getUrlName() {
-    long queryFrom = build.getStartTimeInMillis();
+    long queryFrom = build.getStartTimeInMillis() - (MILLIS_IN_MINUTE * 1);
     long queryTo;
     if (build.isBuilding()) {
       Calendar cal = Calendar.getInstance();
@@ -43,7 +44,7 @@ public class SearchAction implements Action {
       queryTo = cal.getTimeInMillis();
     }
     else {
-      queryTo = queryFrom + build.getDuration() + (1000 * 60 * 5);
+      queryTo = queryFrom + build.getDuration() + (MILLIS_IN_MINUTE * 5);
     }
 
     String buildName = build.getProject().getDisplayName();

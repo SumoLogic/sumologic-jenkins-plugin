@@ -18,7 +18,6 @@ import java.util.logging.Logger;
 public class SumologicOutputStream extends LineTransformationOutputStream {
 
   private static final Logger LOGGER = Logger.getLogger(SumologicOutputStream.class.getName());
-  private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS ZZZZ");
 
   private LogSender logSender;
   private OutputStream wrappedStream;
@@ -30,8 +29,6 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
   private int maxLinesPerBatch;
   private int currentLines;
 
-  private boolean timestampingEnabled;
-
   public SumologicOutputStream(OutputStream stream, AbstractBuild build, PluginDescriptorImpl descriptor) {
     super();
     wrappedStream = stream;
@@ -39,8 +36,6 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
 
     this.jobName = build.getProject().getDisplayName();
     this.jobNumber = build.getDisplayName();
-
-    timestampingEnabled = descriptor.isTimestampingEnabled();
     maxLinesPerBatch = descriptor.getMaxLinesInt();
 
     currentLines = 0;
@@ -56,22 +51,14 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
   @Override
   protected void eol(byte[] bytes, int i) throws IOException {
 
-    String timeStampStr = "[" + DATE_FORMAT.format(new Date()) + "] ";
-    byte[] timestampBytes = timeStampStr.getBytes();
-    buffer.append(timestampBytes, 0, timestampBytes.length);
     buffer.append(bytes, 0, i);
-
-    if (timestampingEnabled) {
-      wrappedStream.write(timestampBytes, 0, timestampBytes.length);
-    }
+    currentLines++;
 
     wrappedStream.write(bytes, 0, i);
-    currentLines++;
 
     if (currentLines >= maxLinesPerBatch) {
       flushBuffer();
     }
-
   }
 
   private synchronized void flushBuffer(){

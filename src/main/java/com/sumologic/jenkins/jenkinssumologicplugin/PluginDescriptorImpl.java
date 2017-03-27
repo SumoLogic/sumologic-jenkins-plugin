@@ -24,6 +24,7 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
   private String maxLines = "2000";
   private String queryPortal = "service.sumologic.com";
   private boolean timestampingEnabled = true;
+  private boolean buildLogEnabled = true;
 
   public PluginDescriptorImpl() {
     super(SumoBuildNotifier.class);
@@ -52,6 +53,7 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
     queryPortal = formData.getString("queryPortal");
     maxLines = formData.getString("maxLines");
     timestampingEnabled = formData.getBoolean("timestampingEnabled");
+    buildLogEnabled = formData.getBoolean("buildLogEnabled");
 
     save();
     return super.configure(req, formData);
@@ -132,5 +134,13 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
   public void setQueryPortal (String queryPortal) {
     this.queryPortal = queryPortal;
+  }
+
+  public boolean isBuildLogEnabled() {
+    return buildLogEnabled;
+  }
+
+  public void setBuildLogEnabled(boolean value) {
+    buildLogEnabled = value;
   }
 }

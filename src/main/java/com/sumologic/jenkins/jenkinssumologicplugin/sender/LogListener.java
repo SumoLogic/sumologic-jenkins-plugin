@@ -18,10 +18,20 @@ public class LogListener extends ConsoleLogFilter {
   public OutputStream decorateLogger(AbstractBuild abstractBuild, OutputStream outputStream)
     throws IOException, InterruptedException {
 
-    abstractBuild.addAction(new SearchAction(abstractBuild));
+    PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
 
-    SumologicOutputStream stream = new SumologicOutputStream(
-        outputStream, abstractBuild, PluginDescriptorImpl.getInstance());
+    OutputStream stream = outputStream;
+
+    if (pluginDescriptor.isTimestampingEnabled()) {
+      stream = new TimestampingOutputStream(stream);
+    }
+
+    if (pluginDescriptor.isBuildLogEnabled()) {
+      abstractBuild.addAction(new SearchAction(abstractBuild));
+      stream = new SumologicOutputStream(
+          stream, abstractBuild, pluginDescriptor);
+
+    }
 
     return stream;
   }

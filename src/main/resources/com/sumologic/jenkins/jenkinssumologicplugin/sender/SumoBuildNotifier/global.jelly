@@ -37,5 +37,11 @@
         description="Check for automated timstamps at the beggining of every log line.">
       <f:checkbox name="sumoplugin.timestampingEnabled" default="true"/>
     </f:entry>
+    <f:entry
+        title="Enable automated build log sending to Sumo Logic."
+        field="buildLogEnabled"
+        description="Check to automatically send all build logs to Sumo Logic.">
+      <f:checkbox name="sumoplugin.buildLogEnabled" default="true"/>
+    </f:entry>
   </f:section>
 </j:jelly>
