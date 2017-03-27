@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.ModelFactory;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.model.*;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
@@ -61,9 +60,8 @@ public class SumoBuildNotifier extends Notifier {
   protected void send(AbstractBuild build, TaskListener listener) {
     Gson gson = new Gson();
     String json = gson.toJson(ModelFactory.createBuildModel(build));
-    String projectName = build.getProject().getDisplayName();
 
     LOG.info("Uploading build status to sumologic: " + json);
-    logSender.sendLogs(getDescriptor().getUrl(), json.getBytes(), projectName, "jenkinsStatus");
+    logSender.sendLogs(getDescriptor().getUrl(), json.getBytes(), "jobStatus", "jenkinsStatus");
   }
 }
