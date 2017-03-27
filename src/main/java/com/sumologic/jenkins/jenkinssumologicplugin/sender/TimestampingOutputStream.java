@@ -13,6 +13,9 @@ import java.util.Date;
 import java.util.logging.Logger;
 
 /**
+ * OutputStream decorator that for each new line in the stream additionally adds a consistent timestamp
+ * and forwards the rest of the stream line without modifications.
+ *
  * Created by lukasz on 3/21/17.
  */
 public class TimestampingOutputStream extends LineTransformationOutputStream {
@@ -30,7 +33,6 @@ public class TimestampingOutputStream extends LineTransformationOutputStream {
 
   @Override
   protected void eol(byte[] bytes, int i) throws IOException {
-
     String timeStampStr = "[" + DATE_FORMAT.format(new Date()) + "] ";
     byte[] timestampBytes = timeStampStr.getBytes();
 

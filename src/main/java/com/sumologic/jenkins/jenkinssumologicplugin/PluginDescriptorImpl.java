@@ -15,13 +15,17 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
+ * Sumo Logic plugin for Jenkins model.
+ * Provides options to parametrize plugin.
+ *
  * Created by deven on 7/8/15.
+ * Contributors: lukasz
  */
 @Extension
 public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
-
+  private final int MAX_LINES_DEFAULT = 2000;
   private String collectorUrl = "";
-  private String maxLines = "2000";
+  private String maxLines = Integer.toString(MAX_LINES_DEFAULT);
   private String queryPortal = "service.sumologic.com";
   private boolean timestampingEnabled = true;
   private boolean buildLogEnabled = true;
@@ -42,13 +46,12 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
   @Override
   public String getDisplayName() {
-
     return "Sumologic build logger";
   }
 
   @Override
   public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
-
+    boolean configOk = super.configure(req, formData);
     collectorUrl = formData.getString("url");
     queryPortal = formData.getString("queryPortal");
     maxLines = formData.getString("maxLines");
@@ -56,7 +59,7 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
     buildLogEnabled = formData.getBoolean("buildLogEnabled");
 
     save();
-    return super.configure(req, formData);
+    return configOk;
   }
 
   public FormValidation doCheckUrl(@QueryParameter String value) {
@@ -97,8 +100,7 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
   }
 
   public void setUrl(String url) {
-
-   this.collectorUrl = url;
+    this.collectorUrl = url;
   }
 
   public boolean isTimestampingEnabled() {
@@ -122,7 +124,7 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
     try {
       value = Integer.parseInt(maxLines);
     } catch (NumberFormatException e) {
-      value = 200;
+      value = MAX_LINES_DEFAULT;
     }
 
     return value;

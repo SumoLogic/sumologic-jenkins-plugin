@@ -13,6 +13,9 @@ import java.util.Date;
 import java.util.logging.Logger;
 
 /**
+ * OutputStream decorator that adds functionality of forwarding the stream to Sumo Logic Http Source.
+ * Does not modify the original stream content.
+ *
  * Created by lukasz on 3/21/17.
  */
 public class SumologicOutputStream extends LineTransformationOutputStream {
@@ -42,6 +45,7 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
     buffer = new ByteArrayBuffer(1);
     this.url = descriptor.getUrl();
   }
+
   @Override
   public void close() throws IOException {
     super.close();
@@ -50,7 +54,6 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
 
   @Override
   protected void eol(byte[] bytes, int i) throws IOException {
-
     buffer.append(bytes, 0, i);
     currentLines++;
 
@@ -71,10 +74,9 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
     currentLines = 0;
 
     try {
+      // jobNumber is a build number with #, e.g. #42
       logSender.sendLogs(url, lines, jobName + jobNumber, "jenkinsStatus");
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       e.printStackTrace(new PrintStream(wrappedStream));
     }
   }

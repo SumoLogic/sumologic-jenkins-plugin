@@ -19,8 +19,7 @@ public class SearchAction implements Action {
   private final int MILLIS_IN_MINUTE = 1000 * 60;
   private AbstractBuild build;
 
-  public SearchAction(AbstractBuild build)
-  {
+  public SearchAction(AbstractBuild build) {
     this.build = build;
   }
 
@@ -42,8 +41,7 @@ public class SearchAction implements Action {
       Calendar cal = Calendar.getInstance();
       cal.add(Calendar.HOUR, 10);
       queryTo = cal.getTimeInMillis();
-    }
-    else {
+    } else {
       queryTo = queryFrom + build.getDuration() + (MILLIS_IN_MINUTE * 5);
     }
 

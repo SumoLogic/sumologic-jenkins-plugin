@@ -1,13 +1,9 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
-import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
-import jenkins.model.Jenkins;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.apache.http.protocol.HTTP;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -16,7 +12,7 @@ import java.util.logging.Logger;
 
 
 /**
- * Created by deven on 8/6/15.
+ * Created by Lukasz on 20/03/2017
  */
 public class LogSender {
   private final static Logger LOG = Logger.getLogger(LogSender.class.getName());

@@ -42,7 +42,7 @@ public class ModelFactory {
       maxwait = maxwait > waiting ? maxwait : waiting;
       averagewait += waiting;
     }
-    if(queueLength > 0 ) {
+    if (queueLength > 0 ) {
       averagewait = averagewait / queueLength;
     }
 
@@ -68,7 +68,7 @@ public class ModelFactory {
       ModelFactory.populateGeneric(mBuildModel, build);
       MavenModuleSetBuild mbuild = (MavenModuleSetBuild) build;
       SurefireAggregatedReport surefireAggregatedReport = mbuild.getAction(SurefireAggregatedReport.class);
-      if(surefireAggregatedReport != null){
+      if (surefireAggregatedReport != null) {
         mBuildModel.setTotalTestCount(surefireAggregatedReport.getTotalCount());
         mBuildModel.setFailedTestCount(surefireAggregatedReport.getFailCount());
         mBuildModel.setSkippedTestCount(surefireAggregatedReport.getSkipCount());

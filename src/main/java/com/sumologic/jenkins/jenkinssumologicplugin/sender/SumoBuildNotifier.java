@@ -16,10 +16,9 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 /**
- * Created by deven on 7/6/15.
- *
  * This publisher will sendLogs build metadata to a Sumologic HTTP collector.
  *
+ * Created by deven on 7/6/15.
  */
 public class SumoBuildNotifier extends Notifier {
 
@@ -51,13 +50,11 @@ public class SumoBuildNotifier extends Notifier {
 
   @Override
   public PluginDescriptorImpl getDescriptor() {
-
     return (PluginDescriptorImpl) super.getDescriptor();
   }
 
   @Override
   public BuildStepMonitor getRequiredMonitorService() {
-
     return BuildStepMonitor.NONE;
   }
 
@@ -69,7 +66,4 @@ public class SumoBuildNotifier extends Notifier {
     LOG.info("Uploading build status to sumologic: " + json);
     logSender.sendLogs(getDescriptor().getUrl(), json.getBytes(), projectName, "jenkinsStatus");
   }
-
-
-
 }
