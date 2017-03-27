@@ -4,6 +4,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -49,9 +50,15 @@ public class LogSender {
 
     try {
       post = new PostMethod(url);
-      post.addRequestHeader("X-Sumo-Name", sumoName);
       post.addRequestHeader("X-Sumo-Host", getHost());
-      post.addRequestHeader("X-Sumo-Category", sumoCategory);
+
+      if (StringUtils.isNotBlank(sumoName)) {
+        post.addRequestHeader("X-Sumo-Name", sumoName);
+      }
+
+      if (StringUtils.isNotBlank(sumoCategory)) {
+        post.addRequestHeader("X-Sumo-Category", sumoCategory);
+      }
 
       post.setRequestEntity(new ByteArrayRequestEntity(msg));
       httpClient.executeMethod(post);

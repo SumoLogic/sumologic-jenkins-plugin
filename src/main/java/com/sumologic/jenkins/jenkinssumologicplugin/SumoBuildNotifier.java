@@ -61,7 +61,9 @@ public class SumoBuildNotifier extends Notifier {
     Gson gson = new Gson();
     String json = gson.toJson(ModelFactory.createBuildModel(build));
 
+    PluginDescriptorImpl descriptor = getDescriptor();
+
     LOG.info("Uploading build status to sumologic: " + json);
-    logSender.sendLogs(getDescriptor().getUrl(), json.getBytes(), "jobStatus", "jenkinsStatus");
+    logSender.sendLogs(descriptor.getUrl(), json.getBytes(), descriptor.getSourceName(), descriptor.getSourceCategory());
   }
 }

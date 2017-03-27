@@ -26,6 +26,10 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
   private String collectorUrl = "";
   private String maxLines = Integer.toString(MAX_LINES_DEFAULT);
   private String queryPortal = "service.sumologic.com";
+
+  private String sourceName = "";
+  private String sourceCategory = "";
+
   private boolean timestampingEnabled = true;
   private boolean buildLogEnabled = true;
 
@@ -56,6 +60,9 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
     maxLines = formData.getString("maxLines");
     timestampingEnabled = formData.getBoolean("timestampingEnabled");
     buildLogEnabled = formData.getBoolean("buildLogEnabled");
+
+    sourceName = formData.getString("sourceName");
+    sourceCategory = formData.getString("sourceCategory");
 
     save();
     return configOk;
@@ -130,10 +137,12 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
   }
 
   public String getQueryPortal() {
+
     return queryPortal;
   }
 
   public void setQueryPortal (String queryPortal) {
+
     this.queryPortal = queryPortal;
   }
 
@@ -142,6 +151,23 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
   }
 
   public void setBuildLogEnabled(boolean value) {
+
     buildLogEnabled = value;
+  }
+
+  public String getSourceName() {
+    return sourceName;
+  }
+
+  public void setSourceName(String sourceName) {
+    this.sourceName = sourceName;
+  }
+
+  public String getSourceCategory() {
+    return sourceCategory;
+  }
+
+  public void setSourceCategory(String sourceCategory) {
+    this.sourceCategory = sourceCategory;
   }
 }

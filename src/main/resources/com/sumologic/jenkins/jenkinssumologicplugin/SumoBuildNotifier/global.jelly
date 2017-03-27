@@ -25,12 +25,28 @@
             description="Portal for querying data. Default: service.sumologic.com">
           <f:textbox name="sumoplugin.queryPortal" default="service.sumologic.com"/>
         </f:entry>
+
     <f:entry
         title="Max log lines per batch sent to Sumo Logic."
         field="maxLines"
         description="0 for no batching, -1 for one request per build.">
       <f:textbox name="sumoplugin.maxLines" default="2000"/>
     </f:entry>
+
+    <f:entry
+        title="Source Name of periodic and job status for search."
+        field="sourceName"
+        description="Leave empty to use default http source settings.">
+      <f:textbox name="sumoplugin.sourceName" default=""/>
+    </f:entry>
+
+    <f:entry
+        title="Source Category of periodic and job status for search."
+        field="sourceCategory"
+        description="Leave empty to use default http source settings.">
+      <f:textbox name="sumoplugin.sourceCategory" default=""/>
+    </f:entry>
+
     <f:entry
         title="Enable automated output annotation with timestamps."
         field="timestampingEnabled"

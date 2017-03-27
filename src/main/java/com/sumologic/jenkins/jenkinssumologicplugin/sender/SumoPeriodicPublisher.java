@@ -33,9 +33,10 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
   protected void execute(TaskListener listener) throws IOException, InterruptedException {
     String logs = ModelFactory.createJenkinsModel(Jenkins.getInstance()).toJson();
 
-    String url = PluginDescriptorImpl.getInstance().getUrl();
+    PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
+    String url = descriptor.getUrl();
 
-    logSender.sendLogs(url, logs.getBytes(), "periodic", "jenkinsStatus");
+    logSender.sendLogs(url, logs.getBytes(), descriptor.getSourceName(), descriptor.getSourceCategory());
   }
 
   @Override
