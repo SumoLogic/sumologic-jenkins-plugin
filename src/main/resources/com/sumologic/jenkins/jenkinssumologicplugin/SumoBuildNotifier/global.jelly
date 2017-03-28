@@ -34,18 +34,35 @@
     </f:entry>
 
     <f:entry
-        title="Source Name of periodic and job status for search."
-        field="sourceName"
-        description="Leave empty to use default http source settings.">
-      <f:textbox name="sumoplugin.sourceName" default=""/>
+        title="Source Name of periodic jenkins status for search."
+        field="sourceNamePeriodic">
+      <f:textbox name="sumoplugin.sourceNamePeriodic" default="jenkinsStatus"/>
     </f:entry>
 
     <f:entry
-        title="Source Category of periodic and job status for search."
-        field="sourceCategory"
-        description="Leave empty to use default http source settings.">
-      <f:textbox name="sumoplugin.sourceCategory" default=""/>
+        title="Source Name of job status for search."
+        field="sourceNameJobStatus">
+      <f:textbox name="sumoplugin.sourceNameJobStatus" default="jenkinsJobStatus"/>
     </f:entry>
+
+    <f:entry
+        title="Source Category of periodic jenkins status for search."
+        field="sourceCategoryPeriodic">
+      <f:textbox name="sumoplugin.sourceCategoryPeriodic" default="jenkinsStatus"/>
+    </f:entry>
+
+    <f:entry
+        title="Source Category of job status for search."
+        field="sourceCategoryJobStatus">
+      <f:textbox name="sumoplugin.sourceCategoryJobStatus" default="jenkinsJobStatus"/>
+    </f:entry>
+
+    <f:entry
+        title="Source Category of build logs for search."
+        field="sourceCategoryBuildLogs">
+      <f:textbox name="sumoplugin.sourceCategoryBuildLogs" default="jenkinsBuildLogs"/>
+    </f:entry>
+
 
     <f:entry
         title="Enable automated output annotation with timestamps."

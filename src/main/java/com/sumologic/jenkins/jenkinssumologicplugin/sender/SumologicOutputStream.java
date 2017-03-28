@@ -31,12 +31,14 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
   private String jobNumber;
   private int maxLinesPerBatch;
   private int currentLines;
+  private PluginDescriptorImpl descriptor;
 
   public SumologicOutputStream(OutputStream stream, AbstractBuild build, PluginDescriptorImpl descriptor) {
     super();
     wrappedStream = stream;
     logSender = LogSender.getInstance();
 
+    this.descriptor = descriptor;
     this.jobName = build.getProject().getDisplayName();
     this.jobNumber = build.getDisplayName();
     maxLinesPerBatch = descriptor.getMaxLinesInt();
@@ -75,7 +77,7 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
 
     try {
       // jobNumber is a build number with #, e.g. #42
-      logSender.sendLogs(url, lines, jobName + jobNumber, "jenkinsStatus");
+      logSender.sendLogs(url, lines, jobName + jobNumber, descriptor.getSourceCategoryBuildLogs());
     } catch (Exception e) {
       e.printStackTrace(new PrintStream(wrappedStream));
     }

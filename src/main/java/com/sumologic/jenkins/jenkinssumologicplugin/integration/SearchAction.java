@@ -47,8 +47,12 @@ public class SearchAction implements Action {
 
     String buildName = build.getProject().getDisplayName();
     String buildNumber = build.getDisplayName();
-    String queryPortal = PluginDescriptorImpl.getInstance().getQueryPortal();
-    String query = String.format("_sourceName=%s%s _sourceCategory=jenkinsStatus", buildName, buildNumber);
+
+    PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
+    String queryPortal = descriptor.getQueryPortal();
+    String sourceCategory = descriptor.getSourceCategoryBuildLogs();
+
+    String query = String.format("_sourceName=%s%s _sourceCategory=%s", buildName, buildNumber, sourceCategory);
     String encodedQuery = "";
     try {
       encodedQuery = URLEncoder.encode(query, "UTF-8").replace("+", "%20");

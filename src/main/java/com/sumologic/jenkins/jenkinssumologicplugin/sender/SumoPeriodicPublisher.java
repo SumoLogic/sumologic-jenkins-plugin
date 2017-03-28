@@ -24,9 +24,9 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
   private LogSender logSender;
 
   public SumoPeriodicPublisher() {
-    super("Sumologic Periodic Data Publisher");
+    super("Sumo Logic Periodic Data Publisher");
     logSender = LogSender.getInstance();
-    LOGGER.log(Level.FINE, "Sumologic status publishing period is {0}ms", recurrencePeriod);
+    LOGGER.log(Level.FINE, "Sumo Logic status publishing period is {0}ms", recurrencePeriod);
   }
 
   @Override
@@ -36,7 +36,8 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
     PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
     String url = descriptor.getUrl();
 
-    logSender.sendLogs(url, logs.getBytes(), descriptor.getSourceName(), descriptor.getSourceCategory());
+    logSender.sendLogs(url, logs.getBytes(),
+        descriptor.getSourceNamePeriodic(), descriptor.getSourceCategoryPeriodic());
   }
 
   @Override

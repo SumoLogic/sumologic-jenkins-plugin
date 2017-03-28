@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 /**
- * This publisher will sendLogs build metadata to a Sumologic HTTP collector.
+ * This publisher will sendLogs build metadata to a Sumo Logic HTTP collector.
  *
  * Created by deven on 7/6/15.
  */
@@ -66,8 +66,8 @@ public class SumoBuildNotifier extends Notifier {
     LOG.info("Uploading build status to sumologic: " + json);
 
     String url = descriptor.getUrl();
-    String sourceName = descriptor.getSourceName();
-    String category = descriptor.getSourceCategory();
+    String sourceName = descriptor.getSourceNameJobStatus();
+    String category = descriptor.getSourceCategoryJobStatus();
     byte[] bytes = json.getBytes();
 
     logSender.sendLogs(url, bytes, sourceName, category);
