@@ -48,6 +48,11 @@ public class LogSender {
   public void sendLogs(String url, byte[] msg, String sumoName, String sumoCategory){
     PostMethod post = null;
 
+    if (StringUtils.isBlank(url)) {
+      LOG.warning("Trying to send logs with blank url. Update config first!");
+      return;
+    }
+
     try {
       post = new PostMethod(url);
       post.addRequestHeader("X-Sumo-Host", getHost());
