@@ -8,6 +8,7 @@ import hudson.model.*;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
@@ -22,12 +23,11 @@ import java.util.logging.Logger;
 public class SumoBuildNotifier extends Notifier {
 
   private final static Logger LOG = Logger.getLogger(SumoBuildNotifier.class.getName());
-  private LogSender logSender;
+  private static LogSender logSender = LogSender.getInstance();
 
   @DataBoundConstructor
   public SumoBuildNotifier() {
     super();
-    logSender = LogSender.getInstance();
   }
 
   @SuppressWarnings("unchecked")
@@ -61,9 +61,15 @@ public class SumoBuildNotifier extends Notifier {
     Gson gson = new Gson();
     String json = gson.toJson(ModelFactory.createBuildModel(build));
 
-    PluginDescriptorImpl descriptor = getDescriptor();
+    PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
 
     LOG.info("Uploading build status to sumologic: " + json);
-    logSender.sendLogs(descriptor.getUrl(), json.getBytes(), descriptor.getSourceName(), descriptor.getSourceCategory());
+
+    String url = descriptor.getUrl();
+    String sourceName = descriptor.getSourceName();
+    String category = descriptor.getSourceCategory();
+    byte[] bytes = json.getBytes();
+
+    logSender.sendLogs(url, bytes, sourceName, category);
   }
 }
