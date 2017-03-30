@@ -3,13 +3,16 @@ package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
+import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.logging.Logger;
+import java.util.zip.GZIPOutputStream;
 
 
 /**
@@ -65,7 +68,10 @@ public class LogSender {
         post.addRequestHeader("X-Sumo-Category", sumoCategory);
       }
 
-      post.setRequestEntity(new ByteArrayRequestEntity(msg));
+      post.addRequestHeader("Content-Encoding", "gzip");
+      byte[] compressedData = compress(msg);
+
+      post.setRequestEntity(new ByteArrayRequestEntity(compressedData));
       httpClient.executeMethod(post);
       int statusCode = post.getStatusCode();
       if (statusCode != 200) {
@@ -79,6 +85,14 @@ public class LogSender {
         post.releaseConnection();
       }
     }
+  }
 
+  private byte[] compress(byte[] content) throws IOException {
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
+    gzipOutputStream.write(content);
+    gzipOutputStream.close();
+
+    return byteArrayOutputStream.toByteArray();
   }
 }
