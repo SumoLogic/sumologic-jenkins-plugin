@@ -31,13 +31,14 @@ public class TimestampingOutputStream extends LineTransformationOutputStream {
     wrappedStream = stream;
   }
 
-  public static byte[] getTimestampAsByteArray() {
-    String timeStampStr = "[" + DATE_FORMAT.format(new Date()) + "] ";
-    byte[] timestampBytes = timeStampStr.getBytes();
-
-    return timestampBytes;
-  }
-
+  /**
+   * Heuristic used for determining multiline log messages, e.g. stack traces.
+   * For Sumo Logic purposes only lines prefixed with timestamp will be considered a beginning of new log message.
+   *
+   * @param bytes - byte array containing single log line
+   * @param i - log line length (can be less that bytes.length)
+   * @return false if line starts with whitespace, true otherwise
+   */
   public static boolean shouldPutTimestamp(byte[] bytes, int i) {
     String prefix = new String(bytes, 0, i < 4 ? i : 4, Charset.forName("UTF-8"));
 
@@ -46,6 +47,13 @@ public class TimestampingOutputStream extends LineTransformationOutputStream {
     }
 
     return true;
+  }
+
+  public static byte[] getTimestampAsByteArray() {
+    String timeStampStr = "[" + DATE_FORMAT.format(new Date()) + "] ";
+    byte[] timestampBytes = timeStampStr.getBytes();
+
+    return timestampBytes;
   }
 
   @Override
