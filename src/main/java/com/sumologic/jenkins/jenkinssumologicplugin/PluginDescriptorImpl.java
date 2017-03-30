@@ -34,7 +34,6 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
   private String sourceCategoryJobStatus = "jenkinsJobStatus";
   private String sourceCategoryBuildLogs = "jenkinsBuildLogs";
 
-  private boolean timestampingEnabled = true;
   private boolean buildLogEnabled = true;
 
   public PluginDescriptorImpl() {
@@ -62,7 +61,6 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
     collectorUrl = formData.getString("url");
     queryPortal = formData.getString("queryPortal");
     maxLines = formData.getString("maxLines");
-    timestampingEnabled = formData.getBoolean("timestampingEnabled");
     buildLogEnabled = formData.getBoolean("buildLogEnabled");
 
     sourceNamePeriodic = formData.getString("sourceNamePeriodic");
@@ -114,14 +112,6 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
   public void setUrl(String url) {
     this.collectorUrl = url;
-  }
-
-  public boolean isTimestampingEnabled() {
-    return timestampingEnabled;
-  }
-
-  public void setTimestampingEnabled(boolean value) {
-    timestampingEnabled = value;
   }
 
   public String getMaxLines() {

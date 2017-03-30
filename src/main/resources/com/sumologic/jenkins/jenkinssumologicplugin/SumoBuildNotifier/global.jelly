@@ -63,13 +63,6 @@
       <f:textbox name="sumoplugin.sourceCategoryBuildLogs" default="jenkinsBuildLogs"/>
     </f:entry>
 
-
-    <f:entry
-        title="Enable automated output annotation with timestamps."
-        field="timestampingEnabled"
-        description="Check for automated timstamps at the beggining of every log line.">
-      <f:checkbox name="sumoplugin.timestampingEnabled" default="true"/>
-    </f:entry>
     <f:entry
         title="Enable automated build log sending to Sumo Logic."
         field="buildLogEnabled"

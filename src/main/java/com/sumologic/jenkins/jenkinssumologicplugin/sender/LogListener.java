@@ -24,12 +24,7 @@ public class LogListener extends ConsoleLogFilter {
     throws IOException, InterruptedException {
 
     PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
-
     OutputStream stream = outputStream;
-
-    if (pluginDescriptor.isTimestampingEnabled()) {
-      stream = new TimestampingOutputStream(stream);
-    }
 
     if (pluginDescriptor.isBuildLogEnabled()) {
       abstractBuild.addAction(new SearchAction(abstractBuild));

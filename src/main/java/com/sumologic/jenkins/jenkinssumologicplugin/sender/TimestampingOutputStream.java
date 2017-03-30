@@ -8,6 +8,7 @@ import org.apache.http.util.ByteArrayBuffer;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Logger;
@@ -30,13 +31,38 @@ public class TimestampingOutputStream extends LineTransformationOutputStream {
     wrappedStream = stream;
   }
 
+  /**
+   * Heuristic used for determining multiline log messages, e.g. stack traces.
+   * For Sumo Logic purposes only lines prefixed with timestamp will be considered a beginning of new log message.
+   *
+   * @param bytes - byte array containing single log line
+   * @param i - log line length (can be less that bytes.length)
+   * @return false if line starts with whitespace, true otherwise
+   */
+  public static boolean shouldPutTimestamp(byte[] bytes, int i) {
+    String prefix = new String(bytes, 0, i < 4 ? i : 4, Charset.forName("UTF-8"));
 
-  @Override
-  protected void eol(byte[] bytes, int i) throws IOException {
+    if (prefix.length() <= 0 || Character.isWhitespace(prefix.charAt(0))) {
+      return false;
+    }
+
+    return true;
+  }
+
+  public static byte[] getTimestampAsByteArray() {
     String timeStampStr = "[" + DATE_FORMAT.format(new Date()) + "] ";
     byte[] timestampBytes = timeStampStr.getBytes();
 
-    wrappedStream.write(timestampBytes, 0, timestampBytes.length);
+    return timestampBytes;
+  }
+
+  @Override
+  protected void eol(byte[] bytes, int i) throws IOException {
+    if (shouldPutTimestamp(bytes, i)) {
+      byte[] timestampBytes = getTimestampAsByteArray();
+      wrappedStream.write(timestampBytes, 0, timestampBytes.length);
+    }
+
     wrappedStream.write(bytes, 0, i);
   }
 }
