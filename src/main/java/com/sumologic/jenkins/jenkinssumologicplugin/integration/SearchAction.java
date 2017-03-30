@@ -25,7 +25,7 @@ public class SearchAction implements Action {
 
   @Override
   public String getIconFileName() {
-    return "setting.png";
+    return "/plugin/sumologic-publisher/sumologic.ico";
   }
 
   @Override
