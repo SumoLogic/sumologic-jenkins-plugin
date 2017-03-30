@@ -1,4 +1,4 @@
-package com.sumologic.jenkins.jenkinssumologicplugin;
+package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
 import com.google.gson.Gson;
 import hudson.model.AbstractBuild;
@@ -13,7 +13,7 @@ public class BuildModel {
 
   BuildModel(AbstractBuild build) {
     this.name = build.getProject().getDisplayName();
-    this.duration = build.getTimeInMillis();
+    this.duration = build.getDuration();
     this.start_time = build.getStartTimeInMillis();
     this.number = build.getNumber();
     this.scm = build.getChangeSet().getKind();

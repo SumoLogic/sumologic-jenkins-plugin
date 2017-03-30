@@ -1,5 +1,8 @@
-package com.sumologic.jenkins.jenkinssumologicplugin;
+package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
+import com.sumologic.jenkins.jenkinssumologicplugin.SumoBuildNotifier;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.ModelFactory;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
@@ -15,6 +18,8 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+
+import static org.mockito.Mockito.atLeast;
 
 public class SumoBuildNotifierTest {
   @Rule
@@ -37,7 +42,7 @@ public class SumoBuildNotifierTest {
 
     // report how to access the server
     System.out.println("LocalTestServer available at " + serverUrl);
-    j.get(SumoDescriptorImpl.class).setUrl(serverUrl);
+    j.get(PluginDescriptorImpl.class).setUrl(serverUrl);
 
   }
 
@@ -51,15 +56,17 @@ public class SumoBuildNotifierTest {
   @Test
   public void testSendBuildData() throws Exception {
     ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
-    j.get(SumoDescriptorImpl.class).setUrl(serverUrl);
     FreeStyleProject project = j.createFreeStyleProject();
 
     project.getBuildersList().add(new Shell("Echo Hello"));
+    project.getBuildersList().add(new Shell("Echo Hello2"));
+    project.getBuildersList().add(new Shell("Echo Hello3"));
+    project.getBuildersList().add(new Shell("Echo Hello4"));
     project.getPublishersList().add(new SumoBuildNotifier());
 
     FreeStyleBuild build = project.scheduleBuild2(0).get();
 
-    Mockito.verify(handler).handle(
+    Mockito.verify(handler, atLeast(1)).handle(
         captor.capture(),
         Mockito.isA(HttpResponse.class),
         Mockito.isA(HttpContext.class));
@@ -67,7 +74,7 @@ public class SumoBuildNotifierTest {
     HttpEntityEnclosingRequest request = (HttpEntityEnclosingRequest) captor.getValue();
 
 
-    Assert.assertEquals("Wrong length message.", ModelFactory.generateBuildModelFor(build).toJson().length(), request.getEntity().getContentLength());
+    Assert.assertTrue("Message too short.", ModelFactory.createBuildModel(build).toJson().length() <= request.getEntity().getContentLength());
   }
 
   @Test
@@ -76,14 +83,14 @@ public class SumoBuildNotifierTest {
     SumoPeriodicPublisher publisher = new SumoPeriodicPublisher();
     publisher.execute(Mockito.mock(TaskListener.class));
 
-    Mockito.verify(handler).handle(
+    Mockito.verify(handler, atLeast(1)).handle(
         captor.capture(),
         Mockito.isA(HttpResponse.class),
         Mockito.isA(HttpContext.class));
 
     HttpEntityEnclosingRequest request = (HttpEntityEnclosingRequest) captor.getValue();
 
-    Assert.assertEquals("Wrong length message.", ModelFactory.generateJenkinsModelFor(j.getInstance()).toJson().length(), request.getEntity().getContentLength());
+    Assert.assertTrue("Wrong message length.", ModelFactory.createJenkinsModel(j.getInstance()).toJson().length() == request.getEntity().getContentLength());
 
 
 

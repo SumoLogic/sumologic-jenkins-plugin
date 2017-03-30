@@ -1,5 +1,7 @@
-package com.sumologic.jenkins.jenkinssumologicplugin;
+package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.ModelFactory;
 import hudson.Extension;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
@@ -19,16 +21,23 @@ import java.util.logging.Logger;
 public class SumoPeriodicPublisher extends AsyncPeriodicWork {
   protected static final long recurrencePeriod = TimeUnit.MINUTES.toMillis(3);
   private static final Logger LOGGER = Logger.getLogger(SumoPeriodicPublisher.class.getName());
+  private LogSender logSender;
 
   public SumoPeriodicPublisher() {
-    super("Sumologic Periodic Data Publisher");
-    LOGGER.log(Level.FINE, "Sumologic status publishing period is {0}ms", recurrencePeriod);
+    super("Sumo Logic Periodic Data Publisher");
+    logSender = LogSender.getInstance();
+    LOGGER.log(Level.FINE, "Sumo Logic status publishing period is {0}ms", recurrencePeriod);
   }
 
   @Override
   protected void execute(TaskListener listener) throws IOException, InterruptedException {
-    new SumoLogic().push(ModelFactory.generateJenkinsModelFor(Jenkins.getInstance()).toJson());
+    String logs = ModelFactory.createJenkinsModel(Jenkins.getInstance()).toJson();
 
+    PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
+    String url = descriptor.getUrl();
+
+    logSender.sendLogs(url, logs.getBytes(),
+        descriptor.getSourceNamePeriodic(), descriptor.getSourceCategoryPeriodic());
   }
 
   @Override
