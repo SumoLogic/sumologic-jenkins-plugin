@@ -90,7 +90,7 @@ public class SumoBuildNotifierTest {
 
     HttpEntityEnclosingRequest request = (HttpEntityEnclosingRequest) captor.getValue();
 
-    Assert.assertTrue("Wrong message length.", ModelFactory.createJenkinsModel(j.getInstance()).toJson().length() == request.getEntity().getContentLength());
+    Assert.assertTrue("Wrong message length.", ModelFactory.createJenkinsModel(j.getInstance()).toJson().length() >= request.getEntity().getContentLength());
 
 
 
