@@ -56,6 +56,11 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
 
   @Override
   protected void eol(byte[] bytes, int i) throws IOException {
+    if (TimestampingOutputStream.shouldPutTimestamp(bytes, i)) {
+      byte[] timestamp = TimestampingOutputStream.getTimestampAsByteArray();
+      buffer.append(timestamp, 0, timestamp.length);
+    }
+
     buffer.append(bytes, 0, i);
     currentLines++;
 

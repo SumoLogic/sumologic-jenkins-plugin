@@ -8,6 +8,7 @@ import org.apache.http.util.ByteArrayBuffer;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Logger;
@@ -30,13 +31,30 @@ public class TimestampingOutputStream extends LineTransformationOutputStream {
     wrappedStream = stream;
   }
 
-
-  @Override
-  protected void eol(byte[] bytes, int i) throws IOException {
+  public static byte[] getTimestampAsByteArray() {
     String timeStampStr = "[" + DATE_FORMAT.format(new Date()) + "] ";
     byte[] timestampBytes = timeStampStr.getBytes();
 
-    wrappedStream.write(timestampBytes, 0, timestampBytes.length);
+    return timestampBytes;
+  }
+
+  public static boolean shouldPutTimestamp(byte[] bytes, int i) {
+    String prefix = new String(bytes, 0, i < 4 ? i : 4, Charset.forName("UTF-8"));
+
+    if (prefix.length() <= 0 || Character.isWhitespace(prefix.charAt(0))) {
+      return false;
+    }
+
+    return true;
+  }
+
+  @Override
+  protected void eol(byte[] bytes, int i) throws IOException {
+    if (shouldPutTimestamp(bytes, i)) {
+      byte[] timestampBytes = getTimestampAsByteArray();
+      wrappedStream.write(timestampBytes, 0, timestampBytes.length);
+    }
+
     wrappedStream.write(bytes, 0, i);
   }
 }

@@ -34,7 +34,7 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
   private String sourceCategoryJobStatus = "jenkinsJobStatus";
   private String sourceCategoryBuildLogs = "jenkinsBuildLogs";
 
-  private boolean timestampingEnabled = true;
+  private boolean timestampingEnabled = false;
   private boolean buildLogEnabled = true;
 
   public PluginDescriptorImpl() {

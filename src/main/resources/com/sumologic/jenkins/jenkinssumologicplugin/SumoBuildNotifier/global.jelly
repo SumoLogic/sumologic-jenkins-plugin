@@ -65,10 +65,10 @@
 
 
     <f:entry
-        title="Enable automated output annotation with timestamps."
+        title="Enable automated console output annotation with timestamps."
         field="timestampingEnabled"
-        description="Check for automated timstamps at the beggining of every log line.">
-      <f:checkbox name="sumoplugin.timestampingEnabled" default="true"/>
+        description="Logs sent to Sumo Logic will either way be sent with timestamps.">
+      <f:checkbox name="sumoplugin.timestampingEnabled" default="false"/>
     </f:entry>
     <f:entry
         title="Enable automated build log sending to Sumo Logic."
