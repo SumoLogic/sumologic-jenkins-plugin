@@ -53,29 +53,7 @@ public class SumoBuildNotifierTest {
 
   }
 
-  @Test
-  public void testSendBuildData() throws Exception {
-    ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
-    FreeStyleProject project = j.createFreeStyleProject();
 
-    project.getBuildersList().add(new Shell("Echo Hello"));
-    project.getBuildersList().add(new Shell("Echo Hello2"));
-    project.getBuildersList().add(new Shell("Echo Hello3"));
-    project.getBuildersList().add(new Shell("Echo Hello4"));
-    project.getPublishersList().add(new SumoBuildNotifier());
-
-    FreeStyleBuild build = project.scheduleBuild2(0).get();
-
-    Mockito.verify(handler, atLeast(1)).handle(
-        captor.capture(),
-        Mockito.isA(HttpResponse.class),
-        Mockito.isA(HttpContext.class));
-
-    HttpEntityEnclosingRequest request = (HttpEntityEnclosingRequest) captor.getValue();
-
-
-    Assert.assertTrue("Message too short.", ModelFactory.createBuildModel(build).toJson().length() <= request.getEntity().getContentLength());
-  }
 
   @Test
   public void testSendJenkinsData() throws Exception {

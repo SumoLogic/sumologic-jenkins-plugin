@@ -3,6 +3,7 @@ package com.sumologic.jenkins.jenkinssumologicplugin.integration;
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import hudson.model.AbstractBuild;
 import hudson.model.Action;
+import hudson.model.Run;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
@@ -17,9 +18,9 @@ public class SearchAction implements Action {
 
   private final String URL_TEMPLATE = "https://%s/ui/index.html?reason=st#section/search/@%d,%d@%s";
   private final int MILLIS_IN_MINUTE = 1000 * 60;
-  private AbstractBuild build;
+  private Run build;
 
-  public SearchAction(AbstractBuild build) {
+  public SearchAction(Run build) {
     this.build = build;
   }
 
@@ -45,7 +46,7 @@ public class SearchAction implements Action {
       queryTo = queryFrom + build.getDuration() + (MILLIS_IN_MINUTE * 5);
     }
 
-    String buildName = build.getProject().getDisplayName();
+    String buildName = build.getParent().getDisplayName();
     String buildNumber = build.getDisplayName();
 
     PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();

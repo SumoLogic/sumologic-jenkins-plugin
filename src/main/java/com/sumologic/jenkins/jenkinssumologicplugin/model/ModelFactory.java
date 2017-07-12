@@ -4,13 +4,12 @@ import hudson.maven.MavenBuild;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.maven.reporters.SurefireAggregatedReport;
-import hudson.model.AbstractBuild;
-import hudson.model.Computer;
-import hudson.model.Queue;
+import hudson.model.*;
 import hudson.tasks.test.TestResult;
 import jenkins.model.Jenkins;
 
 import java.util.Map;
+import java.util.logging.Logger;
 
 
 /**
@@ -20,16 +19,18 @@ import java.util.Map;
  * step to json serialization.
  */
 public class ModelFactory {
-  protected static void populateGeneric(BuildModel buildModel, AbstractBuild build) {
+  private final static Logger LOG = Logger.getLogger(ModelFactory.class.getName());
 
-    buildModel.setName(build.getProject().getDisplayName());
+  protected static void populateGeneric(BuildModel buildModel, Run build) {
+    buildModel.setName(build.getParent().getDisplayName());
     buildModel.setNumber(build.getNumber());
     buildModel.setDuration(System.currentTimeMillis() - build.getStartTimeInMillis());
     buildModel.setStart(build.getStartTimeInMillis());
-    buildModel.setResult(build.getResult().toString());
-    buildModel.setHudsonVersion(build.getHudsonVersion());
-    buildModel.setDescription(build.getDescription());
+    String result = build.getResult() != null ? build.getResult().toString() : "Unknown";
+    buildModel.setResult(result);
 
+    buildModel.setHudsonVersion(Hudson.getVersion().toString());
+    buildModel.setDescription(build.getDescription());
   }
 
   public static JenkinsModel createJenkinsModel(Jenkins jenkins) {
@@ -61,7 +62,7 @@ public class ModelFactory {
     return new JenkinsModel(queueModel, slaveModel, jenkins.getDescription());
   }
 
-  public static BuildModel createBuildModel(AbstractBuild build) {
+  public static BuildModel createBuildModel(Run build) {
     BuildModel buildModel = null;
     if (build instanceof MavenModuleSetBuild) {
       MavenModuleSetBuildModel mBuildModel = new MavenModuleSetBuildModel();

@@ -3,6 +3,7 @@ package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import hudson.console.LineTransformationOutputStream;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import org.apache.http.util.ByteArrayBuffer;
 
 import java.io.IOException;
@@ -33,13 +34,13 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
   private int currentLines;
   private PluginDescriptorImpl descriptor;
 
-  public SumologicOutputStream(OutputStream stream, AbstractBuild build, PluginDescriptorImpl descriptor) {
+  public SumologicOutputStream(OutputStream stream, Run build, PluginDescriptorImpl descriptor) {
     super();
     wrappedStream = stream;
     logSender = LogSender.getInstance();
 
     this.descriptor = descriptor;
-    this.jobName = build.getProject().getDisplayName();
+    this.jobName = build.getParent().getDisplayName();
     this.jobNumber = build.getDisplayName();
     maxLinesPerBatch = descriptor.getMaxLinesInt();
 
