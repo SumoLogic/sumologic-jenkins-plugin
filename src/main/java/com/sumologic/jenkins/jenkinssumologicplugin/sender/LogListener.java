@@ -7,6 +7,7 @@ import hudson.console.ConsoleLogFilter;
 import hudson.model.AbstractBuild;
 import hudson.model.Computer;
 import hudson.model.Run;
+import jenkins.model.Jenkins;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -25,6 +26,18 @@ import java.util.logging.Logger;
 public class LogListener extends ConsoleLogFilter {
   private final static Logger LOG = Logger.getLogger(LogSender.class.getName());
 
+  private String buildName;
+  private String buildNumber;
+
+  public LogListener(){
+    super();
+  }
+
+  public LogListener(String buildName, String buildNumber) {
+    this.buildName = buildName;
+    this.buildNumber = buildNumber;
+  }
+
   @Override
   public OutputStream decorateLogger(AbstractBuild abstractBuild, OutputStream outputStream)
     throws IOException, InterruptedException {
@@ -37,9 +50,16 @@ public class LogListener extends ConsoleLogFilter {
     OutputStream stream = outputStream;
 
     if (pluginDescriptor.isBuildLogEnabled()) {
-      build.addAction(new SearchAction(build));
-      stream = new SumologicOutputStream(
-          stream, build, pluginDescriptor);
+      if (build != null) {
+        build.addAction(new SearchAction(build));
+        stream = new SumologicOutputStream(
+            stream, build, pluginDescriptor);
+
+      }
+      else {
+        stream = new SumologicOutputStream(
+            stream, buildName, buildNumber, pluginDescriptor);
+      }
     }
 
     return stream;

@@ -49,6 +49,21 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
     this.url = descriptor.getUrl();
   }
 
+  public SumologicOutputStream(OutputStream stream, String buildName, String buildNumber, PluginDescriptorImpl descriptor) {
+    super();
+    wrappedStream = stream;
+    logSender = LogSender.getInstance();
+
+    this.descriptor = descriptor;
+    this.jobName = buildName;
+    this.jobNumber = "#" + buildNumber;
+    maxLinesPerBatch = descriptor.getMaxLinesInt();
+
+    currentLines = 0;
+    buffer = new ByteArrayBuffer(1);
+    this.url = descriptor.getUrl();
+  }
+
   @Override
   public void close() throws IOException {
     super.close();
