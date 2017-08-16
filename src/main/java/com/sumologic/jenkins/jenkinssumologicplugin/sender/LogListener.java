@@ -12,6 +12,7 @@ import jenkins.model.Jenkins;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.logging.Logger;
 
 /**
@@ -23,7 +24,7 @@ import java.util.logging.Logger;
  * Created by lukasz on 3/21/17.
  */
 @Extension(ordinal = -1)
-public class LogListener extends ConsoleLogFilter {
+public class LogListener extends ConsoleLogFilter implements Serializable {
   private final static Logger LOG = Logger.getLogger(LogSender.class.getName());
 
   private String buildName;
