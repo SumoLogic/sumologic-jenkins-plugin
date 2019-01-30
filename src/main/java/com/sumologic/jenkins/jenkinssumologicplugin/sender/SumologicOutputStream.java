@@ -2,15 +2,13 @@ package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import hudson.console.LineTransformationOutputStream;
-import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import org.apache.http.util.ByteArrayBuffer;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.io.Serializable;
 import java.util.logging.Logger;
 
 /**
@@ -21,20 +19,32 @@ import java.util.logging.Logger;
  */
 public class SumologicOutputStream extends LineTransformationOutputStream {
 
+  static public class State implements Serializable {
+    ByteArrayBuffer buffer;
+    Integer currentLines;
+
+    public State() {
+      buffer = new ByteArrayBuffer(1);
+      currentLines = 0;
+    }
+  }
+
   private static final Logger LOGGER = Logger.getLogger(SumologicOutputStream.class.getName());
+
+  private static final String FLUSH_COMMAND = "%%%FLUSH_COMMAND%%%";
 
   private LogSender logSender;
   private OutputStream wrappedStream;
-  private ByteArrayBuffer buffer;
 
   private String url;
   private String jobName;
   private String jobNumber;
   private int maxLinesPerBatch;
-  private int currentLines;
   private PluginDescriptorImpl descriptor;
 
-  public SumologicOutputStream(OutputStream stream, Run build, PluginDescriptorImpl descriptor) {
+  private State state;
+
+  public SumologicOutputStream(OutputStream stream, Run build, PluginDescriptorImpl descriptor, State state) {
     super();
     wrappedStream = stream;
     logSender = LogSender.getInstance();
@@ -44,12 +54,13 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
     this.jobNumber = build.getDisplayName();
     maxLinesPerBatch = descriptor.getMaxLinesInt();
 
-    currentLines = 0;
-    buffer = new ByteArrayBuffer(1);
     this.url = descriptor.getUrl();
+
+    this.state = state;
   }
 
-  public SumologicOutputStream(OutputStream stream, String buildName, String buildNumber, PluginDescriptorImpl descriptor) {
+  public SumologicOutputStream(OutputStream stream, String buildName, String buildNumber, PluginDescriptorImpl descriptor,
+                               State state) {
     super();
     wrappedStream = stream;
     logSender = LogSender.getInstance();
@@ -59,45 +70,51 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
     this.jobNumber = "#" + buildNumber;
     maxLinesPerBatch = descriptor.getMaxLinesInt();
 
-    currentLines = 0;
-    buffer = new ByteArrayBuffer(1);
     this.url = descriptor.getUrl();
+
+    this.state = state;
   }
 
   @Override
   public void close() throws IOException {
-    super.close();
     flushBuffer();
+    super.close();
   }
 
   @Override
   protected void eol(byte[] bytes, int i) throws IOException {
-    if (TimestampingOutputStream.shouldPutTimestamp(bytes, i)) {
-      byte[] timestamp = TimestampingOutputStream.getTimestampAsByteArray();
-      buffer.append(timestamp, 0, timestamp.length);
+    if (new String(bytes).startsWith(FLUSH_COMMAND)) {
+      flushBuffer();
+      return;
     }
 
-    buffer.append(bytes, 0, i);
-    currentLines++;
+    if (TimestampingOutputStream.shouldPutTimestamp(bytes, i)) {
+      byte[] timestamp = TimestampingOutputStream.getTimestampAsByteArray();
+      state.buffer.append(timestamp, 0, timestamp.length);
+    }
+
+    state.buffer.append(bytes, 0, i);
+    state.currentLines++;
 
     wrappedStream.write(bytes, 0, i);
 
-    if (currentLines >= maxLinesPerBatch) {
+    if (state.currentLines >= maxLinesPerBatch) {
       flushBuffer();
     }
   }
 
   private synchronized void flushBuffer(){
-    if (currentLines <= 0) {
+    if (state.currentLines <= 0) {
       return;
     }
 
-    byte[] lines = buffer.toByteArray();
-    buffer.clear();
-    currentLines = 0;
+    byte[] lines = state.buffer.toByteArray();
+    state.buffer.clear();
+    state.currentLines = 0;
 
     try {
       // jobNumber is a build number with #, e.g. #42
+      LOGGER.info("Sending " + lines.length + " bytes of build logs to sumo");
       logSender.sendLogs(url, lines, jobName + jobNumber, descriptor.getSourceCategoryBuildLogs());
     } catch (Exception e) {
       e.printStackTrace(new PrintStream(wrappedStream));

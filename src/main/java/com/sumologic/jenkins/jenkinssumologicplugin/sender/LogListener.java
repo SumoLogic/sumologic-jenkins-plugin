@@ -13,6 +13,8 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
@@ -29,6 +31,7 @@ public class LogListener extends ConsoleLogFilter implements Serializable {
 
   private String buildName;
   private String buildNumber;
+  private SumologicOutputStream.State streamState;
 
   public LogListener(){
     super();
@@ -37,7 +40,9 @@ public class LogListener extends ConsoleLogFilter implements Serializable {
   public LogListener(String buildName, String buildNumber) {
     this.buildName = buildName;
     this.buildNumber = buildNumber;
+    this.streamState = new SumologicOutputStream.State();
   }
+
 
   @Override
   public OutputStream decorateLogger(AbstractBuild abstractBuild, OutputStream outputStream)
@@ -48,18 +53,18 @@ public class LogListener extends ConsoleLogFilter implements Serializable {
   @Override
   public OutputStream decorateLogger(Run build, OutputStream outputStream) throws IOException, InterruptedException {
     PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
-    OutputStream stream = outputStream;
+
+    SumologicOutputStream stream = null;
 
     if (pluginDescriptor.isBuildLogEnabled()) {
       if (build != null) {
         build.addAction(new SearchAction(build));
         stream = new SumologicOutputStream(
-            stream, build, pluginDescriptor);
+                outputStream, build, pluginDescriptor, streamState);
 
-      }
-      else {
+      } else {
         stream = new SumologicOutputStream(
-            stream, buildName, buildNumber, pluginDescriptor);
+                outputStream, buildName, buildNumber, pluginDescriptor, streamState);
       }
     }
 
@@ -71,4 +76,7 @@ public class LogListener extends ConsoleLogFilter implements Serializable {
     return logger;
   }
 
+  private String key() {
+    return buildName + "$$" + buildNumber;
+  }
 }
