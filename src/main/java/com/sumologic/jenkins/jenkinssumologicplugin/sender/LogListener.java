@@ -35,9 +35,11 @@ public class LogListener extends ConsoleLogFilter implements Serializable {
 
   public LogListener(){
     super();
+    this.streamState = new SumologicOutputStream.State();
   }
 
   public LogListener(String buildName, String buildNumber) {
+    super();
     this.buildName = buildName;
     this.buildNumber = buildNumber;
     this.streamState = new SumologicOutputStream.State();
@@ -54,29 +56,21 @@ public class LogListener extends ConsoleLogFilter implements Serializable {
   public OutputStream decorateLogger(Run build, OutputStream outputStream) throws IOException, InterruptedException {
     PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
 
-    SumologicOutputStream stream = null;
-
     if (pluginDescriptor.isBuildLogEnabled()) {
       if (build != null) {
         build.addAction(new SearchAction(build));
-        stream = new SumologicOutputStream(
-                outputStream, build, pluginDescriptor, streamState);
+        return new SumologicOutputStream(outputStream, build, pluginDescriptor, streamState);
 
       } else {
-        stream = new SumologicOutputStream(
-                outputStream, buildName, buildNumber, pluginDescriptor, streamState);
+        return new SumologicOutputStream(outputStream, buildName, buildNumber, pluginDescriptor, streamState);
       }
     }
 
-    return stream;
+    return outputStream;
   }
 
   @Override
   public OutputStream decorateLogger(@Nonnull Computer computer, OutputStream logger) throws IOException, InterruptedException {
     return logger;
-  }
-
-  private String key() {
-    return buildName + "$$" + buildNumber;
   }
 }

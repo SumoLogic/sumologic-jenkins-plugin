@@ -56,11 +56,11 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
 
     this.url = descriptor.getUrl();
 
-    this.state = state;
+    this.state =  state != null ? state : new State();
   }
 
   public SumologicOutputStream(OutputStream stream, String buildName, String buildNumber, PluginDescriptorImpl descriptor,
-                               State state) {
+                                State state) {
     super();
     wrappedStream = stream;
     logSender = LogSender.getInstance();
@@ -72,7 +72,7 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
 
     this.url = descriptor.getUrl();
 
-    this.state = state;
+    this.state =  state != null ? state : new State();
   }
 
   @Override
