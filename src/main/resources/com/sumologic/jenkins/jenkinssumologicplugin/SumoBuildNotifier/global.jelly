@@ -19,6 +19,45 @@
         description="Input url for http collector endpoint.">
       <f:textbox name="sumoplugin.url"/>
     </f:entry>
+          <f:entry
+                title="Enable proxy settings."
+                field="enableProxy"
+                description="Check to enable proxy settings..">
+              <f:checkbox name="sumoplugin.enableProxy" default="true"/>
+            </f:entry>
+          <f:entry
+              title="Proxy Host"
+              field="proxyHost"
+              description="Input the proxy server URL. e.g proxy.example.com">
+            <f:textbox name="sumoplugin.proxyHost"/>
+          </f:entry>
+          <f:entry
+              title="Proxy Port"
+              field="proxyPort"
+              description="Input the port for the proxy server.">
+            <f:textbox name="sumoplugin.proxyPort"/>
+          </f:entry>
+            <f:entry
+                title="Enable proxy authentication."
+                field="enableProxyAuth"
+                description="Check to enable authentication for the proxy.">
+              <f:checkbox name="sumoplugin.enableProxyAuth" default="true"/>
+            </f:entry>
+            <f:entry
+                title="Username"
+                field="proxyAuthUsername"
+                description="Input the username to use for the proxy.">
+              <f:textbox name="sumoplugin.proxyAuthUsername"/>
+            </f:entry>
+            <f:entry
+                title="Password"
+                field="proxyAuthPassword"
+                description="Input the password to use for the proxy.">
+              <f:password field="proxyAuthPassword" name="sumoplugin.proxyAuthPassword"/>
+            </f:entry>
+          
+      
+    
     <f:entry
             title="Sumo Logic portal name."
             field="queryPortal"
