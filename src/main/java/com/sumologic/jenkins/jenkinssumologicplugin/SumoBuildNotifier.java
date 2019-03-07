@@ -66,6 +66,19 @@ public class SumoBuildNotifier extends Notifier {
     LOG.info("Uploading build status to sumologic: " + json);
 
     String url = descriptor.getUrl();
+
+    // Proxy settings
+    boolean enableProxy = descriptor.getEnableProxy();
+    String proxyHost = descriptor.getProxyHost();
+    int proxyPort = descriptor.getProxyPort();
+    boolean enableProxyAuth = descriptor.getEnableProxyAuth();
+    String proxyAuthUsername = descriptor.getProxyAuthUsername();
+    String proxyAuthPassword = descriptor.getProxyAuthPassword();
+    
+    if(enableProxy) {
+      logSender.setHttpClientProxy(proxyHost, proxyPort, enableProxyAuth, proxyAuthUsername, proxyAuthPassword);
+    }
+
     String sourceName = descriptor.getSourceNameJobStatus();
     String category = descriptor.getSourceCategoryJobStatus();
     byte[] bytes = json.getBytes();

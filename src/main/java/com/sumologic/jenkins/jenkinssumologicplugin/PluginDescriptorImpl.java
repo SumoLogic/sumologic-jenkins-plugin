@@ -24,6 +24,15 @@ import java.net.URL;
 public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
   private final int MAX_LINES_DEFAULT = 2000;
   private String collectorUrl = "";
+
+  // Proxy settings
+  private boolean enableProxy = false;
+  private String proxyHost = "";
+  private int proxyPort = -1;
+  private boolean enableProxyAuth = false;
+  private String proxyAuthUsername = "";
+  private String proxyAuthPassword = "";
+
   private String maxLines = Integer.toString(MAX_LINES_DEFAULT);
   private String queryPortal = "service.sumologic.com";
 
@@ -59,6 +68,15 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
   public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
     boolean configOk = super.configure(req, formData);
     collectorUrl = formData.getString("url");
+
+    // Proxy settings
+    enableProxy = formData.getBoolean("enableProxy");
+    proxyHost = formData.getString("proxyHost");
+    proxyPort = Integer.parseInt(formData.getString("proxyPort"));
+    enableProxyAuth = formData.getBoolean("enableProxyAuth");
+    proxyAuthUsername = formData.getString("proxyAuthUsername");
+    proxyAuthPassword = formData.getString("proxyAuthPassword");
+
     queryPortal = formData.getString("queryPortal");
     maxLines = formData.getString("maxLines");
     buildLogEnabled = formData.getBoolean("buildLogEnabled");
@@ -108,6 +126,54 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
   public String getUrl() {
     return collectorUrl;
+  }
+
+  public boolean getEnableProxy() { 
+    return enableProxy;
+  }
+
+  public void setEnableProxy(boolean enableProxy) {
+    this.enableProxy = enableProxy;
+  }
+
+  public String getProxyHost() {
+    return proxyHost;
+  }
+
+  public void setProxyHost(String proxyHost) {
+    this.proxyHost = proxyHost;
+  }
+
+  public int getProxyPort() {
+    return proxyPort;
+  }
+
+  public void setProxyPort(int proxyPort) {
+    this.proxyPort = proxyPort;
+  }
+
+  public boolean getEnableProxyAuth() {
+    return enableProxyAuth;
+  }
+
+  public void setEnableProxyAuth(boolean enableProxyAuth) {
+    this.enableProxyAuth = enableProxyAuth;
+  }
+
+  public String getProxyAuthUsername() { 
+    return proxyAuthUsername;
+  }
+
+  public void setProxyAuthUsername(String proxyAuthUsername) {
+    this.proxyAuthUsername = proxyAuthUsername;
+  }
+
+  public String getProxyAuthPassword() {
+    return proxyAuthPassword;
+  }
+
+  public void setProxyAuthPassword(String proxyAuthPassword) {
+    this.proxyAuthPassword = proxyAuthPassword;
   }
 
   public void setUrl(String url) {
