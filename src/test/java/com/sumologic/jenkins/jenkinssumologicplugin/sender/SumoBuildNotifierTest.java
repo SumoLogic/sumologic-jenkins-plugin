@@ -53,6 +53,7 @@ public class SumoBuildNotifierTest {
 
   }
 
+  @Ignore
   @Test
   public void testSendBuildData() throws Exception {
     ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
@@ -77,6 +78,7 @@ public class SumoBuildNotifierTest {
     Assert.assertTrue("Message too short.", ModelFactory.createBuildModel(build).toJson().length() <= request.getEntity().getContentLength());
   }
 
+  @Ignore
   @Test
   public void testSendJenkinsData() throws Exception {
     ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
