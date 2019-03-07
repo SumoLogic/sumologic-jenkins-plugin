@@ -27,6 +27,8 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
   private ByteArrayBuffer buffer;
 
   private String url;
+  private String proxyHost;
+  private int proxyPort;
   private String jobName;
   private String jobNumber;
   private int maxLinesPerBatch;
@@ -46,6 +48,19 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
     currentLines = 0;
     buffer = new ByteArrayBuffer(1);
     this.url = descriptor.getUrl();
+    
+    // Proxy settings
+    boolean enableProxy = descriptor.getEnableProxy();
+    String proxyHost = descriptor.getProxyHost();
+    int proxyPort = descriptor.getProxyPort();
+    boolean enableProxyAuth = descriptor.getEnableProxyAuth();
+    String proxyAuthUsername = descriptor.getProxyAuthUsername();
+    String proxyAuthPassword = descriptor.getProxyAuthPassword();
+    
+    if(enableProxy) {
+      logSender.setHttpClientProxy(proxyHost, proxyPort, enableProxyAuth, proxyAuthUsername, proxyAuthPassword);
+    }
+    
   }
 
   @Override

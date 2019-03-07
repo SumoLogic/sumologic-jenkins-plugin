@@ -36,7 +36,19 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
     PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
     String url = descriptor.getUrl();
 
-    logSender.sendLogs(url, logs.getBytes(),
+    // Proxy settings
+    boolean enableProxy = descriptor.getEnableProxy();
+    String proxyHost = descriptor.getProxyHost();
+    int proxyPort = descriptor.getProxyPort();
+    boolean enableProxyAuth = descriptor.getEnableProxyAuth();
+    String proxyAuthUsername = descriptor.getProxyAuthUsername();
+    String proxyAuthPassword = descriptor.getProxyAuthPassword();
+    
+    if(enableProxy) {
+      logSender.setHttpClientProxy(proxyHost, proxyPort, enableProxyAuth, proxyAuthUsername, proxyAuthPassword);
+    }
+
+    logSender.sendLogs(url,logs.getBytes(),
         descriptor.getSourceNamePeriodic(), descriptor.getSourceCategoryPeriodic());
   }
 

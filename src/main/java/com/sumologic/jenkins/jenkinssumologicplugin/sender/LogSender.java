@@ -1,6 +1,10 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HostConfiguration;
+import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
@@ -46,6 +50,20 @@ public class LogSender {
     }
 
     return INSTANCE;
+  }
+
+  public void setHttpClientProxy(String proxyHost, int proxyPort, boolean enableProxyAuth, String proxyAuthUsername, String proxyAuthPassword) {
+    // Set proxy for HttpClient
+    HostConfiguration config = httpClient.getHostConfiguration();
+    config.setProxy(proxyHost, proxyPort);
+
+    if(enableProxyAuth) {
+      if(proxyAuthUsername != null && proxyAuthPassword != null) {
+        Credentials credentials = new UsernamePasswordCredentials(proxyAuthUsername, proxyAuthPassword);
+        AuthScope authScope = new AuthScope(proxyHost, proxyPort);
+        httpClient.getState().setProxyCredentials(authScope, credentials);
+      }
+    }
   }
 
   public void sendLogs(String url, byte[] msg, String sumoName, String sumoCategory){
