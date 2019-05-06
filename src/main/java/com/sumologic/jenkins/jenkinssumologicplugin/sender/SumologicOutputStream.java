@@ -14,110 +14,95 @@ import java.util.logging.Logger;
 /**
  * OutputStream decorator that adds functionality of forwarding the stream to Sumo Logic Http Source.
  * Does not modify the original stream content.
- *
+ * <p>
  * Created by lukasz on 3/21/17.
+ * <p>
+ * Modified by Sourabh Jain 5/2019
  */
 public class SumologicOutputStream extends LineTransformationOutputStream {
 
-  static public class State implements Serializable {
-    ByteArrayBuffer buffer;
-    Integer currentLines;
+    static public class State implements Serializable {
+        ByteArrayBuffer buffer;
+        Integer currentLines;
 
-    public State() {
-      buffer = new ByteArrayBuffer(1);
-      currentLines = 0;
-    }
-  }
-
-  private static final Logger LOGGER = Logger.getLogger(SumologicOutputStream.class.getName());
-
-  private static final String FLUSH_COMMAND = "%%%FLUSH_COMMAND%%%";
-
-  private LogSender logSender;
-  private OutputStream wrappedStream;
-
-  private String url;
-  private String jobName;
-  private String jobNumber;
-  private int maxLinesPerBatch;
-  private PluginDescriptorImpl descriptor;
-
-  private State state;
-
-  public SumologicOutputStream(OutputStream stream, Run build, PluginDescriptorImpl descriptor, State state) {
-    super();
-    wrappedStream = stream;
-    logSender = LogSender.getInstance();
-
-    this.descriptor = descriptor;
-    this.jobName = build.getParent().getDisplayName();
-    this.jobNumber = build.getDisplayName();
-    maxLinesPerBatch = descriptor.getMaxLinesInt();
-
-    this.url = descriptor.getUrl();
-
-    this.state =  state != null ? state : new State();
-  }
-
-  public SumologicOutputStream(OutputStream stream, String buildName, String buildNumber, PluginDescriptorImpl descriptor,
-                                State state) {
-    super();
-    wrappedStream = stream;
-    logSender = LogSender.getInstance();
-
-    this.descriptor = descriptor;
-    this.jobName = buildName;
-    this.jobNumber = "#" + buildNumber;
-    maxLinesPerBatch = descriptor.getMaxLinesInt();
-
-    this.url = descriptor.getUrl();
-
-    this.state =  state != null ? state : new State();
-  }
-
-  @Override
-  public void close() throws IOException {
-    flushBuffer();
-    super.close();
-  }
-
-  @Override
-  protected void eol(byte[] bytes, int i) throws IOException {
-    if (new String(bytes).startsWith(FLUSH_COMMAND)) {
-      flushBuffer();
-      return;
+        public State() {
+            buffer = new ByteArrayBuffer(1);
+            currentLines = 0;
+        }
     }
 
-    if (TimestampingOutputStream.shouldPutTimestamp(bytes, i)) {
-      byte[] timestamp = TimestampingOutputStream.getTimestampAsByteArray();
-      state.buffer.append(timestamp, 0, timestamp.length);
+    private static final Logger LOGGER = Logger.getLogger(SumologicOutputStream.class.getName());
+
+    private static final String FLUSH_COMMAND = "%%%FLUSH_COMMAND%%%";
+
+    private LogSender logSender;
+    private OutputStream wrappedStream;
+
+    private String url;
+    private String jobName;
+    private String jobNumber;
+    private int maxLinesPerBatch;
+    private PluginDescriptorImpl descriptor;
+
+    private State state;
+
+    public SumologicOutputStream(OutputStream stream, Run build, PluginDescriptorImpl descriptor, State state) {
+        super();
+        wrappedStream = stream;
+        logSender = LogSender.getInstance();
+
+        this.descriptor = descriptor;
+        this.jobName = build.getParent().getDisplayName();
+        this.jobNumber = build.getDisplayName();
+        maxLinesPerBatch = descriptor.getMaxLinesInt();
+
+        this.url = descriptor.getUrl();
+
+        this.state = state != null ? state : new State();
     }
 
-    state.buffer.append(bytes, 0, i);
-    state.currentLines++;
-
-    wrappedStream.write(bytes, 0, i);
-
-    if (state.currentLines >= maxLinesPerBatch) {
-      flushBuffer();
-    }
-  }
-
-  private synchronized void flushBuffer(){
-    if (state.currentLines <= 0) {
-      return;
+    @Override
+    public void close() throws IOException {
+        flushBuffer();
+        super.close();
     }
 
-    byte[] lines = state.buffer.toByteArray();
-    state.buffer.clear();
-    state.currentLines = 0;
+    @Override
+    protected void eol(byte[] bytes, int i) throws IOException {
+        if (new String(bytes).startsWith(FLUSH_COMMAND)) {
+            flushBuffer();
+            return;
+        }
+        if (TimestampingOutputStream.shouldPutTimestamp(bytes, i)) {
+            byte[] timestamp = TimestampingOutputStream.getTimestampAsByteArray();
+            state.buffer.append(timestamp, 0, timestamp.length);
+        }
 
-    try {
-      // jobNumber is a build number with #, e.g. #42
-      LOGGER.info("Sending " + lines.length + " bytes of build logs to sumo");
-      logSender.sendLogs(url, lines, jobName + jobNumber, descriptor.getSourceCategoryBuildLogs());
-    } catch (Exception e) {
-      e.printStackTrace(new PrintStream(wrappedStream));
+        state.buffer.append(bytes, 0, i);
+        state.currentLines++;
+
+        wrappedStream.write(bytes, 0, i);
+
+        if (state.currentLines >= maxLinesPerBatch) {
+            flushBuffer();
+        }
     }
-  }
+
+    private synchronized void flushBuffer() {
+        if (state.currentLines <= 0) {
+            return;
+        }
+
+        byte[] lines = state.buffer.toByteArray();
+        state.buffer.clear();
+        state.currentLines = 0;
+
+        try {
+            // jobNumber is a build number with #, e.g. #42
+            LOGGER.info("Sending " + lines.length + " bytes of build logs to sumo");
+            logSender.sendLogs(url, lines, jobName + jobNumber, descriptor.getSourceCategoryBuildLogs());
+        } catch (Exception e) {
+            e.printStackTrace(new PrintStream(wrappedStream));
+        }
+    }
 }

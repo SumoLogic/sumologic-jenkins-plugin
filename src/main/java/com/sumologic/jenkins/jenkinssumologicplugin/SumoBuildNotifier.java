@@ -2,89 +2,100 @@ package com.sumologic.jenkins.jenkinssumologicplugin;
 
 import com.google.gson.Gson;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.ModelFactory;
+import com.sumologic.jenkins.jenkinssumologicplugin.pipeline.PipelineStatusDTO;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSender;
-import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.Plugin;
-import hudson.console.ConsoleLogFilter;
 import hudson.model.*;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import jenkins.tasks.SimpleBuildStep;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
-import java.io.Console;
 import java.io.IOException;
-import java.util.Collection;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.logging.Logger;
 
 /**
  * This publisher will sendLogs build metadata to a Sumo Logic HTTP collector.
- *
+ * <p>
  * Created by deven on 7/6/15.
+ * <p>
+ * Modified by Sourabh Jain 5/2019
  */
 public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
 
-  private final static Logger LOG = Logger.getLogger(SumoBuildNotifier.class.getName());
-  private static LogSender logSender = LogSender.getInstance();
+    private final static Logger LOG = Logger.getLogger(SumoBuildNotifier.class.getName());
+    private static LogSender logSender = LogSender.getInstance();
 
-  @DataBoundConstructor
-  public SumoBuildNotifier() {
-    super();
-  }
-
-  @SuppressWarnings("unchecked")
-  public static SumoBuildNotifier getNotifier(AbstractProject project) {
-    Map<Descriptor<Publisher>, Publisher> map = project.getPublishersList().toMap();
-    for (Publisher publisher : map.values()) {
-      if (publisher instanceof SumoBuildNotifier) {
-        return (SumoBuildNotifier) publisher;
-      }
+    @DataBoundConstructor
+    public SumoBuildNotifier() {
+        super();
     }
 
-    return null;
-  }
+    @SuppressWarnings("unchecked")
+    public static SumoBuildNotifier getNotifier(AbstractProject project) {
+        Map<Descriptor<Publisher>, Publisher> map = project.getPublishersList().toMap();
+        for (Publisher publisher : map.values()) {
+            if (publisher instanceof SumoBuildNotifier) {
+                return (SumoBuildNotifier) publisher;
+            }
+        }
 
-  @Override
-  public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-    send(build);
-    return true;
-  }
+        return null;
+    }
 
-  @Override
-  public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath filePath, @Nonnull Launcher launcher, @Nonnull TaskListener taskListener) throws InterruptedException, IOException {
-    send(run);
-  }
+    public static SumoBuildNotifier getInstance() {
+        return new SumoBuildNotifier();
+    }
 
-  @Override
-  public BuildStepMonitor getRequiredMonitorService() {
-    return BuildStepMonitor.NONE;
-  }
+    @Override
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        send(build);
+        return true;
+    }
 
-  protected void send(Run build) {
-    Gson gson = new Gson();
-    String json = gson.toJson(ModelFactory.createBuildModel(build));
+    @Override
+    public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath filePath, @Nonnull Launcher launcher, @Nonnull TaskListener taskListener) throws InterruptedException, IOException {
+        send(run);
+    }
 
-    PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
+    @Override
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
+    }
 
-    LOG.info("Uploading build status to sumologic: " + json);
+    public void send(Run build) {
+        Gson gson = new Gson();
+        String json = gson.toJson(ModelFactory.createBuildModel(build));
+        send(json);
+    }
 
-    String url = descriptor.getUrl();
-    String sourceName = descriptor.getSourceNameJobStatus();
-    String category = descriptor.getSourceCategoryJobStatus();
-    byte[] bytes = json.getBytes();
+    public void send(final PipelineStatusDTO pipelineStatusDTO) {
+        Gson gson = new Gson();
+        String json = gson.toJson(pipelineStatusDTO);
+        send(json);
+    }
 
-    logSender.sendLogs(url, bytes, sourceName, category);
-  }
+    public void send(String json){
+        PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
 
-  @Override
-  public PluginDescriptorImpl getDescriptor() {
-    PluginDescriptorImpl result = (PluginDescriptorImpl) super.getDescriptor();
-    return result;
-  }
+        LOG.info("Uploading build status to sumologic: " + json);
+
+        String url = descriptor.getUrl();
+        String sourceName = descriptor.getSourceNameJobStatus();
+        String category = descriptor.getSourceCategoryJobStatus();
+        byte[] bytes = json.getBytes();
+
+        logSender.sendLogs(url, bytes, sourceName, category);
+    }
+
+    @Override
+    public PluginDescriptorImpl getDescriptor() {
+        PluginDescriptorImpl result = (PluginDescriptorImpl) super.getDescriptor();
+        return result;
+    }
 }

@@ -30,7 +30,7 @@ public class SumoBuildNotifierTest {
   private String serverUrl;
 
 
- /* @Before
+ @Before
   public void setUp() throws Exception {
     handler = Mockito.mock(HttpRequestHandler.class);
     server = new LocalTestServer(null, null);
@@ -72,5 +72,5 @@ public class SumoBuildNotifierTest {
 
 
 
-  }*/
+  }
 }

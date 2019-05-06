@@ -29,7 +29,9 @@ public class ModelFactory {
     String result = build.getResult() != null ? build.getResult().toString() : "Unknown";
     buildModel.setResult(result);
 
-    buildModel.setHudsonVersion(Hudson.getVersion().toString());
+    if(Hudson.getVersion() != null){
+      buildModel.setHudsonVersion(Hudson.getVersion().toString());
+    }
     buildModel.setDescription(build.getDescription());
   }
 

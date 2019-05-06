@@ -12,7 +12,7 @@ import static org.junit.Assert.assertThat;
 
 public class ModelFactoryTest {
 
-  //@Test
+  @Test
   public void testGenerateBuildModelForAbstractBuild() throws Exception {
 
     final String name = "MockJob", status = "Success", version = "1.51010.1111", scm = "nothing";
@@ -29,7 +29,7 @@ public class ModelFactoryTest {
 
     Mockito.when(project.getDisplayName()).thenReturn(name);
 
-    String jsonExpected = "{\"name\":\"MockJob\",\"hudsonVersion\":\"?\",\"result\":\"SUCCESS\",\"number\":101,\"start_time\":0,\"duration\":";
+    String jsonExpected = "{\"name\":\"MockJob\",\"hudsonVersion\":\"2.69\",\"result\":\"SUCCESS\",\"number\":101,\"start_time\":0,\"duration\":";
 
     String json = ModelFactory.createBuildModel(build).toJson();
 
