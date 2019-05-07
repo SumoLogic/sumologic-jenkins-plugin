@@ -16,6 +16,7 @@ import jenkins.triggers.SCMTriggerItem;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.*;
 
@@ -27,6 +28,8 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstan
  * Created by Sourabh Jain on 5/2019.
  */
 public class CommonModelFactory {
+
+    private static final Logger LOG = Logger.getLogger(CommonModelFactory.class.getName());
 
     public static void populateGeneric(BuildModel buildModel, Run buildInfo) {
 

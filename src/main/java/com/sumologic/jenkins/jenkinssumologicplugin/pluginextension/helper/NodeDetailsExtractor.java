@@ -2,8 +2,8 @@ package com.sumologic.jenkins.jenkinssumologicplugin.pluginextension.helper;
 
 
 import com.cloudbees.workflow.rest.external.ChunkVisitor;
+import com.sumologic.jenkins.jenkinssumologicplugin.constants.ParallelNodeTypeEnum;
 import org.apache.commons.lang.StringUtils;
-import org.jenkinsci.plugins.workflow.actions.ArgumentsAction;
 import org.jenkinsci.plugins.workflow.actions.WorkspaceAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepEndNode;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
@@ -14,41 +14,43 @@ import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Sumo Logic plugin for Jenkins model.
- *
- * Sumo Constants
- *
+ * <p>
+ * Finds the parallel nodes if present.
+ * <p>
  * Created by Sourabh Jain on 5/2019.
  */
 public class NodeDetailsExtractor extends ChunkVisitor {
     private static final Logger LOG = Logger.getLogger(NodeDetailsExtractor.class.getName());
-    // key is node id, value is jenkins worker node name
     private Map<String, String> workspaceNodes = new HashMap<>();
-    // key is flowode id, value is parent stage id
-    private Map<String, String> parallelNodes = new HashMap<>();
+    private Map<String, Set<String>> parallelNodes = new HashMap<>();
     private String execNodeName = null;
     private String execNodeStartId = null;
-    private String enclosingStageName = null;
-    private String enclosingStageId = null;
-    private String currentParallelNodeStartId = "";
 
     NodeDetailsExtractor(@Nonnull WorkflowRun run) {
         super(run);
+    }
+
+    Map<String, String> getWorkspaceNodes() {
+        return workspaceNodes;
+    }
+
+    Map<String, Set<String>> getParallelNodes() {
+        return parallelNodes;
     }
 
     @Override
     public void atomNode(@CheckForNull FlowNode before, @Nonnull FlowNode atomNode, @CheckForNull FlowNode after, @Nonnull ForkScanner scan) {
         //reverse-order, traverse from end node to start node
         try {
-            recordExecNode(atomNode);
-            recordStageNode(atomNode);
-            recordParallelNode(scan);
+            findWhereCurrentNodeIsExecuting(atomNode);
+            findParallelNode(scan, atomNode);
         } catch (Exception ex) {
             LOG.log(Level.WARNING, "failed to extract pluginextension info", ex);
         }
@@ -56,35 +58,11 @@ public class NodeDetailsExtractor extends ChunkVisitor {
     }
 
     /**
-     * store stage node info
-     *
-     * @param atomNode flow node
-     */
-    private void recordStageNode(FlowNode atomNode) {
-        // record stage name for parallel run inside stage
-        if (enclosingStageName == null) {
-            StepStartNode stageNode = getPipelineBlockBoundaryStartNode(atomNode, "stage");
-            if (stageNode != null) {
-                ArgumentsAction argumentsAction = stageNode.getAction(ArgumentsAction.class);
-                if (argumentsAction != null) {
-                    enclosingStageName = "" + argumentsAction.getArgumentValue("name");
-                } else {
-                    enclosingStageName = "";
-                }
-                enclosingStageId = stageNode.getId();
-                LOG.log(Level.FINE, "found stage node id={0}, name={1}", new String[]{enclosingStageId, enclosingStageName});
-            }
-        } else if (atomNode instanceof StepStartNode && atomNode.getId().equals(enclosingStageId)) {
-            enclosingStageName = null;
-        }
-    }
-
-    /**
      * store the jenkins node name where pluginextension ran
      *
      * @param atomNode flow  node
      */
-    private void recordExecNode(FlowNode atomNode) {
+    private void findWhereCurrentNodeIsExecuting(FlowNode atomNode) {
         if (execNodeName == null) {
             StepStartNode nodeStep = getPipelineBlockBoundaryStartNode(atomNode, "node");
             if (nodeStep != null) {
@@ -113,20 +91,19 @@ public class NodeDetailsExtractor extends ChunkVisitor {
      *
      * @param scan Scanner
      */
-    private void recordParallelNode(@Nonnull ForkScanner scan) {
-        if (scan.getCurrentParallelStartNode() != null) {
-            //store parallel node start id
-            String nodeId = scan.getCurrentParallelStartNode().getId();
-            if (nodeId != null && !nodeId.equals(currentParallelNodeStartId)) {
-                currentParallelNodeStartId = nodeId;
-                //hacky way to calc the parallelBlockNodeId
-                try {
-                    String parallelBlockId = "" + (1 + Integer.parseInt(nodeId));
-                    parallelNodes.put(parallelBlockId, enclosingStageName);
-                } catch (NumberFormatException ex) {
-                    //ignore
+    private void findParallelNode(@Nonnull ForkScanner scan, FlowNode atomNode) {
+        if (ParallelNodeTypeEnum.NORMAL.toString().equals(String.valueOf(scan.getCurrentType()))
+                && ParallelNodeTypeEnum.PARALLEL_BRANCH_START.toString().equals(String.valueOf(scan.getNextType()))
+        && scan.getCurrentParallelStartNode() != null) {
+            List<String> parentIds = scan.getCurrentParallelStartNode().getParents().stream().map(FlowNode::getId).collect(Collectors.toList());
+            Set<String> childrenInParallel = atomNode.getParents().stream().map(FlowNode::getId).collect(Collectors.toSet());
+            parentIds.forEach(parentId ->{
+                if(parallelNodes.containsKey(parentId)){
+                    parallelNodes.get(parentId).addAll(childrenInParallel);
+                }else{
+                    parallelNodes.put(parentId, childrenInParallel);
                 }
-            }
+            });
         }
     }
 
@@ -156,13 +133,4 @@ public class NodeDetailsExtractor extends ChunkVisitor {
         }
         return startNode;
     }
-
-    Map<String, String> getWorkspaceNodes() {
-        return workspaceNodes;
-    }
-
-    Map<String, String> getParallelNodes() {
-        return parallelNodes;
-    }
-
 }

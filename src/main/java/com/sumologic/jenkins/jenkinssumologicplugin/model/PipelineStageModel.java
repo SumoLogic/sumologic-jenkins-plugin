@@ -1,6 +1,7 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Sumo Logic plugin for Jenkins model.
@@ -19,7 +20,7 @@ public class PipelineStageModel {
     private float pauseDuration;
     private String arguments;
     private String executionNode;
-    private String parallelStage;
+    private Set<String> parallelStage;
     private ErrorModel errorModel;
     private List<PipelineStageModel> steps;
 
@@ -53,10 +54,6 @@ public class PipelineStageModel {
 
     public void setExecutionNode(String executionNode) {
         this.executionNode = executionNode;
-    }
-
-    public void setParallelStage(String parallelStage) {
-        this.parallelStage = parallelStage;
     }
 
     public void setSteps(List<PipelineStageModel> steps) {
@@ -95,10 +92,6 @@ public class PipelineStageModel {
         return executionNode;
     }
 
-    public String getParallelStage() {
-        return parallelStage;
-    }
-
     public List<PipelineStageModel> getSteps() {
         return steps;
     }
@@ -109,5 +102,13 @@ public class PipelineStageModel {
 
     public void setErrorModel(ErrorModel errorModel) {
         this.errorModel = errorModel;
+    }
+
+    public Set<String> getParallelStage() {
+        return parallelStage;
+    }
+
+    public void setParallelStage(Set<String> parallelStage) {
+        this.parallelStage = parallelStage;
     }
 }

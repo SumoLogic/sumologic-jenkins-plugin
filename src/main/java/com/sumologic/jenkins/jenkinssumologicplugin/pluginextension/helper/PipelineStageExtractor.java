@@ -8,6 +8,7 @@ import com.sumologic.jenkins.jenkinssumologicplugin.model.ErrorModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.PipelineStageModel;
 import hudson.Extension;
 import hudson.model.Result;
+import hudson.scheduler.Hash;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
@@ -15,17 +16,14 @@ import org.jenkinsci.plugins.workflow.graphanalysis.ForkScanner;
 import org.jenkinsci.plugins.workflow.graphanalysis.LabelledChunkFinder;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Sumo Logic plugin for Jenkins model.
  *
- *
- *
+ * <p> Help extract stages information for pipeline Jobs.
  * Created by Sourabh Jain on 5/2019.
  */
 @Extension
@@ -44,32 +42,31 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
         return new ArrayList<>();
     }
 
-    private List<PipelineStageModel> createStages(NodeDetailsExtractor visitor){
+    private List<PipelineStageModel> createStages(NodeDetailsExtractor visitor) {
         List<PipelineStageModel> stages = new ArrayList<>();
 
         Collection<StageNodeExt> stageNodes = visitor.getStages();
         Map<String, String> workspaceNodes = visitor.getWorkspaceNodes();
-        Map<String, String> parallelNodes = visitor.getParallelNodes();
-        LOG.info("Workspace Nodes "+workspaceNodes);
-        LOG.info("Parallel Nodes "+parallelNodes);
-        if(CollectionUtils.isNotEmpty(stageNodes)){
+        Map<String, Set<String>> parallelNodes = visitor.getParallelNodes();
+        if (CollectionUtils.isNotEmpty(stageNodes)) {
             stageNodes.forEach(stageNodeExt -> {
                 PipelineStageModel stage = getNodeDetails(stageNodeExt, workspaceNodes);
                 List<PipelineStageModel> steps = new ArrayList<>();
                 stageNodeExt.getStageFlowNodes().forEach(atomFlowNodeExt -> steps.add(getNodeDetails(atomFlowNodeExt, workspaceNodes)));
-                if(CollectionUtils.isNotEmpty(steps)){
+                if (CollectionUtils.isNotEmpty(steps)) {
                     stage.setSteps(steps);
-                    if (parallelNodes.containsKey(stageNodeExt.getId())) {
-                        stage.setParallelStage(parallelNodes.get(stageNodeExt.getId()));
-                    }
+                }
+                if (parallelNodes.containsKey(stageNodeExt.getId())) {
+                    stage.setParallelStage(parallelNodes.get(stageNodeExt.getId()));
                 }
                 stages.add(stage);
             });
         }
+        //beautifyForDeclarativeParallelBranches(stages);
         return stages;
     }
 
-    private PipelineStageModel getNodeDetails(FlowNodeExt stageNodeExt, Map<String, String> workspaceNodes){
+    private PipelineStageModel getNodeDetails(FlowNodeExt stageNodeExt, Map<String, String> workspaceNodes) {
         final PipelineStageModel pipelineStageDTO = new PipelineStageModel();
         pipelineStageDTO.setId(stageNodeExt.getId());
         pipelineStageDTO.setName(stageNodeExt.getName());
@@ -107,6 +104,20 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
                 return Result.NOT_BUILT.toString();
             default:
                 return status.toString();
+        }
+    }
+
+    private void beautifyForDeclarativeParallelBranches(List<PipelineStageModel> stages) {
+        if (CollectionUtils.isNotEmpty(stages)) {
+            Set<PipelineStageModel> collect = stages.stream().filter(pipelineStageModel -> pipelineStageModel.getName().startsWith("Branch: ")).collect(Collectors.toSet());
+
+            for (PipelineStageModel pipelineStageModel : collect) {
+                Optional<PipelineStageModel> first = stages.stream().filter(pipelineStageModel1 -> pipelineStageModel.getName().equals("Branch: " + pipelineStageModel1.getName())).findFirst();
+                first.ifPresent(stageModel -> {
+                    stageModel.setId(pipelineStageModel.getId());
+                    stages.remove(pipelineStageModel);
+                });
+            }
         }
     }
 }
