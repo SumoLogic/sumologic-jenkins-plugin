@@ -1,4 +1,4 @@
-package com.sumologic.jenkins.jenkinssumologicplugin.pluginextension;
+package com.sumologic.jenkins.jenkinssumologicplugin.pluginextension.listener;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.SumoBuildNotifier;
 import hudson.Extension;
