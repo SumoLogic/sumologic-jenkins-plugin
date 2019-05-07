@@ -1,12 +1,8 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
-import com.sumologic.jenkins.jenkinssumologicplugin.SumoBuildNotifier;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.ModelFactory;
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
-import hudson.tasks.Shell;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;

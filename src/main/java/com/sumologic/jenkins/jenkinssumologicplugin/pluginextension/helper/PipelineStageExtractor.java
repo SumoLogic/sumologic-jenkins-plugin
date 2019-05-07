@@ -1,9 +1,11 @@
-package com.sumologic.jenkins.jenkinssumologicplugin.pipeline;
+package com.sumologic.jenkins.jenkinssumologicplugin.pluginextension.helper;
 
 import com.cloudbees.workflow.rest.external.ErrorExt;
 import com.cloudbees.workflow.rest.external.FlowNodeExt;
 import com.cloudbees.workflow.rest.external.StageNodeExt;
 import com.cloudbees.workflow.rest.external.StatusExt;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.ErrorModel;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.PipelineStageModel;
 import hudson.Extension;
 import hudson.model.Result;
 import org.apache.commons.collections.CollectionUtils;
@@ -19,13 +21,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+/**
+ * Sumo Logic plugin for Jenkins model.
+ *
+ *
+ *
+ * Created by Sourabh Jain on 5/2019.
+ */
 @Extension
 public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRun> {
 
     private static final Logger LOG = Logger.getLogger(PipelineStageExtractor.class.getName());
 
     @Override
-    public List<PipelineStageDTO> extractPipelineStages(WorkflowRun workflowRun) {
+    public List<PipelineStageModel> extractPipelineStages(WorkflowRun workflowRun) {
         FlowExecution flowExecution = workflowRun.getExecution();
         if (flowExecution != null) {
             NodeDetailsExtractor visitor = new NodeDetailsExtractor(workflowRun);
@@ -35,8 +44,8 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
         return new ArrayList<>();
     }
 
-    private List<PipelineStageDTO> createStages(NodeDetailsExtractor visitor){
-        List<PipelineStageDTO> stages = new ArrayList<>();
+    private List<PipelineStageModel> createStages(NodeDetailsExtractor visitor){
+        List<PipelineStageModel> stages = new ArrayList<>();
 
         Collection<StageNodeExt> stageNodes = visitor.getStages();
         Map<String, String> workspaceNodes = visitor.getWorkspaceNodes();
@@ -45,8 +54,8 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
         LOG.info("Parallel Nodes "+parallelNodes);
         if(CollectionUtils.isNotEmpty(stageNodes)){
             stageNodes.forEach(stageNodeExt -> {
-                PipelineStageDTO stage = getNodeDetails(stageNodeExt, workspaceNodes);
-                List<PipelineStageDTO> steps = new ArrayList<>();
+                PipelineStageModel stage = getNodeDetails(stageNodeExt, workspaceNodes);
+                List<PipelineStageModel> steps = new ArrayList<>();
                 stageNodeExt.getStageFlowNodes().forEach(atomFlowNodeExt -> steps.add(getNodeDetails(atomFlowNodeExt, workspaceNodes)));
                 if(CollectionUtils.isNotEmpty(steps)){
                     stage.setSteps(steps);
@@ -60,8 +69,8 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
         return stages;
     }
 
-    private PipelineStageDTO getNodeDetails(FlowNodeExt stageNodeExt, Map<String, String> workspaceNodes){
-        final PipelineStageDTO pipelineStageDTO = new PipelineStageDTO();
+    private PipelineStageModel getNodeDetails(FlowNodeExt stageNodeExt, Map<String, String> workspaceNodes){
+        final PipelineStageModel pipelineStageDTO = new PipelineStageModel();
         pipelineStageDTO.setId(stageNodeExt.getId());
         pipelineStageDTO.setName(stageNodeExt.getName());
         pipelineStageDTO.setStatus(convertToResult(stageNodeExt.getStatus()));
@@ -79,8 +88,10 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
 
         ErrorExt error = stageNodeExt.getError();
         if (error != null) {
-            pipelineStageDTO.setErrorMessage(error.getMessage());
-            pipelineStageDTO.setErrorType(error.getType());
+            ErrorModel errorModel = new ErrorModel();
+            errorModel.setErrorMessage(error.getMessage());
+            errorModel.setErrorType(error.getType());
+            pipelineStageDTO.setErrorModel(errorModel);
         }
         return pipelineStageDTO;
     }

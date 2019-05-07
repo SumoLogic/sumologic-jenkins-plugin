@@ -1,4 +1,12 @@
-package com.sumologic.jenkins.jenkinssumologicplugin.pipeline;
+package com.sumologic.jenkins.jenkinssumologicplugin.constants;
+
+/**
+ * Sumo Logic plugin for Jenkins model.
+ *
+ * Log Type Enum
+ *
+ * Created by Sourabh Jain on 5/2019.
+ */
 
 public enum LogTypeEnum {
 
@@ -13,4 +21,5 @@ public enum LogTypeEnum {
     public String getValue() {
         return value;
     }
+
 }

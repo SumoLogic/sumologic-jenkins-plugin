@@ -1,8 +1,15 @@
-package com.sumologic.jenkins.jenkinssumologicplugin.pipeline;
+package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
 import java.util.List;
 
-class PipelineStageDTO {
+/**
+ * Sumo Logic plugin for Jenkins model.
+ *
+ * Pipeline stages details model
+ *
+ * Created by Sourabh Jain on 5/2019.
+ */
+public class PipelineStageModel {
 
     private String id;
     private String name;
@@ -12,57 +19,48 @@ class PipelineStageDTO {
     private float pauseDuration;
     private String arguments;
     private String executionNode;
-    private String errorType;
-    private String errorMessage;
     private String parallelStage;
-    private List<PipelineStageDTO> steps;
+    private ErrorModel errorModel;
+    private List<PipelineStageModel> steps;
 
-    void setId(String id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    void setName(String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
-    void setStatus(String status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
-    void setStartTime(float startTime) {
+    public void setStartTime(float startTime) {
         this.startTime = startTime;
     }
 
-    void setDuration(float duration) {
+    public void setDuration(float duration) {
         this.duration = duration;
     }
 
-    void setPauseDuration(float pauseDuration) {
+    public void setPauseDuration(float pauseDuration) {
         this.pauseDuration = pauseDuration;
     }
 
-    void setArguments(String arguments) {
+    public void setArguments(String arguments) {
         this.arguments = arguments;
     }
 
-    void setExecutionNode(String executionNode) {
+    public void setExecutionNode(String executionNode) {
         this.executionNode = executionNode;
     }
 
-    void setErrorType(String errorType) {
-        this.errorType = errorType;
-    }
-
-    void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
-
-    void setSteps(List<PipelineStageDTO> steps) {
-        this.steps = steps;
-    }
-
-    void setParallelStage(String parallelStage) {
+    public void setParallelStage(String parallelStage) {
         this.parallelStage = parallelStage;
+    }
+
+    public void setSteps(List<PipelineStageModel> steps) {
+        this.steps = steps;
     }
 
     public String getId() {
@@ -97,19 +95,19 @@ class PipelineStageDTO {
         return executionNode;
     }
 
-    public String getErrorType() {
-        return errorType;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
     public String getParallelStage() {
         return parallelStage;
     }
 
-    public List<PipelineStageDTO> getSteps() {
+    public List<PipelineStageModel> getSteps() {
         return steps;
+    }
+
+    public ErrorModel getErrorModel() {
+        return errorModel;
+    }
+
+    public void setErrorModel(ErrorModel errorModel) {
+        this.errorModel = errorModel;
     }
 }

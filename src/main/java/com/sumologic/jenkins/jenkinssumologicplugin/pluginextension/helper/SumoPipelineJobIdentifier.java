@@ -1,5 +1,6 @@
-package com.sumologic.jenkins.jenkinssumologicplugin.pipeline;
+package com.sumologic.jenkins.jenkinssumologicplugin.pluginextension.helper;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.model.PipelineStageModel;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Run;
@@ -9,8 +10,14 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
+/**
+ * Sumo Logic plugin for Jenkins model.
+ *
+ * Identify the Pipeline stages information
+ *
+ * Created by Sourabh Jain on 5/2019.
+ */
 public abstract class SumoPipelineJobIdentifier<R extends Run> implements ExtensionPoint {
     private final Class<R> targetType;
 
@@ -22,7 +29,7 @@ public abstract class SumoPipelineJobIdentifier<R extends Run> implements Extens
             throw new IllegalStateException(getClass() + " uses the raw type for extending SumoPipelineJobIdentifier");
     }
 
-    public abstract List<PipelineStageDTO> extractPipelineStages(R r);
+    public abstract List<PipelineStageModel> extractPipelineStages(R r);
 
     /**
      * @return Returns all the registered {@link SumoPipelineJobIdentifier}s

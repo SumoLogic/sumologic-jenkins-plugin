@@ -1,14 +1,19 @@
-package com.sumologic.jenkins.jenkinssumologicplugin.pipeline;
+package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
-import hudson.tasks.test.TestResult;
-
-class TestCaseDTO {
+/**
+ * Sumo Logic plugin for Jenkins model.
+ *
+ * Test case model
+ *
+ * Created by Sourabh Jain on 5/2019.
+ */
+public class TestCaseModel {
     private int failures;
     private int passes;
     private int skips;
     private int total;
 
-    TestCaseDTO(int failures, int passes, int skips, int total) {
+    public TestCaseModel(int failures, int passes, int skips, int total) {
         this.failures = failures;
         this.passes = passes;
         this.skips = skips;

@@ -1,5 +1,6 @@
-package com.sumologic.jenkins.jenkinssumologicplugin.pipeline;
+package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.constants.LogTypeEnum;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.model.*;
@@ -12,96 +13,68 @@ import jenkins.model.CauseOfInterruption;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
 import jenkins.triggers.SCMTriggerItem;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import static com.sumologic.jenkins.jenkinssumologicplugin.pipeline.SumoConstants.COMMA_SEPARATOR;
-import static com.sumologic.jenkins.jenkinssumologicplugin.pipeline.SumoConstants.MASTER;
+import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.*;
 
-class SumoPipelineJobStatusGenerator {
-    private static final Logger LOG = Logger.getLogger(SumoPipelineJobStatusGenerator.class.getName());
+/**
+ * Sumo Logic plugin for Jenkins model.
+ *
+ * Common Model factory to update common build information
+ *
+ * Created by Sourabh Jain on 5/2019.
+ */
+public class CommonModelFactory {
 
-    static PipelineStatusDTO generateJobStatusInformation(final Run buildInfo) {
-        final PipelineStatusDTO pipelineStatusDTO = new PipelineStatusDTO();
+    public static void populateGeneric(BuildModel buildModel, Run buildInfo) {
 
-        pipelineStatusDTO.setLogType(LogTypeEnum.JOB_STATUS.getValue());
-        pipelineStatusDTO.setBuildNumber(buildInfo.getNumber());
-        pipelineStatusDTO.setJobName(buildInfo.getParent().getFullName());
-        pipelineStatusDTO.setUser(getUserName(buildInfo));
-        pipelineStatusDTO.setJobStartTime(buildInfo.getTimestampString2());
+        buildModel.setLogType(LogTypeEnum.JOB_STATUS.getValue());
+        buildModel.setName(buildInfo.getParent().getDisplayName());
+        buildModel.setNumber(buildInfo.getNumber());
+        buildModel.setDescription(buildInfo.getParent().getDescription());
+        if(Hudson.getVersion() != null){
+            buildModel.setHudsonVersion(Hudson.getVersion().toString());
+        }
         if (buildInfo.getParent() instanceof Describable) {
             String jobType = ((Describable) buildInfo.getParent()).getDescriptor().getDisplayName();
-            pipelineStatusDTO.setJobType(jobType);
+            buildModel.setJobType(jobType);
         }
-        pipelineStatusDTO.setJobRunDuration(getJobRunDuration(buildInfo));
-        if(buildInfo.getResult() != null){
-            pipelineStatusDTO.setJobResult(buildInfo.getResult().toString());
-        }
-        pipelineStatusDTO.setJobBuildURL(getAbsoluteUrl(buildInfo));
-        pipelineStatusDTO.setUpstreamJobURL(getUpStreamUrl(buildInfo));
-        pipelineStatusDTO.setTriggerCauses(getJobTriggerCauses(buildInfo));
+        String result = buildInfo.getResult() != null ? buildInfo.getResult().toString() : "Unknown";
+        buildModel.setResult(result);
+        buildModel.setUser(getUserName(buildInfo));
 
-        getLabelAndNodeName(buildInfo, pipelineStatusDTO);
+        //Backward compatibility duration
+        buildModel.setDuration(System.currentTimeMillis() - buildInfo.getStartTimeInMillis());
+        buildModel.setStart(buildInfo.getStartTimeInMillis());
 
-        TestCaseDTO testCaseDTO = getTestResultSummary(buildInfo);
-        if (testCaseDTO != null) {
-            pipelineStatusDTO.setTestResult(testCaseDTO);
+        buildModel.setJobStartTime(DATETIME_FORMATTER.format(buildInfo.getTimestamp()));
+        buildModel.setJobRunDuration(getJobRunDuration(buildInfo));
+
+        buildModel.setJobBuildURL(getAbsoluteUrl(buildInfo));
+        buildModel.setUpstreamJobURL(getUpStreamUrl(buildInfo));
+        buildModel.setTriggerCauses(getJobTriggerCauses(buildInfo));
+
+        getLabelAndNodeName(buildInfo, buildModel);
+
+        TestCaseModel testCaseModel = getTestResultSummary(buildInfo);
+        if (testCaseModel != null) {
+            buildModel.setTestResult(testCaseModel);
         }
 
         if (buildInfo instanceof AbstractBuild) {
             AbstractBuild build = (AbstractBuild) buildInfo;
             List<String> changelog = getChangeLog(build);
             if (!changelog.isEmpty()) {
-                pipelineStatusDTO.setChangeLogDetails(changelog);
-            }
-        }
-
-        for (SumoPipelineJobIdentifier extendListener : SumoPipelineJobIdentifier.canApply(buildInfo)) {
-            try {
-                List<PipelineStageDTO> stages = extendListener.extractPipelineStages(buildInfo);
-                if (CollectionUtils.isNotEmpty(stages)) {
-                    pipelineStatusDTO.setStages(stages);
-                }
-            } catch (Exception e) {
-                LOG.log(Level.SEVERE, "failed to extract job info", e);
+                buildModel.setChangeLogDetails(changelog);
             }
         }
 
         Map<String, Object> parameters = getBuildVariables(buildInfo);
         if (!parameters.isEmpty()) {
-            pipelineStatusDTO.setPipelineMetaData(parameters);
+            buildModel.setJobMetaData(parameters);
         }
-
-        return pipelineStatusDTO;
-    }
-
-    /**
-     *
-     * @param buildInfo Jenkins Job Build Information
-     * @return All the causes that triggered the Job separated by comma(,)
-     */
-    private static String getJobTriggerCauses(Run buildInfo) {
-        Set<String> causes = new LinkedHashSet<>();
-        for (CauseAction action : buildInfo.getActions(CauseAction.class)) {
-            if(action != null && action.getCauses() != null){
-                for (Cause cause : action.getCauses()) {
-                    causes.add(cause.getShortDescription());
-                }
-            }
-        }
-        for (InterruptedBuildAction action : buildInfo.getActions(InterruptedBuildAction.class)) {
-            if(action != null && action.getCauses() != null){
-                for (CauseOfInterruption cause : action.getCauses()) {
-                    causes.add(cause.getShortDescription());
-                }
-            }
-        }
-        return StringUtils.join(causes, COMMA_SEPARATOR);
     }
 
     /**
@@ -174,6 +147,44 @@ class SumoPipelineJobStatusGenerator {
     }
 
     /**
+     * @param buildInfo Jenkins Job Build Information
+     * @return job duration
+     */
+    private static float getJobRunDuration(Run buildInfo) {
+        float duration = buildInfo.getDuration() / 1000f;
+        if (duration < 0.01f || buildInfo.isBuilding()) {
+            duration = Math.max(0, (System.currentTimeMillis() - buildInfo.getStartTimeInMillis()) / 1000f);
+        }
+        return duration;
+    }
+
+    /**
+     *
+     * @param buildInfo Jenkins Job Build Information
+     * @return All the causes that triggered the Job separated by comma(,)
+     */
+    private static String getJobTriggerCauses(Run buildInfo) {
+        Set<String> causes = new LinkedHashSet<>();
+        for (CauseAction action : buildInfo.getActions(CauseAction.class)) {
+            if(action != null && action.getCauses() != null){
+                for (Cause cause : action.getCauses()) {
+                    causes.add(cause.getShortDescription());
+                }
+            }
+        }
+        for (InterruptedBuildAction action : buildInfo.getActions(InterruptedBuildAction.class)) {
+            if(action != null && action.getCauses() != null){
+                for (CauseOfInterruption cause : action.getCauses()) {
+                    causes.add(cause.getShortDescription());
+                }
+            }
+        }
+        return StringUtils.join(causes, COMMA_SEPARATOR);
+    }
+
+
+
+    /**
      *
      * @param buildInfo Jenkins Job Build Information
      * @return  URL for the JOB
@@ -204,44 +215,34 @@ class SumoPipelineJobStatusGenerator {
     /**
      *
      * @param buildInfo Jenkins Job Build Information
-     * @param pipelineStatusDTO Pipeline Job Status DTO
+     * @param BuildModel Pipeline Job Status DTO
      */
-    private static void getLabelAndNodeName(Run buildInfo, PipelineStatusDTO pipelineStatusDTO) {
+    private static void getLabelAndNodeName(Run buildInfo, BuildModel BuildModel) {
         Executor executor = buildInfo.getExecutor();
         if (executor != null) {
             if (executor.getOwner().getNode() != null) {
-                pipelineStatusDTO.setLabel(executor.getOwner().getNode().getLabelString());
+                BuildModel.setLabel(executor.getOwner().getNode().getLabelString());
             }
         }
         if (buildInfo instanceof AbstractBuild) {
-            pipelineStatusDTO.setNodeName(((AbstractBuild) buildInfo).getBuiltOnStr());
+            BuildModel.setNodeName(((AbstractBuild) buildInfo).getBuiltOnStr());
         } else{
             if (executor != null && StringUtils.isEmpty(executor.getOwner().getName())) {
-                pipelineStatusDTO.setNodeName(MASTER);
+                BuildModel.setNodeName(MASTER);
             }
         }
     }
 
-    /**
-     * @param buildInfo Jenkins Job Build Information
-     * @return job duration
-     */
-    private static float getJobRunDuration(Run buildInfo) {
-        float duration = buildInfo.getDuration() / 1000f;
-        if (duration < 0.01f || buildInfo.isBuilding()) {
-            duration = Math.max(0, (System.currentTimeMillis() - buildInfo.getStartTimeInMillis()) / 1000f);
-        }
-        return duration;
-    }
+
 
     /**
      * @param buildInfo Jenkins Job Build Information
      * @return summary of failures,passes,skips, total and duration
      */
-    private static TestCaseDTO getTestResultSummary(Run buildInfo) {
+    private static TestCaseModel getTestResultSummary(Run buildInfo) {
         AbstractTestResultAction action = buildInfo.getAction(AbstractTestResultAction.class);
         if(action != null){
-            return new TestCaseDTO(action.getFailCount(), action.getTotalCount()-action.getFailCount()-action.getSkipCount(),
+            return new TestCaseModel(action.getFailCount(), action.getTotalCount()-action.getFailCount()-action.getSkipCount(),
                     action.getSkipCount(), action.getTotalCount());
         }
         return null;

@@ -1,8 +1,8 @@
 package com.sumologic.jenkins.jenkinssumologicplugin;
 
 import com.google.gson.Gson;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.ModelFactory;
-import com.sumologic.jenkins.jenkinssumologicplugin.pipeline.PipelineStatusDTO;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSender;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -15,9 +15,12 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.GENERATION_ERROR;
 
 /**
  * This publisher will sendLogs build metadata to a Sumo Logic HTTP collector.
@@ -54,13 +57,25 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
 
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        send(build);
+        try{
+            send(build);
+        } catch (Exception e) {
+            String errorMessage = GENERATION_ERROR + Arrays.toString(e.getStackTrace());
+            LOG.log(Level.WARNING, errorMessage);
+            listener.error(errorMessage);
+        }
         return true;
     }
 
     @Override
     public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath filePath, @Nonnull Launcher launcher, @Nonnull TaskListener taskListener) throws InterruptedException, IOException {
-        send(run);
+        try{
+            send(run);
+        } catch (Exception e) {
+            String errorMessage = GENERATION_ERROR + Arrays.toString(e.getStackTrace());
+            LOG.log(Level.WARNING, errorMessage);
+            taskListener.error(errorMessage);
+        }
     }
 
     @Override
@@ -74,9 +89,9 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
         send(json);
     }
 
-    public void send(final PipelineStatusDTO pipelineStatusDTO) {
+    public void send(final BuildModel buildModel) {
         Gson gson = new Gson();
-        String json = gson.toJson(pipelineStatusDTO);
+        String json = gson.toJson(buildModel);
         send(json);
     }
 

@@ -1,4 +1,4 @@
-package com.sumologic.jenkins.jenkinssumologicplugin.pipeline;
+package com.sumologic.jenkins.jenkinssumologicplugin.pluginextension;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogListener;
 import hudson.Extension;
@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * Custom pipeline step that can be used without a node and build wrapper.
+ * Custom plugin extension step that can be used without a node and build wrapper.
  *
  * Created by - Sourabh Jain 5/2019
  */

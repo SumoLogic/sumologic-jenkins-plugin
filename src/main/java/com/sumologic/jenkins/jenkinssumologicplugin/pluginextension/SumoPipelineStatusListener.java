@@ -1,4 +1,4 @@
-package com.sumologic.jenkins.jenkinssumologicplugin.pipeline;
+package com.sumologic.jenkins.jenkinssumologicplugin.pluginextension;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.SumoBuildNotifier;
 import hudson.Extension;
@@ -7,13 +7,22 @@ import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.sumologic.jenkins.jenkinssumologicplugin.pipeline.SumoConstants.END_OF_SUMO_PIPELINE;
-import static com.sumologic.jenkins.jenkinssumologicplugin.pipeline.SumoPipelineJobStatusGenerator.generateJobStatusInformation;
+import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.END_OF_SUMO_PIPELINE;
+import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.GENERATION_ERROR;
+import static com.sumologic.jenkins.jenkinssumologicplugin.pluginextension.helper.SumoPipelineJobStatusGenerator.generateJobStatusInformation;
 
+/**
+ * Sumo Logic plugin for Jenkins model.
+ *
+ * Run Listener that listen every build and for sumologic pipeline.
+ *
+ * Created by Sourabh Jain on 5/2019.
+ */
 @Extension
 public class SumoPipelineStatusListener extends RunListener<Run> {
 
@@ -31,8 +40,9 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
                 SumoBuildNotifier.getInstance().send(generateJobStatusInformation(run));
             }
         } catch (Exception e) {
-            LOG.log(Level.WARNING, "Job Status Generation ended with exception as {0}", e.getStackTrace());
-            //TODO send failure for JOb due to plugin issue
+            String errorMessage = GENERATION_ERROR + Arrays.toString(e.getStackTrace());
+            LOG.log(Level.WARNING, errorMessage);
+            listener.error(errorMessage);
         }
     }
 }

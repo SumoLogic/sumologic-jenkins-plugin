@@ -4,7 +4,9 @@ import hudson.maven.MavenBuild;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.maven.reporters.SurefireAggregatedReport;
-import hudson.model.*;
+import hudson.model.Computer;
+import hudson.model.Queue;
+import hudson.model.Run;
 import hudson.tasks.test.TestResult;
 import jenkins.model.Jenkins;
 
@@ -20,20 +22,6 @@ import java.util.logging.Logger;
  */
 public class ModelFactory {
   private final static Logger LOG = Logger.getLogger(ModelFactory.class.getName());
-
-  protected static void populateGeneric(BuildModel buildModel, Run build) {
-    buildModel.setName(build.getParent().getDisplayName());
-    buildModel.setNumber(build.getNumber());
-    buildModel.setDuration(System.currentTimeMillis() - build.getStartTimeInMillis());
-    buildModel.setStart(build.getStartTimeInMillis());
-    String result = build.getResult() != null ? build.getResult().toString() : "Unknown";
-    buildModel.setResult(result);
-
-    if(Hudson.getVersion() != null){
-      buildModel.setHudsonVersion(Hudson.getVersion().toString());
-    }
-    buildModel.setDescription(build.getDescription());
-  }
 
   public static JenkinsModel createJenkinsModel(Jenkins jenkins) {
     Queue queue = jenkins.getQueue();
@@ -68,7 +56,7 @@ public class ModelFactory {
     BuildModel buildModel = null;
     if (build instanceof MavenModuleSetBuild) {
       MavenModuleSetBuildModel mBuildModel = new MavenModuleSetBuildModel();
-      ModelFactory.populateGeneric(mBuildModel, build);
+      CommonModelFactory.populateGeneric(mBuildModel, build);
       MavenModuleSetBuild mbuild = (MavenModuleSetBuild) build;
       SurefireAggregatedReport surefireAggregatedReport = mbuild.getAction(SurefireAggregatedReport.class);
       if (surefireAggregatedReport != null) {
@@ -88,13 +76,12 @@ public class ModelFactory {
     } else if (build instanceof MavenBuild) {
       MavenBuild mbuild = (MavenBuild) build;
       MavenModuleBuildModel mBuildModel = new MavenModuleBuildModel();
-      ModelFactory.populateGeneric(mBuildModel, mbuild);
+      CommonModelFactory.populateGeneric(mBuildModel, mbuild);
       buildModel = mBuildModel;
     } else {
       buildModel = new BuildModel();
-      ModelFactory.populateGeneric(buildModel, build);
+      CommonModelFactory.populateGeneric(buildModel, build);
     }
-
     return buildModel;
   }
 }

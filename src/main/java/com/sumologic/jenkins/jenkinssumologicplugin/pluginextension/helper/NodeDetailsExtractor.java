@@ -1,4 +1,4 @@
-package com.sumologic.jenkins.jenkinssumologicplugin.pipeline;
+package com.sumologic.jenkins.jenkinssumologicplugin.pluginextension.helper;
 
 
 import com.cloudbees.workflow.rest.external.ChunkVisitor;
@@ -7,8 +7,6 @@ import org.jenkinsci.plugins.workflow.actions.ArgumentsAction;
 import org.jenkinsci.plugins.workflow.actions.WorkspaceAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepEndNode;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
-import org.jenkinsci.plugins.workflow.graph.BlockEndNode;
-import org.jenkinsci.plugins.workflow.graph.BlockStartNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.graph.FlowStartNode;
 import org.jenkinsci.plugins.workflow.graphanalysis.ForkScanner;
@@ -22,8 +20,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Record workspace node during visitation
- * Not thread safe
+ * Sumo Logic plugin for Jenkins model.
+ *
+ * Sumo Constants
+ *
+ * Created by Sourabh Jain on 5/2019.
  */
 public class NodeDetailsExtractor extends ChunkVisitor {
     private static final Logger LOG = Logger.getLogger(NodeDetailsExtractor.class.getName());
@@ -49,7 +50,7 @@ public class NodeDetailsExtractor extends ChunkVisitor {
             recordStageNode(atomNode);
             recordParallelNode(scan);
         } catch (Exception ex) {
-            LOG.log(Level.WARNING, "failed to extract pipeline info", ex);
+            LOG.log(Level.WARNING, "failed to extract pluginextension info", ex);
         }
         super.atomNode(before, atomNode, after, scan);
     }
@@ -79,7 +80,7 @@ public class NodeDetailsExtractor extends ChunkVisitor {
     }
 
     /**
-     * store the jenkins node name where pipeline ran
+     * store the jenkins node name where pluginextension ran
      *
      * @param atomNode flow  node
      */
