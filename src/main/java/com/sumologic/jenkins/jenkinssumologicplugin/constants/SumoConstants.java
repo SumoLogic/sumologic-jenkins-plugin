@@ -20,7 +20,7 @@ public class SumoConstants {
     public static final String MASTER = "master";
 
     public static final FastDateFormat DATETIME_FORMATTER
-            = FastDateFormat.getInstance("dd MMM yyyy HH:mm:ss Z");
+            = FastDateFormat.getInstance("dd-MM-yyyy HH:mm:ss Z");
 
     public static final String GENERATION_ERROR = "Job Status Generation ended with exception as ";
 }

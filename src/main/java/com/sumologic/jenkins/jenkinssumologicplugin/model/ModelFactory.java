@@ -1,5 +1,6 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.pluginextension.listener.SumoJenkinsAuditListener;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSetBuild;
@@ -49,7 +50,7 @@ public class ModelFactory {
     }
     SlaveModel slaveModel = new SlaveModel(jenkins.getComputers().length - 1, jenkins.getNumExecutors(), numFreeExecutors);
 
-    return new JenkinsModel(queueModel, slaveModel, jenkins.getDescription());
+    return new JenkinsModel(queueModel, slaveModel, jenkins.getDescription(), SumoJenkinsAuditListener.getRecentAuditEvents());
   }
 
   public static BuildModel createBuildModel(Run build) {
