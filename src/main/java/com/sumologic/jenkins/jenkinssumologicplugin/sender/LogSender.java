@@ -14,6 +14,9 @@ import java.net.UnknownHostException;
 import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 
+import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.CARBON_CONTENT_TYPE;
+import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.GRAPHITE_CONTENT_TYPE;
+
 
 /**
  * Created by Lukasz on 20/03/2017
@@ -48,7 +51,7 @@ public class LogSender {
     return INSTANCE;
   }
 
-  public void sendLogs(String url, byte[] msg, String sumoName, String sumoCategory){
+  public void sendLogs(String url, byte[] msg, String sumoName, String sumoCategory, String contentType){
     PostMethod post = null;
 
     if (StringUtils.isBlank(url)) {
@@ -58,17 +61,9 @@ public class LogSender {
 
     try {
       post = new PostMethod(url);
-      post.addRequestHeader("X-Sumo-Host", getHost());
 
-      if (StringUtils.isNotBlank(sumoName)) {
-        post.addRequestHeader("X-Sumo-Name", sumoName);
-      }
+      createHeaders(post, sumoName, sumoCategory, contentType);
 
-      if (StringUtils.isNotBlank(sumoCategory)) {
-        post.addRequestHeader("X-Sumo-Category", sumoCategory);
-      }
-
-      post.addRequestHeader("Content-Encoding", "gzip");
       byte[] compressedData = compress(msg);
 
       post.setRequestEntity(new ByteArrayRequestEntity(compressedData));
@@ -87,6 +82,10 @@ public class LogSender {
     }
   }
 
+  public void sendLogs(String url, byte[] msg, String sumoName, String sumoCategory){
+      sendLogs(url, msg, sumoName, sumoCategory, null);
+  }
+
   private byte[] compress(byte[] content) throws IOException {
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
     GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
@@ -95,4 +94,32 @@ public class LogSender {
 
     return byteArrayOutputStream.toByteArray();
   }
+
+  private void createHeaders(final PostMethod post, final String sumoName,
+                             final String sumoCategory, final String contentType){
+
+    post.addRequestHeader("X-Sumo-Host", getHost());
+
+    if (StringUtils.isNotBlank(sumoName)) {
+      post.addRequestHeader("X-Sumo-Name", sumoName);
+    }
+
+    if (StringUtils.isNotBlank(sumoCategory)) {
+      post.addRequestHeader("X-Sumo-Category", sumoCategory);
+    }
+
+    post.addRequestHeader("Content-Encoding", "gzip");
+
+    if(isValidContentType(contentType)){
+        post.addRequestHeader("Content-Type", contentType);
+    }
+  }
+
+  private boolean isValidContentType(final String contentType){
+      if(contentType != null){
+          return GRAPHITE_CONTENT_TYPE.equals(contentType) || CARBON_CONTENT_TYPE.equals(contentType);
+      }
+      return false;
+  }
+
 }

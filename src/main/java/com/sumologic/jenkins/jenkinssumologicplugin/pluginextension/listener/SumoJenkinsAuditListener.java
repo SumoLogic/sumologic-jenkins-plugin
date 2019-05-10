@@ -51,8 +51,14 @@ public class SumoJenkinsAuditListener extends SecurityListener {
             .build();
 
     private void captureUserAuditEvent(String userName, final AuditEventTypeEnum auditEventTypeEnum){
-        User user = User.get(userName);
-        auditCache.put(user.getId(), new AuditModel(user.getFullName(), user.getId(), auditEventTypeEnum.getValue(), DATETIME_FORMATTER.format(new Date())));
+        User user = User.getById(userName, false);
+        String userFullName = userName;
+        String userId = userName;
+        if(user != null){
+            userFullName = user.getFullName();
+            userId = user.getId();
+        }
+        auditCache.put(userName, new AuditModel(userFullName, userId, auditEventTypeEnum.getValue(), DATETIME_FORMATTER.format(new Date())));
     }
 
     public static Collection<AuditModel> getRecentAuditEvents(){

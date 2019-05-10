@@ -23,4 +23,8 @@ public class SumoConstants {
             = FastDateFormat.getInstance("dd-MM-yyyy HH:mm:ss Z");
 
     public static final String GENERATION_ERROR = "Job Status Generation ended with exception as ";
+
+    public static final String GRAPHITE_CONTENT_TYPE = "application/vnd.sumologic.graphite";
+
+    public static final String CARBON_CONTENT_TYPE = "application/vnd.sumologic.carbon2";
 }

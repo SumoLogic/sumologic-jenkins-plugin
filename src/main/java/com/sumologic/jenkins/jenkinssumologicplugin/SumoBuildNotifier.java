@@ -16,6 +16,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,7 +58,7 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
 
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        try{
+        try {
             send(build);
         } catch (Exception e) {
             String errorMessage = GENERATION_ERROR + Arrays.toString(e.getStackTrace());
@@ -69,7 +70,7 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
 
     @Override
     public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath filePath, @Nonnull Launcher launcher, @Nonnull TaskListener taskListener) throws InterruptedException, IOException {
-        try{
+        try {
             send(run);
         } catch (Exception e) {
             String errorMessage = GENERATION_ERROR + Arrays.toString(e.getStackTrace());
@@ -95,7 +96,24 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
         send(json);
     }
 
-    public void send(String json){
+    public void send(final List<String> messages) {
+        PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
+
+        //Divide messages into equal parts
+        int timesTheLoopShouldRun = messages.size() / 100 + 1;
+        for (int i = 0; i < timesTheLoopShouldRun; i++) {
+            StringBuilder stringBuilder = new StringBuilder();
+            int start = i+100*i;
+            int end = Math.min(100+100*i, messages.size());
+            for (int j = start; j < end; j++) {
+                stringBuilder.append(messages.get(j)).append("\n");
+            }
+            //LOG.info("Uploading Metric data to SumoLogic "+stringBuilder.toString());
+            logSender.sendLogs(descriptor.getUrl(), stringBuilder.toString().getBytes(), "MetricData", "Labs/Jenkins/MetricsData");
+        }
+    }
+
+    public void send(String json) {
         PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
 
         LOG.info("Uploading build status to sumologic: " + json);

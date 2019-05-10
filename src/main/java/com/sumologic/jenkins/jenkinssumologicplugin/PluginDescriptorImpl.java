@@ -1,12 +1,19 @@
 package com.sumologic.jenkins.jenkinssumologicplugin;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.pluginextension.metrics.SumoMetricDataPublisher;
+import com.sumologic.jenkins.jenkinssumologicplugin.pluginextension.metrics.SumoMetricReporter;
 import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.init.TermMilestone;
+import hudson.init.Terminator;
 import hudson.model.AbstractProject;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -36,9 +43,13 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
   private boolean buildLogEnabled = true;
 
+  private transient SumoMetricDataPublisher sumoMetricDataPublisher;
+
   public PluginDescriptorImpl() {
     super(SumoBuildNotifier.class);
     load();
+    sumoMetricDataPublisher = new SumoMetricDataPublisher();
+    getSumoMetricDataPublisher().publishMetricData();
   }
 
   public static PluginDescriptorImpl getInstance() {
@@ -70,8 +81,29 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
     sourceCategoryBuildLogs = formData.getString("sourceCategoryBuildLogs");
 
     save();
+    getSumoMetricDataPublisher().publishMetricData();
     return configOk;
   }
+
+  @Terminator(after = TermMilestone.STARTED)
+  @Restricted(NoExternalUse.class)
+  public static void shutdown(){
+    PluginDescriptorImpl pluginDescriptor = checkIfPluginInUse();
+    pluginDescriptor.getSumoMetricDataPublisher().stopReporter();
+  }
+
+  private SumoMetricDataPublisher getSumoMetricDataPublisher() {
+    return sumoMetricDataPublisher;
+  }
+
+  private static PluginDescriptorImpl checkIfPluginInUse(){
+    PluginDescriptorImpl pluginDescriptor = ExtensionList.lookup(BuildStepDescriptor.class).get(PluginDescriptorImpl.class);
+    if(pluginDescriptor == null){
+        throw new IllegalStateException("Sumo Logic Publisher is not part of the extension list");
+    }
+    return pluginDescriptor;
+  }
+
 
   public FormValidation doCheckUrl(@QueryParameter String value) {
     if (value.isEmpty()) {
