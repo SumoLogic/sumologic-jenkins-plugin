@@ -222,6 +222,7 @@ public class CommonModelFactory {
      */
     private static void getLabelAndNodeName(Run buildInfo, BuildModel BuildModel) {
         Executor executor = buildInfo.getExecutor();
+
         if (executor != null) {
             if (executor.getOwner().getNode() != null) {
                 BuildModel.setLabel(executor.getOwner().getNode().getLabelString());

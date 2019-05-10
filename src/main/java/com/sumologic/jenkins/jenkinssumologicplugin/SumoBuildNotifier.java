@@ -22,6 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.GENERATION_ERROR;
+import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.GRAPHITE_CONTENT_TYPE;
 
 /**
  * This publisher will sendLogs build metadata to a Sumo Logic HTTP collector.
@@ -109,7 +110,7 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
                 stringBuilder.append(messages.get(j)).append("\n");
             }
             //LOG.info("Uploading Metric data to SumoLogic "+stringBuilder.toString());
-            logSender.sendLogs(descriptor.getUrl(), stringBuilder.toString().getBytes(), "MetricData", "Labs/Jenkins/MetricsData");
+            logSender.sendLogs(descriptor.getUrl(), stringBuilder.toString().getBytes(), "MetricData", "Labs/Jenkins/MetricsData", GRAPHITE_CONTENT_TYPE);
         }
     }
 
