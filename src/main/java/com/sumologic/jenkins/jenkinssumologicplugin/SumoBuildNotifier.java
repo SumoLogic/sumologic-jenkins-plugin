@@ -78,7 +78,7 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
         return BuildStepMonitor.NONE;
     }
 
-  protected void send(Run build) {
+    protected void send(Run build) {
         Gson gson = new Gson();
         String json = gson.toJson(ModelFactory.createBuildModel(build));
 

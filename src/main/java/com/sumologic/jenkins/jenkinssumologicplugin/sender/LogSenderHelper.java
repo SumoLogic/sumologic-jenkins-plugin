@@ -8,6 +8,13 @@ import java.util.List;
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.DIVIDER_FOR_MESSAGES;
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.GRAPHITE_CONTENT_TYPE;
 
+/**
+ * Sumo Logic plugin for Jenkins model.
+ * <p>
+ * Log Sender Helper
+ * <p>
+ * Created by Sourabh Jain on 5/2019.
+ */
 public class LogSenderHelper {
 
     private static LogSenderHelper INSTANCE = null;
@@ -20,7 +27,7 @@ public class LogSenderHelper {
         return INSTANCE;
     }
 
-    public void sendLogsToPeriodicSourceCategory(String data){
+    public void sendLogsToPeriodicSourceCategory(String data) {
 
         PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
         //TODO add flag for periodic and audit data
@@ -30,22 +37,22 @@ public class LogSenderHelper {
 
     public void sendMultipleLogsToPeriodicSourceCategory(final List<String> messages) {
         List<String> strings = divideDataIntoEquals(messages);
-        for(String data : strings){
+        for (String data : strings) {
             sendLogsToPeriodicSourceCategory(data);
         }
     }
 
-    public void sendLogsToMetricDataCategory(final List<String> messages){
+    public void sendLogsToMetricDataCategory(final List<String> messages) {
         PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
         //TODO add flag for Metric data category
         List<String> strings = divideDataIntoEquals(messages);
-        for(String data :strings){
+        for (String data : strings) {
             LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), data.getBytes()
                     , pluginDescriptor.getSourceNamePeriodic(), pluginDescriptor.getSourceCategoryPeriodic(), GRAPHITE_CONTENT_TYPE);
         }
     }
 
-    public void sendLogsToStatusDataCategory(String data){
+    public void sendLogsToStatusDataCategory(String data) {
         PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
 
         //TODO add flag for for Status data
@@ -53,15 +60,15 @@ public class LogSenderHelper {
                 , pluginDescriptor.getSourceNameJobStatus(), pluginDescriptor.getSourceCategoryJobStatus());
     }
 
-    private static List<String> divideDataIntoEquals(final List<String> messages){
+    private static List<String> divideDataIntoEquals(final List<String> messages) {
         List<String> convertedMessages = new ArrayList<>();
 
         StringBuilder stringBuilder = new StringBuilder();
         int count = 1;
-        for(String message : messages){
+        for (String message : messages) {
             stringBuilder.append(message).append("\n");
             count++;
-            if(count % DIVIDER_FOR_MESSAGES == 1){
+            if (count % DIVIDER_FOR_MESSAGES == 1) {
                 convertedMessages.add(stringBuilder.toString());
                 stringBuilder = new StringBuilder();
             }

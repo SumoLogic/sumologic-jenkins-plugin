@@ -2,18 +2,16 @@ package com.sumologic.jenkins.jenkinssumologicplugin.constants;
 
 import org.apache.commons.lang.time.FastDateFormat;
 
-import java.util.regex.Pattern;
-
 /**
  * Sumo Logic plugin for Jenkins model.
- *
+ * <p>
  * Sumo Constants
- *
+ * <p>
  * Created by Sourabh Jain on 5/2019.
  */
 public class SumoConstants {
 
-    private SumoConstants(){
+    private SumoConstants() {
 
     }
 
@@ -36,5 +34,5 @@ public class SumoConstants {
     public static final int DIVIDER_FOR_MESSAGES = 100;
 
 
-    public static final String ERROR_SPAN_CONTENT = "error.*?>(.*?)</span>";
+    public static final String MONITOR_PATTERN_MATCHER = "error.*?>(.*?)</span>";
 }

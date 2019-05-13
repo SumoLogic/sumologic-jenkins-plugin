@@ -38,10 +38,16 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
 
     @Override
     public void onStarted(Run run, TaskListener listener) {
-        String userName = getUserName(run);
-        String message = String.format(AuditEventTypeEnum.JOB_STARTED.getMessage(), userName, run.getNumber());
-        captureAuditEvent(userName, AuditEventTypeEnum.JOB_STARTED, message, null);
-        updateSlaveInfoAfterJobRun(run);
+        try {
+            String userName = getUserName(run);
+            String message = String.format(AuditEventTypeEnum.JOB_STARTED.getMessage(), userName, run.getNumber());
+            captureAuditEvent(userName, AuditEventTypeEnum.JOB_STARTED, message, null);
+            updateSlaveInfoAfterJobRun(run);
+        } catch (Exception e) {
+            String errorMessage = GENERATION_ERROR + Arrays.toString(e.getStackTrace());
+            LOG.log(Level.WARNING, errorMessage);
+            listener.error(errorMessage);
+        }
     }
 
     @Override
@@ -67,7 +73,7 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
                     User user = interrupts.get(0).getUser();
                     String message = String.format(AuditEventTypeEnum.JOB_ABORTED.getMessage(), user.getFullName()
                             , run.getNumber());
-                    captureAuditEvent(user.getFullName(), AuditEventTypeEnum.JOB_ABORTED, message,  null);
+                    captureAuditEvent(user.getFullName(), AuditEventTypeEnum.JOB_ABORTED, message, null);
                 }
             }
         } catch (Exception e) {
@@ -77,14 +83,14 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
         }
     }
 
-    private static void updateSlaveInfoAfterJobRun(Run buildInfo){
+    private static void updateSlaveInfoAfterJobRun(Run buildInfo) {
         //Update slave information as build has been done
         BuildModel buildModel = new BuildModel();
         getLabelAndNodeName(buildInfo, buildModel);
         Computer.threadPoolForRemoting.submit(() -> {
-            if(buildModel.getNodeName() != null){
+            if (buildModel.getNodeName() != null) {
                 Node node = Jenkins.get().getNode(buildModel.getNodeName());
-                if(node != null && node.toComputer() != null){
+                if (node != null && node.toComputer() != null) {
                     Computer computer = node.toComputer();
                     updateStatus(computer, EventSourceEnum.PERIODIC_UPDATE.getValue());
                 }

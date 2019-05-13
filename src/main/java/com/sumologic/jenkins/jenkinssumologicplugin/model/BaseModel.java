@@ -1,11 +1,18 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
+/**
+ * Sumo Logic plugin for Jenkins model.
+ * <p>
+ * Base Model
+ * <p>
+ * Created by Sourabh Jain on 5/2019.
+ */
 public class BaseModel {
 
     private String logType;
     private String eventTime;
 
-    public BaseModel(){
+    public BaseModel() {
 
     }
 

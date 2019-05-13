@@ -1,6 +1,5 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.utility;
 
-import com.sumologic.jenkins.jenkinssumologicplugin.model.TestCaseModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.TestCaseResultModel;
 import hudson.model.Run;
 import hudson.tasks.junit.CaseResult;
@@ -8,12 +7,17 @@ import hudson.tasks.junit.SuiteResult;
 import hudson.tasks.junit.TestResultAction;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.AggregatedTestResultAction;
-import hudson.tasks.test.TestResult;
-import org.apache.commons.collections.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Sumo Logic plugin for Jenkins model.
+ * <p>
+ * Generate test case report
+ * <p>
+ * Created by Sourabh Jain on 5/2019.
+ */
 public class TestCaseReport {
 
     public static List<TestCaseResultModel> getTestCaseReport(Run buildInfo) {
@@ -59,7 +63,7 @@ public class TestCaseReport {
         return caseResults;
     }
 
-    private static TestCaseResultModel convertTestResult(CaseResult testCase){
+    private static TestCaseResultModel convertTestResult(CaseResult testCase) {
         TestCaseResultModel testCaseResultModel = new TestCaseResultModel();
 
         testCaseResultModel.setClassName(testCase.getClassName());
@@ -70,9 +74,9 @@ public class TestCaseReport {
         testCaseResultModel.setFailedSince(testCase.getFailedSince());
         testCaseResultModel.setErrorDetails(testCase.getErrorDetails());
         testCaseResultModel.setErrorStackTrace(testCase.getErrorStackTrace());
-        if(!testCase.isSkipped()){
+        if (!testCase.isSkipped()) {
             testCaseResultModel.setStatus(testCase.isFailed() ? "Failed" : "Passed");
-        }else{
+        } else {
             testCaseResultModel.setStatus("Skipped");
         }
         return testCaseResultModel;

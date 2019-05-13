@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 
 /**
  * Custom plugin extension step that can be used without a node and build wrapper.
- *
+ * <p>
  * Created by - Sourabh Jain 5/2019
  */
 public class SumoPipelineLogCollection extends Step {
@@ -23,7 +23,8 @@ public class SumoPipelineLogCollection extends Step {
     private final static Logger LOG = Logger.getLogger(SumoPipelineLogCollection.class.getName());
 
     @DataBoundConstructor
-    public SumoPipelineLogCollection() {}
+    public SumoPipelineLogCollection() {
+    }
 
     @Override
     public StepExecution start(StepContext context) {
@@ -40,7 +41,8 @@ public class SumoPipelineLogCollection extends Step {
         }
 
         @Override
-        public void onResume() {}
+        public void onResume() {
+        }
 
         /**
          * {@inheritDoc}

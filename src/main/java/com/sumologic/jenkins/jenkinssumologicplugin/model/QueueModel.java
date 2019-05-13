@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 
 /**
  * Created by deven on 8/6/15.
+ *
+ * Updates by Sourabh Jain 05/2019
  */
 public class QueueModel extends BaseModel {
     protected int NumItemsInQueue, NumBlockedItemsInQueue;
@@ -86,6 +88,34 @@ public class QueueModel extends BaseModel {
 
     public void setJobURL(String jobURL) {
         this.jobURL = jobURL;
+    }
+
+    public long getQueueId() {
+        return queueId;
+    }
+
+    public float getQueueTime() {
+        return queueTime;
+    }
+
+    public boolean isBlocked() {
+        return isBlocked;
+    }
+
+    public String getReasonForBlock() {
+        return reasonForBlock;
+    }
+
+    public boolean isConcurrentBuild() {
+        return isConcurrentBuild;
+    }
+
+    public String getJobName() {
+        return jobName;
+    }
+
+    public String getJobURL() {
+        return jobURL;
     }
 
     public String toString() {

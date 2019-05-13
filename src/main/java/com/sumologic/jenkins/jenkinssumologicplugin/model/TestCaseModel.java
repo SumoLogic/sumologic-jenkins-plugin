@@ -1,7 +1,5 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
-import hudson.tasks.test.TestResult;
-
 import java.util.ArrayList;
 import java.util.List;
 

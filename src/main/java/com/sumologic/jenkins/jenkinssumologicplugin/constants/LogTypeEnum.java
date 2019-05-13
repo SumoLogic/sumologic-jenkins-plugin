@@ -2,9 +2,9 @@ package com.sumologic.jenkins.jenkinssumologicplugin.constants;
 
 /**
  * Sumo Logic plugin for Jenkins model.
- *
+ * <p>
  * Log Type Enum
- *
+ * <p>
  * Created by Sourabh Jain on 5/2019.
  */
 
@@ -16,7 +16,7 @@ public enum LogTypeEnum {
     SLAVE_EVENT("Slave_Event");
     private String value;
 
-    LogTypeEnum(final String value){
+    LogTypeEnum(final String value) {
         this.value = value;
     }
 

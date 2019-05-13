@@ -2,10 +2,16 @@ package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
 import com.google.gson.Gson;
 
-import java.util.List;
 import java.util.Map;
 
-public class AuditModel extends BaseModel{
+/**
+ * Sumo Logic plugin for Jenkins model.
+ * <p>
+ * Audit Model
+ * <p>
+ * Created by Sourabh Jain on 5/2019.
+ */
+public class AuditModel extends BaseModel {
 
     private String userName;
     private String auditEventType;
@@ -43,7 +49,7 @@ public class AuditModel extends BaseModel{
         return fileDetails;
     }
 
-    public String toString(){
+    public String toString() {
         Gson gson = new Gson();
         return gson.toJson(this);
     }

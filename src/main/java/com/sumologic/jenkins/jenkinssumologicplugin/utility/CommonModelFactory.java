@@ -239,9 +239,9 @@ public class CommonModelFactory {
         }
         if (buildInfo instanceof AbstractBuild) {
             String builtOnStr = ((AbstractBuild) buildInfo).getBuiltOnStr();
-            if("".equals(builtOnStr)){
+            if ("".equals(builtOnStr)) {
                 BuildModel.setNodeName(MASTER);
-            }else{
+            } else {
                 BuildModel.setNodeName(builtOnStr);
             }
         } else {
@@ -559,7 +559,7 @@ public class CommonModelFactory {
             } else {
                 monitorData = data.toString();
             }
-            Pattern compile = Pattern.compile(ERROR_SPAN_CONTENT, Pattern.CASE_INSENSITIVE);
+            Pattern compile = Pattern.compile(MONITOR_PATTERN_MATCHER, Pattern.CASE_INSENSITIVE);
             Matcher matcher = compile.matcher(monitorData);
             if (matcher.find()) {
                 monitorDetails.put(monitorName, "warning:" + matcher.group(1));

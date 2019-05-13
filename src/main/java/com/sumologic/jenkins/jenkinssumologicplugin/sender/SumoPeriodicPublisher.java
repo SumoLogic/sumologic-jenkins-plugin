@@ -29,6 +29,8 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFa
  * Created by deven on 8/6/15.
  * <p>
  * Periodically publish jenkins system metadata to sumo
+ *
+ * Updated by Sourabh Jain 05/2019
  */
 @Extension
 public class SumoPeriodicPublisher extends AsyncPeriodicWork {

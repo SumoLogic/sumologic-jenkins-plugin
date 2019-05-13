@@ -2,9 +2,9 @@ package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
 /**
  * Sumo Logic plugin for Jenkins model.
- *
+ * <p>
  * Error model
- *
+ * <p>
  * Created by Sourabh Jain on 5/2019.
  */
 public class ErrorModel {

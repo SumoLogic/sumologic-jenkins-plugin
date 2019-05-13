@@ -1,8 +1,7 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.metrics;
 
-import com.codahale.metrics.*;
 import com.codahale.metrics.Timer;
-import com.sumologic.jenkins.jenkinssumologicplugin.SumoBuildNotifier;
+import com.codahale.metrics.*;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +11,11 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Metric Reporter which publishes metric data to SumoLogic
+ * Sumo Logic plugin for Jenkins model.
+ * <p>
+ * Sumo Metric Reporter to generate graphite metric data
+ * <p>
+ * Created by Sourabh Jain on 5/2019.
  */
 public class SumoMetricReporter extends ScheduledReporter {
 
@@ -74,7 +77,7 @@ public class SumoMetricReporter extends ScheduledReporter {
                 reportTimer(timer.getKey(), timer.getValue(), timeInMilli, messages);
             }
 
-            LogSenderHelper.getInstance().sendLogsToMetricDataCategory(messages);
+            logSenderHelper.sendLogsToMetricDataCategory(messages);
         } catch (IOException e) {
             LOGGER.warn("Unable to send metrics to SumoLogic");
         }
@@ -94,7 +97,7 @@ public class SumoMetricReporter extends ScheduledReporter {
     private void reportTimer(String name, Timer timer, long timestamp, List<String> messages) throws IOException {
 
         double[] values = prepareDataFromSnapshotForStatistics(timer.getSnapshot());
-        for (int i =0; i<snapshotStatisticsKeys.length;i++) {
+        for (int i = 0; i < snapshotStatisticsKeys.length; i++) {
             messages.add(buildMessage(prefix(name, snapshotStatisticsKeys[i]), format(convertDuration(values[i])), timestamp));
         }
 
@@ -105,7 +108,7 @@ public class SumoMetricReporter extends ScheduledReporter {
         messages.add(buildMessage(prefix(name, "count"), format(meter.getCount()), timestamp));
 
         String[] values = prepareDataFromMeterForRate(meter);
-        for (int i =0; i<snapshotRateKeys.length;i++) {
+        for (int i = 0; i < snapshotRateKeys.length; i++) {
             messages.add(buildMessage(prefix(name, snapshotRateKeys[i]), values[i], timestamp));
         }
     }
@@ -115,12 +118,12 @@ public class SumoMetricReporter extends ScheduledReporter {
         messages.add(buildMessage(prefix(name, "count"), format(histogram.getCount()), timestamp));
 
         double[] values = prepareDataFromSnapshotForStatistics(histogram.getSnapshot());
-        for (int i =0; i<snapshotStatisticsKeys.length;i++) {
+        for (int i = 0; i < snapshotStatisticsKeys.length; i++) {
             messages.add(buildMessage(prefix(name, snapshotStatisticsKeys[i]), format(values[i]), timestamp));
         }
     }
 
-    private double[] prepareDataFromSnapshotForStatistics(final Snapshot snapshot){
+    private double[] prepareDataFromSnapshotForStatistics(final Snapshot snapshot) {
         return new double[]{
                 snapshot.getMax(), snapshot.getMean(), snapshot.getMin(),
                 snapshot.getStdDev(), snapshot.getMedian(), snapshot.get75thPercentile(),
@@ -128,7 +131,7 @@ public class SumoMetricReporter extends ScheduledReporter {
                 snapshot.get99thPercentile(), snapshot.get999thPercentile()};
     }
 
-    private String[] prepareDataFromMeterForRate(final Metered metered){
+    private String[] prepareDataFromMeterForRate(final Metered metered) {
         return new String[]{
                 format(convertRate(metered.getOneMinuteRate())),
                 format(convertRate(metered.getFiveMinuteRate())),
@@ -137,7 +140,7 @@ public class SumoMetricReporter extends ScheduledReporter {
         };
     }
 
-    private String buildMessage(String name, String value, long timeStamp){
+    private String buildMessage(String name, String value, long timeStamp) {
         return name + " " + value + " " + timeStamp;
     }
 

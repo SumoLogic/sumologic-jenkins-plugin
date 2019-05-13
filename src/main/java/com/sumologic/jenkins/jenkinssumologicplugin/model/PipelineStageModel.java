@@ -5,9 +5,9 @@ import java.util.Set;
 
 /**
  * Sumo Logic plugin for Jenkins model.
- *
+ * <p>
  * Pipeline stages details model
- *
+ * <p>
  * Created by Sourabh Jain on 5/2019.
  */
 public class PipelineStageModel {

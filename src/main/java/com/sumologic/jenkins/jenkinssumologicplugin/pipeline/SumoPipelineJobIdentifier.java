@@ -13,9 +13,9 @@ import java.util.List;
 
 /**
  * Sumo Logic plugin for Jenkins model.
- *
+ * <p>
  * Identify the Pipeline stages information
- *
+ * <p>
  * Created by Sourabh Jain on 5/2019.
  */
 public abstract class SumoPipelineJobIdentifier<R extends Run> implements ExtensionPoint {

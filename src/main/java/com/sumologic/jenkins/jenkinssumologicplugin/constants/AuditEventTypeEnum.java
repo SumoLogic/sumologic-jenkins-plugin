@@ -1,5 +1,12 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.constants;
 
+/**
+ * Sumo Logic plugin for Jenkins model.
+ * <p>
+ * Audit Event Type Enum
+ * <p>
+ * Created by Sourabh Jain on 5/2019.
+ */
 public enum AuditEventTypeEnum {
 
     LOGIN("User_Login", "%s Logged in."),
@@ -17,8 +24,7 @@ public enum AuditEventTypeEnum {
     private String value;
     private String message;
 
-    AuditEventTypeEnum(final String value, final String message)
-    {
+    AuditEventTypeEnum(final String value, final String message) {
         this.value = value;
         this.message = message;
     }

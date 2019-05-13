@@ -7,6 +7,8 @@ import java.util.Map;
 
 /**
  * Created by deven on 8/6/15.
+ *
+ * Updated by Sourabh Jain 05/2019
  */
 public class SlaveModel extends BaseModel {
     protected int numberOfSlaves, numberOfExecutors, numberOfFreeExecutors;
@@ -110,6 +112,42 @@ public class SlaveModel extends BaseModel {
 
     public String getNodeName() {
         return nodeName;
+    }
+
+    public String getNodeLabel() {
+        return nodeLabel;
+    }
+
+    public String getNodeStatus() {
+        return nodeStatus;
+    }
+
+    public boolean isIdle() {
+        return isIdle;
+    }
+
+    public boolean isOnline() {
+        return isOnline;
+    }
+
+    public String getReasonOffline() {
+        return reasonOffline;
+    }
+
+    public boolean isRemoved() {
+        return isRemoved;
+    }
+
+    public boolean isConnecting() {
+        return isConnecting;
+    }
+
+    public String getNodeURL() {
+        return nodeURL;
+    }
+
+    public String getEventSource() {
+        return eventSource;
     }
 
     public String toString() {

@@ -18,6 +18,13 @@ import java.util.regex.Pattern;
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.IGNORE_PATTERN;
 import static com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory.*;
 
+/**
+ * Sumo Logic plugin for Jenkins model.
+ * <p>
+ * For any config related change
+ * <p>
+ * Created by Sourabh Jain on 5/2019.
+ */
 @Extension
 public class SumoJobConfigListener extends SaveableListener implements Serializable {
 

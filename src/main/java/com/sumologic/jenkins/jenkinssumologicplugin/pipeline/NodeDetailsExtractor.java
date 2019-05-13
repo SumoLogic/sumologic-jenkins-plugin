@@ -14,7 +14,10 @@ import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -94,13 +97,13 @@ public class NodeDetailsExtractor extends ChunkVisitor {
     private void findParallelNode(@Nonnull ForkScanner scan, FlowNode atomNode) {
         if (ParallelNodeTypeEnum.NORMAL.toString().equals(String.valueOf(scan.getCurrentType()))
                 && ParallelNodeTypeEnum.PARALLEL_BRANCH_START.toString().equals(String.valueOf(scan.getNextType()))
-        && scan.getCurrentParallelStartNode() != null) {
+                && scan.getCurrentParallelStartNode() != null) {
             List<String> parentIds = scan.getCurrentParallelStartNode().getParents().stream().map(FlowNode::getId).collect(Collectors.toList());
             Set<String> childrenInParallel = atomNode.getParents().stream().map(FlowNode::getId).collect(Collectors.toSet());
-            parentIds.forEach(parentId ->{
-                if(parallelNodes.containsKey(parentId)){
+            parentIds.forEach(parentId -> {
+                if (parallelNodes.containsKey(parentId)) {
                     parallelNodes.get(parentId).addAll(childrenInParallel);
-                }else{
+                } else {
                     parallelNodes.put(parentId, childrenInParallel);
                 }
             });

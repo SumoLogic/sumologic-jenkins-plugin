@@ -1,9 +1,8 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.pipeline;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
-import com.sumologic.jenkins.jenkinssumologicplugin.model.ErrorModel;
-import com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.PipelineStageModel;
+import com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory;
 import hudson.model.Result;
 import hudson.model.Run;
 import org.apache.commons.collections.CollectionUtils;
@@ -15,9 +14,9 @@ import java.util.logging.Logger;
 
 /**
  * Sumo Logic plugin for Jenkins model.
- *
+ * <p>
  * Helper class to create Pipeline job information
- *
+ * <p>
  * Created by Sourabh Jain on 5/2019.
  */
 public class SumoPipelineJobStatusGenerator {
@@ -31,7 +30,7 @@ public class SumoPipelineJobStatusGenerator {
         for (SumoPipelineJobIdentifier extendListener : SumoPipelineJobIdentifier.canApply(buildInfo)) {
             try {
                 List<PipelineStageModel> stages = extendListener.extractPipelineStages(buildInfo);
-                if(!Result.SUCCESS.toString().equals(buildModel.getResult())){
+                if (!Result.SUCCESS.toString().equals(buildModel.getResult())) {
                     Optional<PipelineStageModel> first = stages.stream().filter(pipelineStageModel -> pipelineStageModel.getStatus().equals(buildModel.getResult())).findFirst();
                     first.ifPresent(pipelineStageModel -> buildModel.setErrorModel(pipelineStageModel.getErrorModel()));
                 }

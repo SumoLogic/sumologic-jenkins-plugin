@@ -10,6 +10,13 @@ import java.util.logging.Logger;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory.captureUserLoginEvent;
 
+/**
+ * Sumo Logic plugin for Jenkins model.
+ * <p>
+ * Security Listener for Audit Related information
+ * <p>
+ * Created by Sourabh Jain on 5/2019.
+ */
 @Extension
 public class SumoJenkinsUserLoginListener extends SecurityListener {
     private static final Logger LOG = Logger.getLogger(SumoJenkinsUserLoginListener.class.getName());

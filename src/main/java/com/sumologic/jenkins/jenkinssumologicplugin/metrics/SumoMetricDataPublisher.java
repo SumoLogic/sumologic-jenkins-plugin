@@ -3,10 +3,8 @@ package com.sumologic.jenkins.jenkinssumologicplugin.metrics;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
-import com.sumologic.jenkins.jenkinssumologicplugin.SumoBuildNotifier;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import jenkins.metrics.api.Metrics;
-import jenkins.model.Jenkins;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,20 +12,27 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Sumo Logic plugin for Jenkins model.
+ * <p>
+ * Sumo Metric data publisher to send metric data to sumologic
+ * <p>
+ * Created by Sourabh Jain on 5/2019.
+ */
 public class SumoMetricDataPublisher {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SumoMetricDataPublisher.class);
 
     private transient SumoMetricReporter sumoMetricReporter;
 
-    public void stopReporter(){
+    public void stopReporter() {
         LOGGER.info("Stopping Reporter");
-        if(sumoMetricReporter != null){
+        if (sumoMetricReporter != null) {
             sumoMetricReporter.stop();
         }
     }
 
-    public synchronized void publishMetricData(){
+    public synchronized void publishMetricData() {
         LOGGER.info("Starting Reporter");
         MetricRegistry metricRegistry = Metrics.metricRegistry();
 
@@ -44,7 +49,7 @@ public class SumoMetricDataPublisher {
 
     }
 
-    private Set<String> createMetricFilter(){
+    private Set<String> createMetricFilter() {
         final Set<String> whitelist = new HashSet<>();
 
         whitelist.add("jenkins.executor.count.value");
@@ -87,7 +92,7 @@ public class SumoMetricDataPublisher {
 
         @Override
         public boolean matches(String name, Metric metric) {
-            for (String whitelisted: whitelist) {
+            for (String whitelisted : whitelist) {
                 if (whitelisted.endsWith(name))
                     return true;
             }

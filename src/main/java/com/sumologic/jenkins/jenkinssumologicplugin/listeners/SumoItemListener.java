@@ -8,6 +8,13 @@ import hudson.model.listeners.ItemListener;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory.captureItemAuditEvent;
 
+/**
+ * Sumo Logic plugin for Jenkins model.
+ * <p>
+ * Sumo Item Listener for any event in Jenkins
+ * <p>
+ * Created by Sourabh Jain on 5/2019.
+ */
 @Extension
 public class SumoItemListener extends ItemListener {
 

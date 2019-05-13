@@ -13,6 +13,13 @@ import java.io.IOException;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory.updateStatus;
 
+/**
+ * Sumo Logic plugin for Jenkins model.
+ * <p>
+ * Computer Listener for any computer related event
+ * <p>
+ * Created by Sourabh Jain on 5/2019.
+ */
 @Extension
 public class SumoJenkinsComputerListener extends ComputerListener {
 

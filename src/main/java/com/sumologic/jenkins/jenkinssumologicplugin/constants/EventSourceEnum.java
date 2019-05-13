@@ -1,5 +1,12 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.constants;
 
+/**
+ * Sumo Logic plugin for Jenkins model.
+ * <p>
+ * Event Source Enum
+ * <p>
+ * Created by Sourabh Jain on 5/2019.
+ */
 public enum EventSourceEnum {
 
     PERIODIC_UPDATE("Periodic_Update"),
@@ -12,7 +19,7 @@ public enum EventSourceEnum {
 
     private String value;
 
-    EventSourceEnum(final String value){
+    EventSourceEnum(final String value) {
         this.value = value;
     }
 
