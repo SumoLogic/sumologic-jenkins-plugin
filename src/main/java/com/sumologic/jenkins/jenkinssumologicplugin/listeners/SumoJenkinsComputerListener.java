@@ -1,10 +1,6 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.listeners;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.EventSourceEnum;
-import com.sumologic.jenkins.jenkinssumologicplugin.constants.LogTypeEnum;
-import com.sumologic.jenkins.jenkinssumologicplugin.model.SlaveModel;
-import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSender;
-import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.TaskListener;
@@ -14,16 +10,11 @@ import hudson.slaves.OfflineCause;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.util.Date;
-import java.util.Map;
 
-import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.DATETIME_FORMATTER;
-import static com.sumologic.jenkins.jenkinssumologicplugin.sender.SumoPeriodicPublisher.getComputerStatus;
+import static com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory.updateStatus;
 
 @Extension
 public class SumoJenkinsComputerListener extends ComputerListener {
-
-    private static LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
 
     @Override
     public void onOnline(Computer computer, TaskListener listener) throws IOException, InterruptedException {
@@ -50,14 +41,5 @@ public class SumoJenkinsComputerListener extends ComputerListener {
     public void onLaunchFailure(Computer computer, TaskListener taskListener) throws IOException, InterruptedException {
         updateStatus(computer, EventSourceEnum.LAUNCH_FAILURE.getValue());
         taskListener.getLogger().flush();
-    }
-
-    public static void updateStatus(Computer computer, String eventSource) {
-        SlaveModel slaveModel = new SlaveModel();
-        slaveModel.setLogType(LogTypeEnum.SLAVE_EVENT.getValue());
-        slaveModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
-        slaveModel.setEventSource(eventSource);
-        getComputerStatus(computer, slaveModel);
-        logSenderHelper.sendLogsToPeriodicSourceCategory(slaveModel.toString());
     }
 }

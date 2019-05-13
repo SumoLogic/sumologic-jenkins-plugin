@@ -11,7 +11,6 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstan
 public class LogSenderHelper {
 
     private static LogSenderHelper INSTANCE = null;
-    private static LogSender logSender = LogSender.getInstance();
 
     public static LogSenderHelper getInstance() {
         if (INSTANCE == null) {
@@ -25,7 +24,7 @@ public class LogSenderHelper {
 
         PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
         //TODO add flag for periodic and audit data
-        logSender.sendLogs(pluginDescriptor.getUrl(), data.getBytes()
+        LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), data.getBytes()
                 , pluginDescriptor.getSourceNamePeriodic(), pluginDescriptor.getSourceCategoryPeriodic());
     }
 
@@ -41,7 +40,7 @@ public class LogSenderHelper {
         //TODO add flag for Metric data category
         List<String> strings = divideDataIntoEquals(messages);
         for(String data :strings){
-            logSender.sendLogs(pluginDescriptor.getUrl(), data.getBytes()
+            LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), data.getBytes()
                     , pluginDescriptor.getSourceNamePeriodic(), pluginDescriptor.getSourceCategoryPeriodic(), GRAPHITE_CONTENT_TYPE);
         }
     }
@@ -50,7 +49,7 @@ public class LogSenderHelper {
         PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
 
         //TODO add flag for for Status data
-        logSender.sendLogs(pluginDescriptor.getUrl(), data.getBytes()
+        LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), data.getBytes()
                 , pluginDescriptor.getSourceNameJobStatus(), pluginDescriptor.getSourceCategoryJobStatus());
     }
 

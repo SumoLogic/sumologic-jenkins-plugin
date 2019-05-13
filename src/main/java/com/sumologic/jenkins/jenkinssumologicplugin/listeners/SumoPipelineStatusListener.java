@@ -1,10 +1,8 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.listeners;
 
-import com.sumologic.jenkins.jenkinssumologicplugin.SumoBuildNotifier;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.AuditEventTypeEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.EventSourceEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
-import com.sumologic.jenkins.jenkinssumologicplugin.model.TestCaseModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import hudson.Extension;
 import hudson.Util;
@@ -22,7 +20,6 @@ import java.util.logging.Logger;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.END_OF_SUMO_PIPELINE;
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.GENERATION_ERROR;
-import static com.sumologic.jenkins.jenkinssumologicplugin.listeners.SumoJenkinsComputerListener.updateStatus;
 import static com.sumologic.jenkins.jenkinssumologicplugin.pipeline.SumoPipelineJobStatusGenerator.generateJobStatusInformation;
 import static com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory.*;
 

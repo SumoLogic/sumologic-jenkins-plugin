@@ -1,15 +1,17 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.utility;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.AuditEventTypeEnum;
+import com.sumologic.jenkins.jenkinssumologicplugin.constants.EventSourceEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.LogTypeEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.AuditModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.SlaveModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.TestCaseModel;
-import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSender;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.model.*;
+import hudson.node_monitors.NodeMonitor;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
 import hudson.tasks.test.AbstractTestResultAction;
@@ -21,12 +23,15 @@ import jenkins.model.Jenkins;
 import jenkins.triggers.SCMTriggerItem;
 import org.apache.commons.lang.StringUtils;
 
-import java.io.File;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.*;
 import static com.sumologic.jenkins.jenkinssumologicplugin.utility.TestCaseReport.getTestCaseReport;
+import static org.apache.commons.lang.reflect.MethodUtils.getAccessibleMethod;
 
 /**
  * Sumo Logic plugin for Jenkins model.
@@ -466,5 +471,102 @@ public class CommonModelFactory {
             relativePath = configPath.substring(jenkinsHome.length() + 1);
         }
         return relativePath;
+    }
+
+    public static void updateStatus(Computer computer, String eventSource) {
+        SlaveModel slaveModel = new SlaveModel();
+        slaveModel.setLogType(LogTypeEnum.SLAVE_EVENT.getValue());
+        slaveModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
+        slaveModel.setEventSource(eventSource);
+        getComputerStatus(computer, slaveModel);
+        logSenderHelper.sendLogsToPeriodicSourceCategory(slaveModel.toString());
+    }
+
+    public static List<SlaveModel> getNodeMonitorsDetails() {
+        List<SlaveModel> slaveModels = new ArrayList<>();
+        Computer[] computers = Jenkins.get().getComputers();
+
+        if (computers == null || computers.length == 0) {
+            return slaveModels;
+        }
+        Collection<NodeMonitor> monitors = ComputerSet.getMonitors();
+        for (Computer computer : computers) {
+            if (computer != null) {
+                SlaveModel slaveModel = new SlaveModel();
+                slaveModel.setLogType(LogTypeEnum.SLAVE_EVENT.getValue());
+                slaveModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
+                slaveModel.setEventSource(EventSourceEnum.PERIODIC_UPDATE.getValue());
+                getComputerStatus(computer, slaveModel);
+                for (NodeMonitor monitor : monitors) {
+                    slaveModel.getMonitorData().putAll(getMonitorData(computer, monitor));
+                }
+                slaveModels.add(slaveModel);
+            }
+        }
+        return slaveModels;
+    }
+
+    public static void getComputerStatus(Computer computer, SlaveModel slaveModel) {
+        slaveModel.setNodeName(getNodeName(computer));
+        Node slaveNode = computer.getNode();
+        if (slaveNode != null) {
+            slaveModel.setNodeLabel(slaveNode.getLabelString());
+        }
+        slaveModel.setNodeStatus("updated");
+        slaveModel.setNumberOfExecutors(computer.getNumExecutors());
+        slaveModel.setIdle(computer.isIdle());
+        slaveModel.setOnline(computer.isOnline());
+        if (computer.isOffline()) {
+            slaveModel.setNumberOfExecutors(0);
+            slaveModel.setRemoved(true);
+            slaveModel.setReasonOffline(computer.getOfflineCauseReason());
+            slaveModel.setConnecting(computer.isConnecting());
+        }
+        slaveModel.setNodeURL(getAbsoluteUrl(computer));
+        long connectTime = computer.getConnectTime();
+    }
+
+    private static String getAbsoluteUrl(Computer computer) {
+        String rootUrl = Jenkins.get().getRootUrl();
+        if (rootUrl == null) {
+            return computer.getUrl();
+        } else {
+            return Util.encode(rootUrl + computer.getUrl());
+        }
+    }
+
+    private static String getNodeName(Computer computer) {
+        if (computer instanceof Jenkins.MasterComputer) {
+            return MASTER;
+        } else {
+            return computer.getName();
+        }
+    }
+
+    private static Map<String, Object> getMonitorData(Computer computer, NodeMonitor monitor) {
+        Map<String, Object> monitorDetails = new HashMap<>();
+        Object data = monitor.data(computer);
+        if (data != null) {
+            String monitorName = monitor.getClass().getSimpleName();
+            String monitorData;
+            Method method = getAccessibleMethod(data.getClass(), "toHtml", new Class<?>[0]);
+            if (method != null) {
+                try {
+                    monitorData = (String) method.invoke(data, new Object[0]);
+                } catch (Exception e) {
+                    monitorData = data.toString();
+                }
+            } else {
+                monitorData = data.toString();
+            }
+            Pattern compile = Pattern.compile(ERROR_SPAN_CONTENT, Pattern.CASE_INSENSITIVE);
+            Matcher matcher = compile.matcher(monitorData);
+            if (matcher.find()) {
+                monitorDetails.put(monitorName, "warning:" + matcher.group(1));
+            } else {
+                monitorDetails.put(monitorName, monitorData);
+            }
+        }
+        return monitorDetails;
     }
 }
