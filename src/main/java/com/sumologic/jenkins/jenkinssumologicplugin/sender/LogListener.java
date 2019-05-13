@@ -26,7 +26,7 @@ import java.util.logging.Logger;
  */
 @Extension(ordinal = -1)
 public class LogListener extends ConsoleLogFilter implements Serializable {
-    private final static Logger LOG = Logger.getLogger(LogSender.class.getName());
+    private final static Logger LOG = Logger.getLogger(LogListener.class.getName());
 
     private transient Run run;
     private SumologicOutputStream.State streamState;

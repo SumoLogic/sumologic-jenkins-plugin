@@ -1,4 +1,4 @@
-package com.sumologic.jenkins.jenkinssumologicplugin.pluginextension;
+package com.sumologic.jenkins.jenkinssumologicplugin.utility;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogListener;
 import hudson.Extension;

@@ -1,8 +1,9 @@
-package com.sumologic.jenkins.jenkinssumologicplugin.pluginextension.metrics;
+package com.sumologic.jenkins.jenkinssumologicplugin.metrics;
 
 import com.codahale.metrics.*;
 import com.codahale.metrics.Timer;
 import com.sumologic.jenkins.jenkinssumologicplugin.SumoBuildNotifier;
+import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +20,8 @@ public class SumoMetricReporter extends ScheduledReporter {
 
     private final Clock clock;
     private final String prefix;
-    private final SumoBuildNotifier sumoBuildNotifier;
+    private final LogSenderHelper logSenderHelper;
+
     private static final String[] snapshotStatisticsKeys = new String[]{"max", "mean", "min", "stddev", "p50", "p75", "p95", "p98", "p99", "p999"};
     private static final String[] snapshotRateKeys = new String[]{"m1_rate", "m5_rate", "m15_rate", "mean_rate"};
 
@@ -33,11 +35,11 @@ public class SumoMetricReporter extends ScheduledReporter {
                                TimeUnit rateUnit,
                                TimeUnit durationUnit,
                                MetricFilter filter,
-                               SumoBuildNotifier sumoBuildNotifier) {
+                               LogSenderHelper logSenderHelper) {
         super(metricRegistry, "sumo-metric-reporter", filter, rateUnit, durationUnit);
         this.clock = clock;
         this.prefix = prefix;
-        this.sumoBuildNotifier = sumoBuildNotifier;
+        this.logSenderHelper = logSenderHelper;
     }
 
     private String prefix(String... components) {
@@ -72,7 +74,7 @@ public class SumoMetricReporter extends ScheduledReporter {
                 reportTimer(timer.getKey(), timer.getValue(), timeInMilli, messages);
             }
 
-            sumoBuildNotifier.send(messages);
+            LogSenderHelper.getInstance().sendLogsToMetricDataCategory(messages);
         } catch (IOException e) {
             LOGGER.warn("Unable to send metrics to SumoLogic");
         }
@@ -177,7 +179,6 @@ public class SumoMetricReporter extends ScheduledReporter {
             this.clock = Clock.defaultClock();
             this.rateUnit = TimeUnit.SECONDS;
             this.durationUnit = TimeUnit.MILLISECONDS;
-            this.filter = MetricFilter.ALL;
         }
 
         public Builder withClock(Clock clock) {
@@ -205,8 +206,8 @@ public class SumoMetricReporter extends ScheduledReporter {
             return this;
         }
 
-        public SumoMetricReporter build(SumoBuildNotifier sumoBuildNotifier) {
-            return new SumoMetricReporter(metricRegistry, clock, prefix, rateUnit, durationUnit, filter, sumoBuildNotifier);
+        public SumoMetricReporter build(LogSenderHelper logSenderHelper) {
+            return new SumoMetricReporter(metricRegistry, clock, prefix, rateUnit, durationUnit, filter, logSenderHelper);
         }
     }
 }

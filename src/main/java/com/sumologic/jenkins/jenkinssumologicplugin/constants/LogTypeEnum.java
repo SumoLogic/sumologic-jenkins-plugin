@@ -10,8 +10,10 @@ package com.sumologic.jenkins.jenkinssumologicplugin.constants;
 
 public enum LogTypeEnum {
 
-    JOB_STATUS("Job_Status");
-
+    JOB_STATUS("Job_Status"),
+    AUDIT_EVENT("Audit_Event"),
+    QUEUE_EVENT("Queue_Event"),
+    SLAVE_EVENT("Slave_Event");
     private String value;
 
     LogTypeEnum(final String value){

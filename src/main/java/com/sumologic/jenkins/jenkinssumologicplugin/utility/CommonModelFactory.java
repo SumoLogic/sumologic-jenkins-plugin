@@ -1,6 +1,12 @@
-package com.sumologic.jenkins.jenkinssumologicplugin.model;
+package com.sumologic.jenkins.jenkinssumologicplugin.utility;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.constants.AuditEventTypeEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.LogTypeEnum;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.AuditModel;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.TestCaseModel;
+import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSender;
+import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import hudson.EnvVars;
 import hudson.Util;
 import hudson.model.*;
@@ -15,21 +21,25 @@ import jenkins.model.Jenkins;
 import jenkins.triggers.SCMTriggerItem;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.File;
 import java.util.*;
 import java.util.logging.Logger;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.*;
+import static com.sumologic.jenkins.jenkinssumologicplugin.utility.TestCaseReport.getTestCaseReport;
 
 /**
  * Sumo Logic plugin for Jenkins model.
- *
+ * <p>
  * Common Model factory to update common build information
- *
+ * <p>
  * Created by Sourabh Jain on 5/2019.
  */
 public class CommonModelFactory {
 
     private static final Logger LOG = Logger.getLogger(CommonModelFactory.class.getName());
+
+    private static LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
 
     public static void populateGeneric(BuildModel buildModel, Run buildInfo) {
 
@@ -37,7 +47,7 @@ public class CommonModelFactory {
         buildModel.setName(buildInfo.getParent().getDisplayName());
         buildModel.setNumber(buildInfo.getNumber());
         buildModel.setDescription(buildInfo.getParent().getDescription());
-        if(Hudson.getVersion() != null){
+        if (Hudson.getVersion() != null) {
             buildModel.setHudsonVersion(Hudson.getVersion().toString());
         }
         if (buildInfo.getParent() instanceof Describable) {
@@ -84,7 +94,7 @@ public class CommonModelFactory {
      * @param buildInfo Jenkins Job Build Information
      * @return the user who triggered the build or upstream build
      */
-    private static String getUserName(Run buildInfo) {
+    public static String getUserName(Run buildInfo) {
         String userName = "anonymous";
         if (buildInfo.getParent().getClass().getName().equals("hudson.maven.MavenModule")) {
             return "(maven)";
@@ -92,7 +102,7 @@ public class CommonModelFactory {
 
         String triggerUserName;
         for (CauseAction action : buildInfo.getActions(CauseAction.class)) {
-            if(action != null && action.getCauses() != null){
+            if (action != null && action.getCauses() != null) {
                 for (Cause cause : action.getCauses()) {
                     triggerUserName = getUsernameOrTimerORScm(cause);
                     if (triggerUserName != null) {
@@ -107,7 +117,6 @@ public class CommonModelFactory {
     }
 
     /**
-     *
      * @param cause cause for the trigger
      * @return UserName as User ID, Timer or scm
      */
@@ -126,11 +135,10 @@ public class CommonModelFactory {
      * get the user name from UpstreamCause, also recursive check top level upstreams
      * e.g.
      * Started by upstream project "sumo_list" build number 47
-     *  originally caused by:
-     *  Started by upstream project "sumo_job" build number 2
-     *      originally caused by:
-     *      Started by user Sourabh Jain
-     *
+     * originally caused by:
+     * Started by upstream project "sumo_job" build number 2
+     * originally caused by:
+     * Started by user Sourabh Jain
      *
      * @param upstreamCause Cause for the upstream Job Trigger
      * @return UserName
@@ -153,7 +161,7 @@ public class CommonModelFactory {
      * @param buildInfo Jenkins Job Build Information
      * @return job duration
      */
-    private static float getJobRunDuration(Run buildInfo) {
+    public static float getJobRunDuration(Run buildInfo) {
         float duration = buildInfo.getDuration() / 1000f;
         if (duration < 0.01f || buildInfo.isBuilding()) {
             duration = Math.max(0, (System.currentTimeMillis() - buildInfo.getStartTimeInMillis()) / 1000f);
@@ -162,21 +170,20 @@ public class CommonModelFactory {
     }
 
     /**
-     *
      * @param buildInfo Jenkins Job Build Information
      * @return All the causes that triggered the Job separated by comma(,)
      */
     private static String getJobTriggerCauses(Run buildInfo) {
         Set<String> causes = new LinkedHashSet<>();
         for (CauseAction action : buildInfo.getActions(CauseAction.class)) {
-            if(action != null && action.getCauses() != null){
+            if (action != null && action.getCauses() != null) {
                 for (Cause cause : action.getCauses()) {
                     causes.add(cause.getShortDescription());
                 }
             }
         }
         for (InterruptedBuildAction action : buildInfo.getActions(InterruptedBuildAction.class)) {
-            if(action != null && action.getCauses() != null){
+            if (action != null && action.getCauses() != null) {
                 for (CauseOfInterruption cause : action.getCauses()) {
                     causes.add(cause.getShortDescription());
                 }
@@ -186,18 +193,16 @@ public class CommonModelFactory {
     }
 
 
-
     /**
-     *
      * @param buildInfo Jenkins Job Build Information
-     * @return  URL for the JOB
+     * @return URL for the JOB
      */
-    private static String getAbsoluteUrl(Run buildInfo) {
-        String rootUrl = Jenkins.getInstance().getRootUrl();
-        if(rootUrl==null){
+    public static String getAbsoluteUrl(Run buildInfo) {
+        String rootUrl = Jenkins.get().getRootUrl();
+        if (rootUrl == null) {
             return buildInfo.getUrl();
         } else {
-            return Util.encode(rootUrl+buildInfo.getUrl());
+            return Util.encode(rootUrl + buildInfo.getUrl());
         }
     }
 
@@ -216,11 +221,10 @@ public class CommonModelFactory {
     }
 
     /**
-     *
-     * @param buildInfo Jenkins Job Build Information
+     * @param buildInfo  Jenkins Job Build Information
      * @param BuildModel Pipeline Job Status DTO
      */
-    private static void getLabelAndNodeName(Run buildInfo, BuildModel BuildModel) {
+    public static void getLabelAndNodeName(Run buildInfo, BuildModel BuildModel) {
         Executor executor = buildInfo.getExecutor();
 
         if (executor != null) {
@@ -229,14 +233,18 @@ public class CommonModelFactory {
             }
         }
         if (buildInfo instanceof AbstractBuild) {
-            BuildModel.setNodeName(((AbstractBuild) buildInfo).getBuiltOnStr());
-        } else{
+            String builtOnStr = ((AbstractBuild) buildInfo).getBuiltOnStr();
+            if("".equals(builtOnStr)){
+                BuildModel.setNodeName(MASTER);
+            }else{
+                BuildModel.setNodeName(builtOnStr);
+            }
+        } else {
             if (executor != null && StringUtils.isEmpty(executor.getOwner().getName())) {
                 BuildModel.setNodeName(MASTER);
             }
         }
     }
-
 
 
     /**
@@ -245,9 +253,12 @@ public class CommonModelFactory {
      */
     private static TestCaseModel getTestResultSummary(Run buildInfo) {
         AbstractTestResultAction action = buildInfo.getAction(AbstractTestResultAction.class);
-        if(action != null){
-            return new TestCaseModel(action.getFailCount(), action.getTotalCount()-action.getFailCount()-action.getSkipCount(),
+        if (action != null) {
+            TestCaseModel testCaseModel = new TestCaseModel(action.getFailCount(), action.getTotalCount() - action.getFailCount() - action.getSkipCount(),
                     action.getSkipCount(), action.getTotalCount());
+
+            testCaseModel.getTestResults().addAll(getTestCaseReport(buildInfo));
+            return testCaseModel;
         }
         return null;
     }
@@ -393,5 +404,67 @@ public class CommonModelFactory {
             value = Util.replaceMacro(value, envVars);
         }
         return value;
+    }
+
+    public static void captureUserLoginEvent(final String userName, final AuditEventTypeEnum auditEventTypeEnum) {
+        String message = String.format(auditEventTypeEnum.getMessage(), userName);
+        captureAuditEvent(userName, auditEventTypeEnum, message, null);
+    }
+
+    public static void captureItemAuditEvent(AuditEventTypeEnum auditEventTypeEnum, String itemName, String itemOldValue) {
+        String userName = getUserName();
+        String message = "";
+        if (AuditEventTypeEnum.COPIED.equals(auditEventTypeEnum) || AuditEventTypeEnum.LOCATION_CHANGED.equals(auditEventTypeEnum)) {
+            message = String.format(auditEventTypeEnum.getMessage(), userName, itemName, itemOldValue);
+        } else {
+            message = String.format(auditEventTypeEnum.getMessage(), userName, itemName);
+        }
+
+        captureAuditEvent(userName, auditEventTypeEnum, message, null);
+    }
+
+    public static void captureConfigChanges(final String fileURL, final AuditEventTypeEnum auditEventTypeEnum,
+                                            String fileName) {
+        String userName = getUserName();
+        String message = String.format(AuditEventTypeEnum.CHANGES_IN_CONFIG.getMessage(),
+                userName, fileName);
+
+        Map<String, Object> fileDetails = new HashMap<>();
+
+        fileDetails.put("Current_File_URL", fileURL);
+        captureAuditEvent(userName, auditEventTypeEnum, message, fileDetails);
+    }
+
+    public static void captureAuditEvent(final String userName, final AuditEventTypeEnum auditEventTypeEnum,
+                                         final String message, Map<String, Object> fileDetails) {
+        User user = User.getById(userName, false);
+        String userFullName = userName;
+        String userId = userName;
+        if (user != null) {
+            userFullName = user.getFullName();
+            userId = user.getId();
+        }
+        AuditModel auditModel = new AuditModel(userFullName, userId, auditEventTypeEnum.getValue(),
+                DATETIME_FORMATTER.format(new Date()), message, LogTypeEnum.AUDIT_EVENT.getValue(), fileDetails);
+
+        logSenderHelper.sendLogsToPeriodicSourceCategory(auditModel.toString());
+    }
+
+    private static String getUserName() {
+        User user = User.current();
+        if (user == null) {
+            return "anonymous";
+        } else {
+            return user.getFullName();
+        }
+    }
+
+    public static String getRelativeJenkinsHomePath(String configPath) {
+        String jenkinsHome = Jenkins.get().getRootDir().getPath();
+        String relativePath = configPath;
+        if (configPath.startsWith(jenkinsHome)) {
+            relativePath = configPath.substring(jenkinsHome.length() + 1);
+        }
+        return relativePath;
     }
 }

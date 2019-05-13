@@ -1,4 +1,4 @@
-package com.sumologic.jenkins.jenkinssumologicplugin.pluginextension.helper;
+package com.sumologic.jenkins.jenkinssumologicplugin.pipeline;
 
 import com.cloudbees.workflow.rest.external.ErrorExt;
 import com.cloudbees.workflow.rest.external.FlowNodeExt;
@@ -8,7 +8,6 @@ import com.sumologic.jenkins.jenkinssumologicplugin.model.ErrorModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.PipelineStageModel;
 import hudson.Extension;
 import hudson.model.Result;
-import hudson.scheduler.Hash;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;

@@ -2,6 +2,8 @@ package com.sumologic.jenkins.jenkinssumologicplugin.constants;
 
 import org.apache.commons.lang.time.FastDateFormat;
 
+import java.util.regex.Pattern;
+
 /**
  * Sumo Logic plugin for Jenkins model.
  *
@@ -27,4 +29,12 @@ public class SumoConstants {
     public static final String GRAPHITE_CONTENT_TYPE = "application/vnd.sumologic.graphite";
 
     public static final String CARBON_CONTENT_TYPE = "application/vnd.sumologic.carbon2";
+
+    public static final String IGNORE_PATTERN = "(queue|nodeMonitors|UpdateCenter|global-build-stats\" +\n" +
+            "            \"|fingerprint|build)(.*?xml)";
+
+    public static final int DIVIDER_FOR_MESSAGES = 100;
+
+
+    public static final String ERROR_SPAN_CONTENT = "error.*?>(.*?)</span>";
 }

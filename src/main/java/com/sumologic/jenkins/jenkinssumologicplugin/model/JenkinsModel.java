@@ -12,13 +12,11 @@ public class JenkinsModel {
   protected QueueModel queue;
   protected SlaveModel slaves;
   protected String description;
-  private Collection<AuditModel> auditDetails;
 
-  public JenkinsModel(QueueModel queue, SlaveModel slaves, String description, Collection<AuditModel> auditDetails) {
+  public JenkinsModel(QueueModel queue, SlaveModel slaves, String description) {
     this.queue = queue;
     this.slaves = slaves;
     this.description = description;
-    this.auditDetails = auditDetails;
   }
 
   public QueueModel getQueue() {

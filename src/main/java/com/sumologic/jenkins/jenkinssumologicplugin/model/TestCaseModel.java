@@ -1,5 +1,10 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
+import hudson.tasks.test.TestResult;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Sumo Logic plugin for Jenkins model.
  *
@@ -12,6 +17,14 @@ public class TestCaseModel {
     private int passes;
     private int skips;
     private int total;
+    private List<TestCaseResultModel> testResults = new ArrayList<>();
+
+    public List<TestCaseResultModel> getTestResults() {
+        if(this.testResults == null){
+            testResults = new ArrayList<>();
+        }
+        return testResults;
+    }
 
     public TestCaseModel(int failures, int passes, int skips, int total) {
         this.failures = failures;

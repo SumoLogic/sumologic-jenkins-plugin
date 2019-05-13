@@ -6,10 +6,8 @@ import hudson.model.Action;
 import hudson.model.Run;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Created by lukasz on 3/24/17.

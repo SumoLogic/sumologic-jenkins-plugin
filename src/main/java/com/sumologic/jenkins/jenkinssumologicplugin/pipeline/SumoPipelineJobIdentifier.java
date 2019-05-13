@@ -1,4 +1,4 @@
-package com.sumologic.jenkins.jenkinssumologicplugin.pluginextension.helper;
+package com.sumologic.jenkins.jenkinssumologicplugin.pipeline;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.model.PipelineStageModel;
 import hudson.ExtensionList;

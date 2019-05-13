@@ -1,7 +1,10 @@
 package com.sumologic.jenkins.jenkinssumologicplugin;
 
-import com.sumologic.jenkins.jenkinssumologicplugin.pluginextension.metrics.SumoMetricDataPublisher;
-import com.sumologic.jenkins.jenkinssumologicplugin.pluginextension.metrics.SumoMetricReporter;
+import com.sumologic.jenkins.jenkinssumologicplugin.constants.EventSourceEnum;
+import com.sumologic.jenkins.jenkinssumologicplugin.constants.LogTypeEnum;
+import com.sumologic.jenkins.jenkinssumologicplugin.metrics.SumoMetricDataPublisher;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.SlaveModel;
+import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.init.TermMilestone;
@@ -19,6 +22,9 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
+
+import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.DATETIME_FORMATTER;
 
 /**
  * Sumo Logic plugin for Jenkins model.
@@ -44,12 +50,14 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
   private boolean buildLogEnabled = true;
 
   private transient SumoMetricDataPublisher sumoMetricDataPublisher;
+  private static LogSenderHelper logSenderHelper = null;
 
   public PluginDescriptorImpl() {
     super(SumoBuildNotifier.class);
     load();
     sumoMetricDataPublisher = new SumoMetricDataPublisher();
     getSumoMetricDataPublisher().publishMetricData();
+    logSenderHelper = LogSenderHelper.getInstance();
   }
 
   public static PluginDescriptorImpl getInstance() {
@@ -90,9 +98,14 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
   public static void shutdown(){
     PluginDescriptorImpl pluginDescriptor = checkIfPluginInUse();
     pluginDescriptor.getSumoMetricDataPublisher().stopReporter();
+    SlaveModel slaveModel = new SlaveModel();
+    slaveModel.setLogType(LogTypeEnum.SLAVE_EVENT.getValue());
+    slaveModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
+    slaveModel.setEventSource(EventSourceEnum.SHUTDOWN.getValue());
+    logSenderHelper.sendLogsToPeriodicSourceCategory(slaveModel.toString());
   }
 
-  private SumoMetricDataPublisher getSumoMetricDataPublisher() {
+  public SumoMetricDataPublisher getSumoMetricDataPublisher() {
     return sumoMetricDataPublisher;
   }
 

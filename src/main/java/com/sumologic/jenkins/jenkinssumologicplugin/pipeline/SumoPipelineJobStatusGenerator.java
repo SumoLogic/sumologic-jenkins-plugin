@@ -1,12 +1,15 @@
-package com.sumologic.jenkins.jenkinssumologicplugin.pluginextension.helper;
+package com.sumologic.jenkins.jenkinssumologicplugin.pipeline;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
-import com.sumologic.jenkins.jenkinssumologicplugin.model.CommonModelFactory;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.ErrorModel;
+import com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.PipelineStageModel;
+import hudson.model.Result;
 import hudson.model.Run;
 import org.apache.commons.collections.CollectionUtils;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,6 +31,10 @@ public class SumoPipelineJobStatusGenerator {
         for (SumoPipelineJobIdentifier extendListener : SumoPipelineJobIdentifier.canApply(buildInfo)) {
             try {
                 List<PipelineStageModel> stages = extendListener.extractPipelineStages(buildInfo);
+                if(!Result.SUCCESS.toString().equals(buildModel.getResult())){
+                    Optional<PipelineStageModel> first = stages.stream().filter(pipelineStageModel -> pipelineStageModel.getStatus().equals(buildModel.getResult())).findFirst();
+                    first.ifPresent(pipelineStageModel -> buildModel.setErrorModel(pipelineStageModel.getErrorModel()));
+                }
                 if (CollectionUtils.isNotEmpty(stages)) {
                     buildModel.setStages(stages);
                 }
