@@ -25,8 +25,9 @@ public class SumoMetricReporter extends ScheduledReporter {
     private final String prefix;
     private final LogSenderHelper logSenderHelper;
 
-    private static final String[] snapshotStatisticsKeys = new String[]{"max", "mean", "min", "stddev", "p50", "p75", "p95", "p98", "p99", "p999"};
-    private static final String[] snapshotRateKeys = new String[]{"m1_rate", "m5_rate", "m15_rate", "mean_rate"};
+    private static final String[] snapshotStatisticsKeys = new String[]{"max", "mean", "min"};
+    //, "stddev", "p50", "p75", "p95", "p98", "p99", "p999"};
+    //private static final String[] snapshotRateKeys = new String[]{"m1_rate", "m5_rate", "m15_rate", "mean_rate"};
 
     public static Builder forRegistry(MetricRegistry metricRegistry) {
         return new Builder(metricRegistry);
@@ -65,13 +66,13 @@ public class SumoMetricReporter extends ScheduledReporter {
                 reportCounter(counter.getKey(), counter.getValue(), timeInMilli, messages);
             }
 
-            for (Map.Entry<String, Histogram> histogram : histograms.entrySet()) {
+            /*for (Map.Entry<String, Histogram> histogram : histograms.entrySet()) {
                 reportHistogram(histogram.getKey(), histogram.getValue(), timeInMilli, messages);
             }
 
             for (Map.Entry<String, Meter> meter : meters.entrySet()) {
                 reportMetered(meter.getKey(), meter.getValue(), timeInMilli, messages);
-            }
+            }*/
 
             for (Map.Entry<String, Timer> timer : timers.entrySet()) {
                 reportTimer(timer.getKey(), timer.getValue(), timeInMilli, messages);
@@ -98,13 +99,13 @@ public class SumoMetricReporter extends ScheduledReporter {
 
         double[] values = prepareDataFromSnapshotForStatistics(timer.getSnapshot());
         for (int i = 0; i < snapshotStatisticsKeys.length; i++) {
-            messages.add(buildMessage(prefix(name, snapshotStatisticsKeys[i]), format(convertDuration(values[i])), timestamp));
+            messages.add(buildMessage(prefix(name, snapshotStatisticsKeys[i]), format(convertDuration(values[i])*1000), timestamp));
         }
 
-        reportMetered(name, timer, timestamp, messages);
+        //reportMetered(name, timer, timestamp, messages);
     }
 
-    private void reportMetered(String name, Metered meter, long timestamp, List<String> messages) throws IOException {
+    /*private void reportMetered(String name, Metered meter, long timestamp, List<String> messages) throws IOException {
         messages.add(buildMessage(prefix(name, "count"), format(meter.getCount()), timestamp));
 
         String[] values = prepareDataFromMeterForRate(meter);
@@ -121,24 +122,24 @@ public class SumoMetricReporter extends ScheduledReporter {
         for (int i = 0; i < snapshotStatisticsKeys.length; i++) {
             messages.add(buildMessage(prefix(name, snapshotStatisticsKeys[i]), format(values[i]), timestamp));
         }
-    }
+    }*/
 
     private double[] prepareDataFromSnapshotForStatistics(final Snapshot snapshot) {
         return new double[]{
-                snapshot.getMax(), snapshot.getMean(), snapshot.getMin(),
-                snapshot.getStdDev(), snapshot.getMedian(), snapshot.get75thPercentile(),
+                snapshot.getMax(), snapshot.getMean(), snapshot.getMin()};
+                /*snapshot.getStdDev(), snapshot.getMedian(), snapshot.get75thPercentile(),
                 snapshot.get95thPercentile(), snapshot.get98thPercentile(),
-                snapshot.get99thPercentile(), snapshot.get999thPercentile()};
+                snapshot.get99thPercentile(), snapshot.get999thPercentile()};*/
     }
 
-    private String[] prepareDataFromMeterForRate(final Metered metered) {
+    /*private String[] prepareDataFromMeterForRate(final Metered metered) {
         return new String[]{
                 format(convertRate(metered.getOneMinuteRate())),
                 format(convertRate(metered.getFiveMinuteRate())),
                 format(convertRate(metered.getFifteenMinuteRate())),
                 format(convertRate(metered.getMeanRate()))
         };
-    }
+    }*/
 
     private String buildMessage(String name, String value, long timeStamp) {
         return name + " " + value + " " + timeStamp;
