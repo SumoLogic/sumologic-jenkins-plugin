@@ -15,6 +15,7 @@ public class TestCaseModel {
     private int passes;
     private int skips;
     private int total;
+    private double totalDuration;
     private List<TestCaseResultModel> testResults = new ArrayList<>();
 
     public List<TestCaseResultModel> getTestResults() {
@@ -61,5 +62,13 @@ public class TestCaseModel {
 
     public void setTotal(int total) {
         this.total = total;
+    }
+
+    public double getTotalDuration() {
+        return totalDuration;
+    }
+
+    public void setTotalDuration(double totalDuration) {
+        this.totalDuration = totalDuration;
     }
 }

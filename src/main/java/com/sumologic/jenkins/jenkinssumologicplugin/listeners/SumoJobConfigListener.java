@@ -2,6 +2,7 @@ package com.sumologic.jenkins.jenkinssumologicplugin.listeners;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.AuditEventTypeEnum;
 import hudson.Extension;
+import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Item;
 import hudson.model.Saveable;
@@ -9,8 +10,27 @@ import hudson.model.User;
 import hudson.model.listeners.SaveableListener;
 import jenkins.model.Jenkins;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.IOUtils;
+import org.jfree.util.Log;
+import org.w3c.dom.Document;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.ext.Locator2;
+import org.xml.sax.helpers.DefaultHandler;
 
-import java.io.Serializable;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Base64;
+import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -44,6 +64,8 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
         }
 
         try {
+            file.getFile().setExecutable(true);
+
             String configContent = file.asString();
             String checkSum = DigestUtils.md5Hex(configPath + configContent);
             if (cached.containsKey(checkSum)) {
@@ -51,20 +73,28 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
             }
             cached.put(checkSum, 0);
 
-            //TODO - compare old and new files to get the difference.
-            //File oldFile = getOldFile(file);
+            File oldFile = getOldFile(file);
 
-            captureConfigChanges(file.getFile().toURI().toString(), AuditEventTypeEnum.CHANGES_IN_CONFIG, getRelativeJenkinsHomePath(file.getFile().getAbsolutePath()));
+            String encodeFileToString = Base64.getEncoder().encodeToString(file.asString().getBytes());
+            String encodeOldFileToString = Base64.getEncoder().encodeToString(new XmlFile(oldFile).asString().getBytes());
 
+            captureConfigChanges(encodeFileToString, encodeOldFileToString, AuditEventTypeEnum.CHANGES_IN_CONFIG, getRelativeJenkinsHomePath(file.getFile().getAbsolutePath()));
+
+            try {
+                Files.copy(file.getFile().toPath(), oldFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                LOG.warning("Can not copy the data to old file");
+            }
             if (!(saveable instanceof Item)) {
                 captureItemAuditEvent(AuditEventTypeEnum.UPDATED, file.getFile().getName(), null);
             }
         } catch (Exception exception) {
-            LOG.warning("An error occurred while Checking the Job Configuration");
+            LOG.warning("An error occurred while Checking the Job Configuration" + exception.getMessage());
+            exception.printStackTrace();
         }
     }
 
-    /*private static File getOldFile(XmlFile file) {
+    private static File getOldFile(XmlFile file) {
         File oldFile = null;
         String pathForOldFile = file.getFile().getParent() + "/config_old.xml";
         if (file.getFile().getParentFile() != null) {
@@ -79,14 +109,8 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
         if (oldFile == null) {
             oldFile = new File(pathForOldFile);
         }
-        try {
-            Files.copy(file.getFile().toPath(), oldFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            LOG.warning("Can not copy the data to old file");
-        }
-
         return oldFile;
-    }*/
+    }
 
     /*private static List<Map<String, Object>> compare(File oldFile, File newFile) throws Exception {
         List<Map<String, Object>> diff = new ArrayList<>();

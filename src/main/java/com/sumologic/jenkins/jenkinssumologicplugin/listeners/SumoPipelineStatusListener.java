@@ -39,9 +39,9 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
     @Override
     public void onStarted(Run run, TaskListener listener) {
         try {
-            String userName = getUserName(run);
-            String message = String.format(AuditEventTypeEnum.JOB_STARTED.getMessage(), userName, run.getNumber());
-            captureAuditEvent(userName, AuditEventTypeEnum.JOB_STARTED, message, null);
+            String userId = getUserId(run);
+            String message = String.format(AuditEventTypeEnum.JOB_STARTED.getMessage(), userId, run.getNumber());
+            captureAuditEvent(userId, AuditEventTypeEnum.JOB_STARTED, message, null);
             updateSlaveInfoAfterJobRun(run);
         } catch (Exception e) {
             String errorMessage = GENERATION_ERROR + Arrays.toString(e.getStackTrace());
@@ -58,12 +58,19 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
             eligible for Job status sending.
             */
             List log = run.getLog(10);
+            BuildModel buildModel = generateJobStatusInformation(run);
             if (log.contains(END_OF_SUMO_PIPELINE)) {
-                BuildModel buildModel = generateJobStatusInformation(run);
                 logSenderHelper.sendLogsToStatusDataCategory(buildModel.toJson());
             }
 
             updateSlaveInfoAfterJobRun(run);
+
+            //Send audit event for job finish
+            if(!"ABORTED".equals(buildModel.getResult())){
+                String message = String.format(AuditEventTypeEnum.JOB_FINISHED.getMessage(), run.getNumber(), buildModel.getResult());
+                captureAuditEvent(buildModel.getUser(), AuditEventTypeEnum.JOB_FINISHED, message, null);
+            }
+
             //Send the Aborted information if any as part of audit.
             List<InterruptedBuildAction> actions = run.getActions(InterruptedBuildAction.class);
             for (InterruptedBuildAction action : actions) {
@@ -71,9 +78,9 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
                         , CauseOfInterruption.UserInterruption.class);
                 if (!interrupts.isEmpty()) {
                     User user = interrupts.get(0).getUser();
-                    String message = String.format(AuditEventTypeEnum.JOB_ABORTED.getMessage(), user.getFullName()
+                    String message = String.format(AuditEventTypeEnum.JOB_ABORTED.getMessage(), user.getId()
                             , run.getNumber());
-                    captureAuditEvent(user.getFullName(), AuditEventTypeEnum.JOB_ABORTED, message, null);
+                    captureAuditEvent(user.getId(), AuditEventTypeEnum.JOB_ABORTED, message, null);
                 }
             }
         } catch (Exception e) {

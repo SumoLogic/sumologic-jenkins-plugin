@@ -3,10 +3,7 @@ package com.sumologic.jenkins.jenkinssumologicplugin.utility;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.AuditEventTypeEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.EventSourceEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.LogTypeEnum;
-import com.sumologic.jenkins.jenkinssumologicplugin.model.AuditModel;
-import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
-import com.sumologic.jenkins.jenkinssumologicplugin.model.SlaveModel;
-import com.sumologic.jenkins.jenkinssumologicplugin.model.TestCaseModel;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.*;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import hudson.EnvVars;
 import hudson.Util;
@@ -61,7 +58,7 @@ public class CommonModelFactory {
         }
         String result = buildInfo.getResult() != null ? buildInfo.getResult().toString() : "Unknown";
         buildModel.setResult(result);
-        buildModel.setUser(getUserName(buildInfo));
+        buildModel.setUser(getUserId(buildInfo));
 
         //Backward compatibility duration
         buildModel.setDuration(System.currentTimeMillis() - buildInfo.getStartTimeInMillis());
@@ -99,7 +96,7 @@ public class CommonModelFactory {
      * @param buildInfo Jenkins Job Build Information
      * @return the user who triggered the build or upstream build
      */
-    public static String getUserName(Run buildInfo) {
+    public static String getUserId(Run buildInfo) {
         String userName = "anonymous";
         if (buildInfo.getParent().getClass().getName().equals("hudson.maven.MavenModule")) {
             return "(maven)";
@@ -127,7 +124,7 @@ public class CommonModelFactory {
      */
     private static String getUsernameOrTimerORScm(Cause cause) {
         if (cause instanceof Cause.UserIdCause) {
-            return ((Cause.UserIdCause) cause).getUserName();
+            return ((Cause.UserIdCause) cause).getUserId();
         } else if (cause instanceof TimerTrigger.TimerTriggerCause) {
             return "(timer)";
         } else if (cause instanceof SCMTrigger.SCMTriggerCause) {
@@ -263,6 +260,8 @@ public class CommonModelFactory {
                     action.getSkipCount(), action.getTotalCount());
 
             testCaseModel.getTestResults().addAll(getTestCaseReport(buildInfo));
+
+            testCaseModel.setTotalDuration(testCaseModel.getTestResults().stream().mapToDouble(TestCaseResultModel::getDuration).sum());
             return testCaseModel;
         }
         return null;
@@ -417,7 +416,7 @@ public class CommonModelFactory {
     }
 
     public static void captureItemAuditEvent(AuditEventTypeEnum auditEventTypeEnum, String itemName, String itemOldValue) {
-        String userName = getUserName();
+        String userName = getUserId();
         String message = "";
         if (AuditEventTypeEnum.COPIED.equals(auditEventTypeEnum) || AuditEventTypeEnum.LOCATION_CHANGED.equals(auditEventTypeEnum)) {
             message = String.format(auditEventTypeEnum.getMessage(), userName, itemName, itemOldValue);
@@ -428,26 +427,25 @@ public class CommonModelFactory {
         captureAuditEvent(userName, auditEventTypeEnum, message, null);
     }
 
-    public static void captureConfigChanges(final String fileURL, final AuditEventTypeEnum auditEventTypeEnum,
+    public static void captureConfigChanges(final String fileData, final String oldFileData, final AuditEventTypeEnum auditEventTypeEnum,
                                             String fileName) {
-        String userName = getUserName();
+        String userName = getUserId();
         String message = String.format(AuditEventTypeEnum.CHANGES_IN_CONFIG.getMessage(),
                 userName, fileName);
 
         Map<String, Object> fileDetails = new HashMap<>();
 
-        fileDetails.put("Current_File_URL", fileURL);
+        fileDetails.put("Current_File_Data", fileData);
+        fileDetails.put("Old_File_Data", oldFileData);
         captureAuditEvent(userName, auditEventTypeEnum, message, fileDetails);
     }
 
-    public static void captureAuditEvent(final String userName, final AuditEventTypeEnum auditEventTypeEnum,
+    public static void captureAuditEvent(final String userId, final AuditEventTypeEnum auditEventTypeEnum,
                                          final String message, Map<String, Object> fileDetails) {
-        User user = User.getById(userName, false);
-        String userFullName = userName;
-        String userId = userName;
+        User user = User.getById(userId, false);
+        String userFullName = userId;
         if (user != null) {
             userFullName = user.getFullName();
-            userId = user.getId();
         }
         AuditModel auditModel = new AuditModel(userFullName, userId, auditEventTypeEnum.getValue(),
                 DATETIME_FORMATTER.format(new Date()), message, LogTypeEnum.AUDIT_EVENT.getValue(), fileDetails);
@@ -455,12 +453,12 @@ public class CommonModelFactory {
         logSenderHelper.sendLogsToPeriodicSourceCategory(auditModel.toString());
     }
 
-    private static String getUserName() {
+    private static String getUserId() {
         User user = User.current();
         if (user == null) {
             return "anonymous";
         } else {
-            return user.getFullName();
+            return user.getId();
         }
     }
 

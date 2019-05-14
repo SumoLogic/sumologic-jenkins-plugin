@@ -11,9 +11,10 @@ public enum AuditEventTypeEnum {
 
     LOGIN("User_Login", "%s Logged in."),
     LOGOUT("User_Logout", "%s Logged Out."),
-    LOGIN_FAILURE("User_Login_Failure", "%s failed to Login."),
+    LOGIN_FAILURE("User_Login_Failure", "%s Login failed."),
     JOB_STARTED("Job_Started", "%s started the job with build number as %s."),
     JOB_ABORTED("Job_Aborted", "%s aborted the job with build number as %s."),
+    JOB_FINISHED("Job_Finished", "Job with build Number as %s finished with status as %s"),
     CREATED("Created", "%s created the item %s."),
     DELETED("Deleted", "%s deleted the item %s."),
     UPDATED("Updated", "%s updated the item %s."),
