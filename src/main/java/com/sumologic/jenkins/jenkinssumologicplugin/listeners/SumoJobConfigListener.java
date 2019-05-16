@@ -2,7 +2,6 @@ package com.sumologic.jenkins.jenkinssumologicplugin.listeners;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.AuditEventTypeEnum;
 import hudson.Extension;
-import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Item;
 import hudson.model.Saveable;
@@ -10,24 +9,11 @@ import hudson.model.User;
 import hudson.model.listeners.SaveableListener;
 import jenkins.model.Jenkins;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.IOUtils;
-import org.jfree.util.Log;
-import org.w3c.dom.Document;
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.ext.Locator2;
-import org.xml.sax.helpers.DefaultHandler;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Base64;
 import java.util.Objects;
@@ -66,6 +52,7 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
         try {
             file.getFile().setExecutable(true);
 
+            //TODO skip files other than jobs. Just send for JObs config files. Provide flag to skip sensitive content data
             String configContent = file.asString();
             String checkSum = DigestUtils.md5Hex(configPath + configContent);
             if (cached.containsKey(checkSum)) {

@@ -5,6 +5,7 @@ import com.sumologic.jenkins.jenkinssumologicplugin.model.PipelineStageModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory;
 import hudson.model.Result;
 import hudson.model.Run;
+import hudson.model.TaskListener;
 import org.apache.commons.collections.CollectionUtils;
 
 import java.util.List;

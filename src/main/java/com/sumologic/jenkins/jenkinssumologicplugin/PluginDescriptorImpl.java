@@ -1,5 +1,6 @@
 package com.sumologic.jenkins.jenkinssumologicplugin;
 
+import com.google.gson.Gson;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.EventSourceEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.LogTypeEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.metrics.SumoMetricDataPublisher;
@@ -23,6 +24,8 @@ import org.kohsuke.stapler.StaplerRequest;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.DATETIME_FORMATTER;
 
@@ -98,11 +101,12 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
     public static void shutdown() {
         PluginDescriptorImpl pluginDescriptor = checkIfPluginInUse();
         pluginDescriptor.getSumoMetricDataPublisher().stopReporter();
-        SlaveModel slaveModel = new SlaveModel();
-        slaveModel.setLogType(LogTypeEnum.SLAVE_EVENT.getValue());
-        slaveModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
-        slaveModel.setEventSource(EventSourceEnum.SHUTDOWN.getValue());
-        logSenderHelper.sendLogsToPeriodicSourceCategory(slaveModel.toString());
+        Map<String, Object> shutDown = new HashMap<>();
+        shutDown.put("logType", LogTypeEnum.SLAVE_EVENT.getValue());
+        shutDown.put("eventTime", DATETIME_FORMATTER.format(new Date()));
+        shutDown.put("eventSource", EventSourceEnum.SHUTDOWN.getValue());
+        Gson gson = new Gson();
+        logSenderHelper.sendLogsToPeriodicSourceCategory(gson.toJson(shutDown));
     }
 
     public SumoMetricDataPublisher getSumoMetricDataPublisher() {

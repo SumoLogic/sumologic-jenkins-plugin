@@ -53,7 +53,7 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         try {
-            send(build);
+            send(build, null);
         } catch (Exception e) {
             String errorMessage = GENERATION_ERROR + Arrays.toString(e.getStackTrace());
             LOG.log(Level.WARNING, errorMessage);
@@ -65,7 +65,7 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
     @Override
     public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath filePath, @Nonnull Launcher launcher, @Nonnull TaskListener taskListener) throws InterruptedException, IOException {
         try {
-            send(run);
+            send(run, taskListener);
         } catch (Exception e) {
             String errorMessage = GENERATION_ERROR + Arrays.toString(e.getStackTrace());
             LOG.log(Level.WARNING, errorMessage);
@@ -78,9 +78,9 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
         return BuildStepMonitor.NONE;
     }
 
-    protected void send(Run build) {
+    protected void send(Run build, TaskListener taskListener) {
         Gson gson = new Gson();
-        String json = gson.toJson(ModelFactory.createBuildModel(build));
+        String json = gson.toJson(ModelFactory.createBuildModel(build, taskListener));
 
         PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
 

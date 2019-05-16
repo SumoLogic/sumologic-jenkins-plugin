@@ -8,6 +8,7 @@ import hudson.maven.reporters.SurefireAggregatedReport;
 import hudson.model.Computer;
 import hudson.model.Queue;
 import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.test.TestResult;
 import jenkins.model.Jenkins;
 
@@ -53,7 +54,7 @@ public class ModelFactory {
     return new JenkinsModel(queueModel, slaveModel, jenkins.getDescription());
   }
 
-  public static BuildModel createBuildModel(Run build) {
+  public static BuildModel createBuildModel(Run build, TaskListener taskListener) {
     BuildModel buildModel = null;
     if (build instanceof MavenModuleSetBuild) {
       MavenModuleSetBuildModel mBuildModel = new MavenModuleSetBuildModel();
@@ -71,7 +72,7 @@ public class ModelFactory {
       Map<MavenModule, MavenBuild> modules = mbuild.getModuleLastBuilds();
 
       for (MavenBuild module : modules.values()) {
-        mBuildModel.addModule((MavenModuleBuildModel) createBuildModel(module));
+        mBuildModel.addModule((MavenModuleBuildModel) createBuildModel(module, taskListener));
       }
       buildModel = mBuildModel;
     } else if (build instanceof MavenBuild) {

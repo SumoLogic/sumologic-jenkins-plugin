@@ -81,7 +81,7 @@ public class SumoMetricDataPublisher {
         whitelist.add("vm.cpu.load");
         whitelist.add("vm.daemon.count");
         whitelist.add("vm.blocked.count");
-        whitelist.add("vm.deadlocks");
+        whitelist.add("vm.deadlock.count");
         whitelist.add("vm.runnable.count");
         whitelist.add("vm.waiting.count");
 

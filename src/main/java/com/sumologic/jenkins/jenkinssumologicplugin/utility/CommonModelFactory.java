@@ -90,6 +90,12 @@ public class CommonModelFactory {
         if (!parameters.isEmpty()) {
             buildModel.setJobMetaData(parameters);
         }
+
+        Map<String, Object> scmInfo = new HashMap<>();
+        appendScm(scmInfo, buildInfo);
+        if(!scmInfo.isEmpty()){
+            buildModel.setScmInfo(scmInfo);
+        }
     }
 
     /**
@@ -273,6 +279,7 @@ public class CommonModelFactory {
      */
     private static List<String> getChangeLog(AbstractBuild build) {
         List<String> changelog = new ArrayList<>();
+        LOG.info("Is this coming here or not");
         if (build.hasChangeSetComputed()) {
             ChangeLogSet<? extends ChangeLogSet.Entry> changeSet = build.getChangeSet();
             for (ChangeLogSet.Entry entry : changeSet) {
@@ -303,7 +310,6 @@ public class CommonModelFactory {
                 }
             }
         }
-        appendScm(values, run);
         return values;
     }
 
@@ -334,12 +340,12 @@ public class CommonModelFactory {
             if (!event.containsKey(scmName)) {
                 singleEvent = getScmInfo(scmName, envVars);
                 event.put(scmName, singleEvent);
-            }
+        }
         }
         if (event.size() == 1) {
             return singleEvent;
         } else { //there are multiple scm
-            return event;
+        return event;
         }
     }
 
