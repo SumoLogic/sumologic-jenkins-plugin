@@ -78,23 +78,9 @@ public class CommonModelFactory {
             buildModel.setTestResult(testCaseModel);
         }
 
-        if (buildInfo instanceof AbstractBuild) {
-            AbstractBuild build = (AbstractBuild) buildInfo;
-            List<String> changelog = getChangeLog(build);
-            if (!changelog.isEmpty()) {
-                buildModel.setChangeLogDetails(changelog);
-            }
-        }
-
         Map<String, Object> parameters = getBuildVariables(buildInfo);
         if (!parameters.isEmpty()) {
             buildModel.setJobMetaData(parameters);
-        }
-
-        Map<String, Object> scmInfo = new HashMap<>();
-        appendScm(scmInfo, buildInfo);
-        if(!scmInfo.isEmpty()){
-            buildModel.setScmInfo(scmInfo);
         }
     }
 
@@ -104,10 +90,6 @@ public class CommonModelFactory {
      */
     public static String getUserId(Run buildInfo) {
         String userName = "anonymous";
-        if (buildInfo.getParent().getClass().getName().equals("hudson.maven.MavenModule")) {
-            return "(maven)";
-        }
-
         String triggerUserName;
         for (CauseAction action : buildInfo.getActions(CauseAction.class)) {
             if (action != null && action.getCauses() != null) {
@@ -120,6 +102,9 @@ public class CommonModelFactory {
                     }
                 }
             }
+        }
+        if (buildInfo.getParent().getClass().getName().equals("hudson.maven.MavenModule")) {
+            return "(maven)";
         }
         return userName;
     }
@@ -141,12 +126,6 @@ public class CommonModelFactory {
 
     /**
      * get the user name from UpstreamCause, also recursive check top level upstreams
-     * e.g.
-     * Started by upstream project "sumo_list" build number 47
-     * originally caused by:
-     * Started by upstream project "sumo_job" build number 2
-     * originally caused by:
-     * Started by user Sourabh Jain
      *
      * @param upstreamCause Cause for the upstream Job Trigger
      * @return UserName
@@ -274,26 +253,6 @@ public class CommonModelFactory {
     }
 
     /**
-     * @param build Jenkins job build
-     * @return scm change log
-     */
-    private static List<String> getChangeLog(AbstractBuild build) {
-        List<String> changelog = new ArrayList<>();
-        LOG.info("Is this coming here or not");
-        if (build.hasChangeSetComputed()) {
-            ChangeLogSet<? extends ChangeLogSet.Entry> changeSet = build.getChangeSet();
-            for (ChangeLogSet.Entry entry : changeSet) {
-                String sbr = entry.getTimestamp() +
-                        " " + "commit:" + entry.getCommitId() +
-                        " " + "author:" + entry.getAuthor() +
-                        " " + "message:" + entry.getMsg();
-                changelog.add(sbr);
-            }
-        }
-        return changelog;
-    }
-
-    /**
      * @param run the build
      * @return build variables with password masked
      */
@@ -311,109 +270,6 @@ public class CommonModelFactory {
             }
         }
         return values;
-    }
-
-    private static void appendScm(Map eventToAppend, Run run) {
-        Map<String, Object> scmInfo = getScmInfo(run);
-        //append scm info build parameter if no conflicts
-        for (Map.Entry<String, Object> scmEntry : scmInfo.entrySet()) {
-            if (!eventToAppend.containsKey(scmEntry.getKey())) {
-                eventToAppend.put(scmEntry.getKey(), scmEntry.getValue());
-            }
-        }
-    }
-
-    private static Map<String, Object> getScmInfo(Run build) {
-        SCMTriggerItem scmTrigger = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(build.getParent());
-        if (scmTrigger == null) {
-            return Collections.emptyMap();
-        }
-        Collection<? extends SCM> scmConfigs = scmTrigger.getSCMs();
-        Map<String, Object> event = new HashMap<>();
-        Map<String, Object> singleEvent = new HashMap<>();
-        EnvVars envVars = new EnvVars();
-        for (SCM scm : scmConfigs) {
-            if (build instanceof AbstractBuild) {
-                scm.buildEnvVars((AbstractBuild) build, envVars);
-            }
-            String scmName = scm.getClass().getName();
-            if (!event.containsKey(scmName)) {
-                singleEvent = getScmInfo(scmName, envVars);
-                event.put(scmName, singleEvent);
-        }
-        }
-        if (event.size() == 1) {
-            return singleEvent;
-        } else { //there are multiple scm
-        return event;
-        }
-    }
-
-    /**
-     * @param scmName scm class name
-     * @param envVars environment variables
-     * @return scm information, we only support git,svn and p4
-     */
-    private static Map<String, Object> getScmInfo(String scmName, EnvVars envVars) {
-        Map<String, Object> event = new HashMap<>();
-        //not support GIT_URL_N or SVN_URL_n
-        // scm can be found at https://wiki.jenkins-ci.org/display/JENKINS/Plugins
-        switch (scmName) {
-            case "hudson.plugins.git.GitSCM":
-                event.put("scm", "git");
-                event.put("scm_url", getScmURL(envVars, "GIT_URL"));
-                event.put("branch", envVars.get("GIT_BRANCH"));
-                event.put("revision", envVars.get("GIT_COMMIT"));
-                break;
-            case "hudson.scm.SubversionSCM":
-                event.put("scm", "svn");
-                event.put("scm_url", getScmURL(envVars, "SVN_URL"));
-                event.put("revision", envVars.get("SVN_REVISION"));
-                break;
-            case "org.jenkinsci.plugins.p4.PerforceScm":
-                event.put("scm", "p4");
-                event.put("p4_client", envVars.get("P4_CLIENT"));
-                event.put("revision", envVars.get("P4_CHANGELIST"));
-                break;
-            case "hudson.plugins.mercurial.MercurialSCM":
-                event.put("scm", "hg");
-                event.put("scm_url", envVars.get("MERCURIAL_REPOSITORY_URL"));
-                event.put("branch", envVars.get("MERCURIAL_REVISION_BRANCH"));
-                event.put("revision", envVars.get("MERCURIAL_REVISION"));
-                break;
-            case "hudson.scm.NullSCM":
-                break;
-            default:
-                event.put("scm", scmName);
-        }
-        return event;
-    }
-
-    /**
-     * @param envVars environment variables
-     * @param prefix  scm prefix, such as GIT_URL, SVN_URL
-     * @return parsed scm urls from build env, e.g. GIT_URL_1, GIT_URL_2, ... GIT_URL_10 or GIT_URL
-     */
-    private static String getScmURL(EnvVars envVars, String prefix) {
-        String value = envVars.get(prefix);
-        if (value == null) {
-            List<String> urls = new ArrayList<>();
-            //just probe max 10 url
-            for (int i = 0; i < 10; i++) {
-                String probe_url = envVars.get(prefix + "_" + i);
-                if (probe_url != null) {
-                    urls.add(Util.replaceMacro(probe_url, envVars));
-                } else {
-                    break;
-                }
-            }
-            if (!urls.isEmpty()) {
-                value = StringUtils.join(urls, ",");
-            }
-        } else {
-            value = Util.replaceMacro(value, envVars);
-        }
-        return value;
     }
 
     public static void captureUserLoginEvent(final String userName, final AuditEventTypeEnum auditEventTypeEnum) {
@@ -527,7 +383,6 @@ public class CommonModelFactory {
             slaveModel.setConnecting(computer.isConnecting());
         }
         slaveModel.setNodeURL(getAbsoluteUrl(computer));
-        long connectTime = computer.getConnectTime();
     }
 
     private static String getAbsoluteUrl(Computer computer) {

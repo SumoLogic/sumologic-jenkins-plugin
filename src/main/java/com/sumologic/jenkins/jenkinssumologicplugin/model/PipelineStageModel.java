@@ -22,7 +22,7 @@ public class PipelineStageModel {
     private String executionNode;
     private Set<String> parallelStage;
     private ErrorModel errorModel;
-    private List<PipelineStageModel> steps;
+    private List<String> steps;
 
     public void setId(String id) {
         this.id = id;
@@ -56,7 +56,7 @@ public class PipelineStageModel {
         this.executionNode = executionNode;
     }
 
-    public void setSteps(List<PipelineStageModel> steps) {
+    public void setSteps(List<String> steps) {
         this.steps = steps;
     }
 
@@ -92,7 +92,7 @@ public class PipelineStageModel {
         return executionNode;
     }
 
-    public List<PipelineStageModel> getSteps() {
+    public List<String> getSteps() {
         return steps;
     }
 

@@ -12,7 +12,11 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.CONSOLE_ERROR;
 
 /**
  * This class intercepts console output stream for every jenkins build and decorates it with additional functionality.
@@ -51,16 +55,21 @@ public class LogListener extends ConsoleLogFilter implements Serializable {
 
     @Override
     public OutputStream decorateLogger(Run build, OutputStream outputStream) throws IOException, InterruptedException {
-        PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
-        if (pluginDescriptor.isBuildLogEnabled()) {
-            if (build != null) {
-                build.addAction(new SearchAction(build));
-                return new SumologicOutputStream(outputStream, build, pluginDescriptor, streamState);
-            } else {
-                return new SumologicOutputStream(outputStream, run, pluginDescriptor, streamState);
+        try {
+            PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+            if (pluginDescriptor.isBuildLogEnabled()) {
+                if (build != null) {
+                    build.addAction(new SearchAction(build));
+                    return new SumologicOutputStream(outputStream, build, pluginDescriptor, streamState);
+                } else {
+                    return new SumologicOutputStream(outputStream, run, pluginDescriptor, streamState);
+                }
             }
+        } catch (Exception e) {
+            String errorMessage = CONSOLE_ERROR + Arrays.toString(e.getStackTrace());
+            LOG.log(Level.WARNING, errorMessage);
+            outputStream.write(errorMessage.getBytes());
         }
-
         return outputStream;
     }
 

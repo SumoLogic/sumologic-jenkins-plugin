@@ -30,10 +30,8 @@ public class BuildModel {
     private String label;
     private String nodeName;
     private TestCaseModel testResult;
-    private List<String> changeLogDetails;
     private Map<String, Object> jobMetaData;
     private List<PipelineStageModel> stages;
-    private Map<String, Object> scmInfo;
     private ErrorModel errorModel;
 
     public String toJson() {
@@ -201,14 +199,6 @@ public class BuildModel {
         this.testResult = testResult;
     }
 
-    public List<String> getChangeLogDetails() {
-        return changeLogDetails;
-    }
-
-    public void setChangeLogDetails(List<String> changeLogDetails) {
-        this.changeLogDetails = changeLogDetails;
-    }
-
     public Map<String, Object> getJobMetaData() {
         return jobMetaData;
     }
@@ -231,13 +221,5 @@ public class BuildModel {
 
     public void setErrorModel(ErrorModel errorModel) {
         this.errorModel = errorModel;
-    }
-
-    public Map<String, Object> getScmInfo() {
-        return scmInfo;
-    }
-
-    public void setScmInfo(Map<String, Object> scmInfo) {
-        this.scmInfo = scmInfo;
     }
 }

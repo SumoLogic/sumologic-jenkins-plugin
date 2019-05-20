@@ -40,7 +40,7 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
     public void onStarted(Run run, TaskListener listener) {
         try {
             String userId = getUserId(run);
-            String message = String.format(AuditEventTypeEnum.JOB_STARTED.getMessage(), userId, run.getNumber());
+            String message = String.format(AuditEventTypeEnum.JOB_STARTED.getMessage(), userId, run.getParent().getDisplayName(), run.getNumber());
             captureAuditEvent(userId, AuditEventTypeEnum.JOB_STARTED, message, null);
             updateSlaveInfoAfterJobRun(run);
         } catch (Exception e) {
@@ -67,7 +67,7 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
 
             //Send audit event for job finish
             if(!"ABORTED".equals(buildModel.getResult())){
-                String message = String.format(AuditEventTypeEnum.JOB_FINISHED.getMessage(), run.getNumber(), buildModel.getResult());
+                String message = String.format(AuditEventTypeEnum.JOB_FINISHED.getMessage(), run.getParent().getDisplayName(), run.getNumber(), buildModel.getResult());
                 captureAuditEvent(buildModel.getUser(), AuditEventTypeEnum.JOB_FINISHED, message, null);
             }
 
@@ -79,7 +79,7 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
                 if (!interrupts.isEmpty()) {
                     User user = interrupts.get(0).getUser();
                     String message = String.format(AuditEventTypeEnum.JOB_ABORTED.getMessage(), user.getId()
-                            , run.getNumber());
+                            , run.getParent().getDisplayName(), run.getNumber());
                     captureAuditEvent(user.getId(), AuditEventTypeEnum.JOB_ABORTED, message, null);
                 }
             }

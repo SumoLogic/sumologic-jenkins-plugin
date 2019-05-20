@@ -50,8 +50,16 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
         if (CollectionUtils.isNotEmpty(stageNodes)) {
             stageNodes.forEach(stageNodeExt -> {
                 PipelineStageModel stage = getNodeDetails(stageNodeExt, workspaceNodes);
-                List<PipelineStageModel> steps = new ArrayList<>();
-                stageNodeExt.getStageFlowNodes().forEach(atomFlowNodeExt -> steps.add(getNodeDetails(atomFlowNodeExt, workspaceNodes)));
+                List<String> steps = new ArrayList<>();
+
+
+                stageNodeExt.getStageFlowNodes().forEach(atomFlowNodeExt -> {
+                    String stepDetails = getStepDetails(atomFlowNodeExt, workspaceNodes);
+                    if (StringUtils.isNotEmpty(stepDetails)) {
+                        steps.add(stepDetails);
+                    }
+                });
+
                 if (CollectionUtils.isNotEmpty(steps)) {
                     stage.setSteps(steps);
                 }
@@ -63,6 +71,27 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
         }
         //beautifyForDeclarativeParallelBranches(stages);
         return stages;
+    }
+
+    private String getStepDetails(FlowNodeExt stageNodeExt, Map<String, String> workspaceNodes) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append("StepName - ").append(stageNodeExt.getName()).append(" ")
+                .append("StepStatus - ").append(convertToResult(stageNodeExt.getStatus())).append(" ")
+                .append("StepDuration - ").append(stageNodeExt.getDurationMillis()/1000f).append(" ")
+                .append("StepArguments - ").append(stageNodeExt.getParameterDescription()).append(" ");
+
+        String execNodeName = stageNodeExt.getExecNode();
+        if (StringUtils.isEmpty(execNodeName)) {
+            execNodeName = workspaceNodes.get(stageNodeExt.getId());
+        }
+        stringBuilder.append("StepExecutedOn - ").append(execNodeName).append(" ");
+
+        if(stageNodeExt.getError() != null){
+            stringBuilder.append("StepErrorType - ").append(stageNodeExt.getError().getType()).append(" ")
+                    .append("StepErrorMessage - ").append(stageNodeExt.getError().getMessage()).append(" ");
+        }
+        return stringBuilder.toString();
     }
 
     private PipelineStageModel getNodeDetails(FlowNodeExt stageNodeExt, Map<String, String> workspaceNodes) {
@@ -106,7 +135,7 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
         }
     }
 
-    private void beautifyForDeclarativeParallelBranches(List<PipelineStageModel> stages) {
+    /*private void beautifyForDeclarativeParallelBranches(List<PipelineStageModel> stages) {
         if (CollectionUtils.isNotEmpty(stages)) {
             Set<PipelineStageModel> collect = stages.stream().filter(pipelineStageModel -> pipelineStageModel.getName().startsWith("Branch: ")).collect(Collectors.toSet());
 
@@ -118,5 +147,5 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
                 });
             }
         }
-    }
+    }*/
 }

@@ -53,7 +53,7 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
 
         this.descriptor = descriptor;
         this.jobName = build.getParent().getDisplayName();
-        this.jobNumber = build.getDisplayName();
+        this.jobNumber = String.valueOf(build.getNumber());
         maxLinesPerBatch = descriptor.getMaxLinesInt();
 
         this.url = descriptor.getUrl();
@@ -73,8 +73,9 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
             flushBuffer();
             return;
         }
+        //Append JobName and Number to Console Logs
         if (TimestampingOutputStream.shouldPutTimestamp(bytes, i)) {
-            byte[] timestamp = TimestampingOutputStream.getTimestampAsByteArray();
+            byte[] timestamp = TimestampingOutputStream.getTimestampAsByteArray(jobName, jobNumber);
             state.buffer.append(timestamp, 0, timestamp.length);
         }
 
@@ -100,7 +101,7 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
         try {
             // jobNumber is a build number with #, e.g. #42
             LOGGER.info("Sending " + lines.length + " bytes of build logs to sumo");
-            logSender.sendLogs(url, lines, jobName + jobNumber, descriptor.getSourceCategoryBuildLogs());
+            logSender.sendLogs(url, lines, descriptor.getSourceNameJobStatus(), descriptor.getSourceCategoryBuildLogs());
         } catch (Exception e) {
             e.printStackTrace(new PrintStream(wrappedStream));
         }

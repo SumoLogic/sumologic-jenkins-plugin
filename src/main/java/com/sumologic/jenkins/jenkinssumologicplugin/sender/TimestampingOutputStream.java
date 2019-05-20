@@ -49,6 +49,13 @@ public class TimestampingOutputStream extends LineTransformationOutputStream {
     return true;
   }
 
+  public static byte[] getTimestampAsByteArray(String jobName, String jobNumber) {
+    String timeStampStr = "[" + DATE_FORMAT.format(new Date()) + "] "+" "+jobName+"#"+jobNumber;
+    byte[] timestampBytes = timeStampStr.getBytes();
+
+    return timestampBytes;
+  }
+
   public static byte[] getTimestampAsByteArray() {
     String timeStampStr = "[" + DATE_FORMAT.format(new Date()) + "] ";
     byte[] timestampBytes = timeStampStr.getBytes();

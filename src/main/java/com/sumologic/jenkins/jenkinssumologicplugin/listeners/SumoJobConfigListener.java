@@ -2,6 +2,7 @@ package com.sumologic.jenkins.jenkinssumologicplugin.listeners;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.AuditEventTypeEnum;
 import hudson.Extension;
+import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.Item;
 import hudson.model.Saveable;
@@ -9,12 +10,14 @@ import hudson.model.User;
 import hudson.model.listeners.SaveableListener;
 import jenkins.model.Jenkins;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Objects;
 import java.util.WeakHashMap;
@@ -50,9 +53,7 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
         }
 
         try {
-            file.getFile().setExecutable(true);
-
-            //TODO skip files other than jobs. Just send for JObs config files. Provide flag to skip sensitive content data
+            //TODO skip files other than jobs. Just send for Jobs config files. Provide flag to skip sensitive content data
             String configContent = file.asString();
             String checkSum = DigestUtils.md5Hex(configPath + configContent);
             if (cached.containsKey(checkSum)) {
@@ -60,12 +61,16 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
             }
             cached.put(checkSum, 0);
 
-            File oldFile = getOldFile(file);
-
             String encodeFileToString = Base64.getEncoder().encodeToString(file.asString().getBytes());
-            String encodeOldFileToString = Base64.getEncoder().encodeToString(new XmlFile(oldFile).asString().getBytes());
 
-            captureConfigChanges(encodeFileToString, encodeOldFileToString, AuditEventTypeEnum.CHANGES_IN_CONFIG, getRelativeJenkinsHomePath(file.getFile().getAbsolutePath()));
+            File oldFile = getOldFile(file);
+            byte[] bytes = fileToString(oldFile);
+            String oldFileAsString = "";
+            if(bytes != null && bytes.length > 0){
+                oldFileAsString = Base64.getEncoder().encodeToString(bytes);
+            }
+
+            captureConfigChanges(encodeFileToString, oldFileAsString, AuditEventTypeEnum.CHANGES_IN_CONFIG, getRelativeJenkinsHomePath(file.getFile().getAbsolutePath()));
 
             try {
                 Files.copy(file.getFile().toPath(), oldFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -76,14 +81,13 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
                 captureItemAuditEvent(AuditEventTypeEnum.UPDATED, file.getFile().getName(), null);
             }
         } catch (Exception exception) {
-            LOG.warning("An error occurred while Checking the Job Configuration" + exception.getMessage());
-            exception.printStackTrace();
+            LOG.warning("An error occurred while Checking the Job Configuration" +     Arrays.toString(exception.getStackTrace()));
         }
     }
 
     private static File getOldFile(XmlFile file) {
         File oldFile = null;
-        String pathForOldFile = file.getFile().getParent() + "/config_old.xml";
+        String pathForOldFile = file.getFile().getParent() +"/"+file.getFile().getName().replace(".xml", "")+ "_old.xml";
         if (file.getFile().getParentFile() != null) {
             for (File fileNames : Objects.requireNonNull(file.getFile().getParentFile().listFiles())) {
                 if (fileNames.getPath().matches(pathForOldFile)) {
@@ -99,6 +103,21 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
         return oldFile;
     }
 
+    private static byte[] fileToString(File file){
+        try {
+            if(file.length() > 0){
+                int length = (int) file.length();
+                BufferedInputStream reader = new BufferedInputStream(new FileInputStream(file));
+                byte[] bytes = new byte[length];
+                reader.read(bytes, 0, length);
+                reader.close();
+                return bytes;
+            }
+        } catch (Exception e) {
+            LOG.warning("Conversion to string failed for "+file.toPath());
+        }
+        return null;
+    }
     /*private static List<Map<String, Object>> compare(File oldFile, File newFile) throws Exception {
         List<Map<String, Object>> diff = new ArrayList<>();
 
