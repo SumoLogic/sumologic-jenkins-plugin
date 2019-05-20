@@ -53,7 +53,6 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
         }
 
         try {
-            //TODO skip files other than jobs. Just send for Jobs config files. Provide flag to skip sensitive content data
             String configContent = file.asString();
             String checkSum = DigestUtils.md5Hex(configPath + configContent);
             if (cached.containsKey(checkSum)) {

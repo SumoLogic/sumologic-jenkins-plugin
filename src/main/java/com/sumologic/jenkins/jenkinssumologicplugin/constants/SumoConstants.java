@@ -24,7 +24,9 @@ public class SumoConstants {
 
     public static final String GENERATION_ERROR = "Job Status Generation ended with exception as ";
 
-    public static final String CONSOLE_ERROR = "Job Condole Logs Sender ended with exception as ";
+    public static final String CONSOLE_ERROR = "Job Console Logs Sender ended with exception as ";
+
+    public static final String SCM_ERROR = "Job SCM Logs Sender ended with exception as ";
 
     public static final String GRAPHITE_CONTENT_TYPE = "application/vnd.sumologic.graphite";
 

@@ -14,13 +14,12 @@ import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
 import hudson.scm.SubversionSCM;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.DATETIME_FORMATTER;
+import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.SCM_ERROR;
 import static hudson.Util.fixEmpty;
 
 @Extension
@@ -32,26 +31,32 @@ public class SumoSCMListener extends SCMListener {
 
     @Override
     public void onChangeLogParsed(Run<?, ?> build, SCM scm, TaskListener listener, ChangeLogSet<?> changelog) {
-        ScmModel scmModel = new ScmModel();
+        try {
+            ScmModel scmModel = new ScmModel();
 
-        scmModel.setLogType(LogTypeEnum.SCM_STATUS.getValue());
-        scmModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
-        scmModel.setJobName(build.getParent().getDisplayName());
-        scmModel.setBuildNumber(build.getNumber());
+            scmModel.setLogType(LogTypeEnum.SCM_STATUS.getValue());
+            scmModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
+            scmModel.setJobName(build.getParent().getDisplayName());
+            scmModel.setBuildNumber(build.getNumber());
 
-        List<String> changes = new ArrayList<>();
-        for (ChangeLogSet.Entry entry : changelog) {
-            String sbr = entry.getTimestamp() +
-                    " " + "commit:" + entry.getCommitId() +
-                    " " + "author:" + entry.getAuthor() +
-                    " " + "message:" + entry.getMsg();
-            changes.add(sbr);
+            List<String> changes = new ArrayList<>();
+            for (ChangeLogSet.Entry entry : changelog) {
+                String sbr = entry.getTimestamp() +
+                        " " + "commit:" + entry.getCommitId() +
+                        " " + "author:" + entry.getAuthor() +
+                        " " + "message:" + entry.getMsg();
+                changes.add(sbr);
+            }
+            scmModel.setChangeLog(changes);
+
+            populateGitScmDetails(scm, scmModel, build);
+            populateSubversionDetails(scm, scmModel, build);
+            logSenderHelper.sendLogsToStatusDataCategory(scmModel.toString());
+        } catch (Exception exception) {
+            String errorMessage = SCM_ERROR + Arrays.toString(exception.getStackTrace());
+            LOG.log(Level.WARNING, errorMessage);
+            listener.error(errorMessage);
         }
-        scmModel.setChangeLog(changes);
-
-        populateGitScmDetails(scm, scmModel, build);
-        populateSubversionDetails(scm, scmModel, build);
-        logSenderHelper.sendLogsToStatusDataCategory(scmModel.toString());
     }
 
     private void populateGitScmDetails(SCM scm, ScmModel scmModel, Run<?, ?> build) {
@@ -75,13 +80,14 @@ public class SumoSCMListener extends SCMListener {
         }
     }
 
-    private void populateSubversionDetails(SCM scm, ScmModel scmModel, Run<?, ?> build){
-        if(scm instanceof SubversionSCM){
+    private void populateSubversionDetails(SCM scm, ScmModel scmModel, Run<?, ?> build) {
+        if (scm instanceof SubversionSCM) {
             SubversionSCM subversionSCM = (SubversionSCM) scm;
             scmModel.setScmType(subversionSCM.getType());
             scmModel.setScmURLs(subversionSCM.getKey());
         }
     }
+
     private String getBranchName(Branch branch) {
         String name = branch.getName();
         if (name.startsWith("refs/remotes/")) {
