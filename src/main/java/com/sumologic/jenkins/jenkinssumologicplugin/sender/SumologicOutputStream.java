@@ -1,14 +1,12 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
+import hudson.console.ConsoleNote;
 import hudson.console.LineTransformationOutputStream;
 import hudson.model.Run;
 import org.apache.http.util.ByteArrayBuffer;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.logging.Logger;
 
 /**
@@ -34,7 +32,6 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
     private static final Logger LOGGER = Logger.getLogger(SumologicOutputStream.class.getName());
 
     private static final String FLUSH_COMMAND = "%%%FLUSH_COMMAND%%%";
-
     private LogSender logSender;
     private OutputStream wrappedStream;
 
@@ -68,6 +65,14 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
     }
 
     @Override
+    public void flush() throws IOException {
+        super.flush();
+        if (state.currentLines > 0) {
+            flushBuffer();
+        }
+    }
+
+    @Override
     protected void eol(byte[] bytes, int i) throws IOException {
         if (new String(bytes).startsWith(FLUSH_COMMAND)) {
             flushBuffer();
@@ -87,6 +92,7 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
         if (state.currentLines >= maxLinesPerBatch) {
             flushBuffer();
         }
+
     }
 
     private synchronized void flushBuffer() {

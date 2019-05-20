@@ -32,7 +32,6 @@ public class BuildModel {
     private TestCaseModel testResult;
     private Map<String, Object> jobMetaData;
     private List<PipelineStageModel> stages;
-    private ErrorModel errorModel;
 
     public String toJson() {
         Gson gson = new Gson();
@@ -213,13 +212,5 @@ public class BuildModel {
 
     public void setStages(List<PipelineStageModel> stages) {
         this.stages = stages;
-    }
-
-    public ErrorModel getErrorModel() {
-        return errorModel;
-    }
-
-    public void setErrorModel(ErrorModel errorModel) {
-        this.errorModel = errorModel;
     }
 }

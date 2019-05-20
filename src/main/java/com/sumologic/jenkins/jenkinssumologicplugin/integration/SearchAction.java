@@ -44,13 +44,13 @@ public class SearchAction implements Action {
         }
 
         String buildName = build.getParent().getDisplayName();
-        String buildNumber = build.getDisplayName();
+        int buildNumber = build.getNumber();
 
         PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
         String queryPortal = descriptor.getQueryPortal();
         String sourceCategory = descriptor.getSourceCategoryBuildLogs();
 
-        String query = String.format("_sourceName=%s%s _sourceCategory=%s", buildName, buildNumber, sourceCategory);
+        String query = String.format(" _sourceCategory=%s %s#%s", sourceCategory, buildName, buildNumber);
         String encodedQuery = "";
         try {
             encodedQuery = URLEncoder.encode(query, "UTF-8").replace("+", "%20");

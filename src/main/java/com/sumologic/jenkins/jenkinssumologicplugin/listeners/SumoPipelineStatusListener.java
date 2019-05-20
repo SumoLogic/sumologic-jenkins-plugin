@@ -59,7 +59,7 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
             */
             List log = run.getLog(10);
             BuildModel buildModel = generateJobStatusInformation(run);
-            if (log.contains(END_OF_SUMO_PIPELINE)) {
+            if (log.contains(END_OF_SUMO_PIPELINE) || "ABORTED".equals(buildModel.getResult())) {
                 logSenderHelper.sendLogsToStatusDataCategory(buildModel.toJson());
             }
 

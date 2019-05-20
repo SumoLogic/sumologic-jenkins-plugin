@@ -15,14 +15,14 @@ public class PipelineStageModel {
     private String id;
     private String name;
     private String status;
-    private float startTime;
+    private String startTime;
     private float duration;
     private float pauseDuration;
     private String arguments;
     private String executionNode;
     private Set<String> parallelStage;
-    private ErrorModel errorModel;
     private List<String> steps;
+    private String error;
 
     public void setId(String id) {
         this.id = id;
@@ -36,7 +36,7 @@ public class PipelineStageModel {
         this.status = status;
     }
 
-    public void setStartTime(float startTime) {
+    public void setStartTime(String startTime) {
         this.startTime = startTime;
     }
 
@@ -72,7 +72,7 @@ public class PipelineStageModel {
         return status;
     }
 
-    public float getStartTime() {
+    public String getStartTime() {
         return startTime;
     }
 
@@ -96,19 +96,19 @@ public class PipelineStageModel {
         return steps;
     }
 
-    public ErrorModel getErrorModel() {
-        return errorModel;
-    }
-
-    public void setErrorModel(ErrorModel errorModel) {
-        this.errorModel = errorModel;
-    }
-
     public Set<String> getParallelStage() {
         return parallelStage;
     }
 
     public void setParallelStage(Set<String> parallelStage) {
         this.parallelStage = parallelStage;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 }

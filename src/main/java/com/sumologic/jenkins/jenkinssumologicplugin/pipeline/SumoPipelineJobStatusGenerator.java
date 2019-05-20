@@ -31,10 +31,6 @@ public class SumoPipelineJobStatusGenerator {
         for (SumoPipelineJobIdentifier extendListener : SumoPipelineJobIdentifier.canApply(buildInfo)) {
             try {
                 List<PipelineStageModel> stages = extendListener.extractPipelineStages(buildInfo);
-                if (!Result.SUCCESS.toString().equals(buildModel.getResult())) {
-                    Optional<PipelineStageModel> first = stages.stream().filter(pipelineStageModel -> pipelineStageModel.getStatus().equals(buildModel.getResult())).findFirst();
-                    first.ifPresent(pipelineStageModel -> buildModel.setErrorModel(pipelineStageModel.getErrorModel()));
-                }
                 if (CollectionUtils.isNotEmpty(stages)) {
                     buildModel.setStages(stages);
                 }

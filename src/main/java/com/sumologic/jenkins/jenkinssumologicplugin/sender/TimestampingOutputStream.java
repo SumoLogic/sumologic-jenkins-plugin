@@ -50,7 +50,7 @@ public class TimestampingOutputStream extends LineTransformationOutputStream {
   }
 
   public static byte[] getTimestampAsByteArray(String jobName, String jobNumber) {
-    String timeStampStr = "[" + DATE_FORMAT.format(new Date()) + "] "+" "+jobName+"#"+jobNumber;
+    String timeStampStr = "[" + DATE_FORMAT.format(new Date()) + "] "+" "+jobName+"#"+jobNumber+" ";
     byte[] timestampBytes = timeStampStr.getBytes();
 
     return timestampBytes;

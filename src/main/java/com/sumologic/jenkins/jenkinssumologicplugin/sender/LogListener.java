@@ -44,6 +44,7 @@ public class LogListener extends ConsoleLogFilter implements Serializable {
     public LogListener(Run build) {
         this();
         this.run = build;
+        build.addAction(new SearchAction(build));
     }
 
 
