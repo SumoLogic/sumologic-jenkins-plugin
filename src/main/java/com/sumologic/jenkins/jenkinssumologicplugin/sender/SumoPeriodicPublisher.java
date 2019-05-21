@@ -85,7 +85,7 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
             } else {
                 queueModel.setJobName(item.task.getDisplayName());
             }
-            queueModel.setJobURL(item.task.getUrl());
+            queueModel.setJobURL(getAbsoluteUrl(item.task.getUrl()));
             queueModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
             queueModels.add(queueModel.toString());
         }
@@ -144,6 +144,7 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
                 buildModel.setName(run.getParent().getDisplayName());
                 buildModel.setNumber(run.getNumber());
                 buildModel.setJobRunDuration(getJobRunDuration(run));
+                buildModel.setJobStartTime(DATETIME_FORMATTER.format(run.getTimestamp()));
                 currentBuildDetails.add(buildModel.toJson());
             }
         }

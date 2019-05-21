@@ -6,6 +6,7 @@ import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import hudson.Extension;
 import hudson.Util;
+import hudson.console.ConsoleNote;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
 import jenkins.model.CauseOfInterruption;
@@ -13,13 +14,16 @@ import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
 
 import javax.annotation.Nonnull;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.END_OF_SUMO_PIPELINE;
-import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.GENERATION_ERROR;
+import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.*;
 import static com.sumologic.jenkins.jenkinssumologicplugin.pipeline.SumoPipelineJobStatusGenerator.generateJobStatusInformation;
 import static com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory.*;
 
@@ -63,6 +67,20 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
                 logSenderHelper.sendLogsToStatusDataCategory(buildModel.toJson());
             }
 
+            /*BufferedReader bufferedReader = new BufferedReader(new FileReader(run.getLogFile()));
+            StringBuilder stringBuilder = new StringBuilder();
+            AtomicInteger count = new AtomicInteger();
+            count.addAndGet(1);
+            bufferedReader.lines().forEach(s -> {
+                String s1 = ConsoleNote.removeNotes(s);
+                stringBuilder.append("[").append(DATE_FORMAT.format(new Date())).append("] ").append(" ").append(run.getParent().getDisplayName()).append("#").append(run.getNumber()).append(" ")
+                        .append(s1).append("\n");
+                count.incrementAndGet();
+                if(count.get()%DIVIDER_FOR_MESSAGES==1){
+                    logSenderHelper.sendLogsToStatusDataCategory();
+                }
+
+            });*/
             updateSlaveInfoAfterJobRun(run);
 
             //Send audit event for job finish

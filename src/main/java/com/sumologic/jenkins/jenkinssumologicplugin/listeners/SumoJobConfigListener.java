@@ -68,8 +68,9 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
             if(bytes != null && bytes.length > 0){
                 oldFileAsString = Base64.getEncoder().encodeToString(bytes);
             }
-
-            captureConfigChanges(encodeFileToString, oldFileAsString, AuditEventTypeEnum.CHANGES_IN_CONFIG, getRelativeJenkinsHomePath(file.getFile().getAbsolutePath()));
+            if(!encodeFileToString.equals(oldFileAsString)){
+                captureConfigChanges(encodeFileToString, oldFileAsString, AuditEventTypeEnum.CHANGES_IN_CONFIG, getRelativeJenkinsHomePath(file.getFile().getAbsolutePath()));
+            }
 
             try {
                 Files.copy(file.getFile().toPath(), oldFile.toPath(), StandardCopyOption.REPLACE_EXISTING);

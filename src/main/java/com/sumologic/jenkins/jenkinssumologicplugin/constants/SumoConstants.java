@@ -2,6 +2,8 @@ package com.sumologic.jenkins.jenkinssumologicplugin.constants;
 
 import org.apache.commons.lang.time.FastDateFormat;
 
+import java.text.SimpleDateFormat;
+
 /**
  * Sumo Logic plugin for Jenkins model.
  * <p>
@@ -21,6 +23,8 @@ public class SumoConstants {
 
     public static final FastDateFormat DATETIME_FORMATTER
             = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss,SSS ZZZZ");
+
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS ZZZZ");
 
     public static final String GENERATION_ERROR = "Job Status Generation ended with exception as ";
 

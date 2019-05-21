@@ -428,4 +428,17 @@ public class CommonModelFactory {
         }
         return monitorDetails;
     }
+
+    /**
+     * @param relativeURL Relative URL
+     * @return URL for the JOB
+     */
+    public static String getAbsoluteUrl(String relativeURL) {
+        String rootUrl = Jenkins.get().getRootUrl();
+        if (rootUrl == null) {
+            return relativeURL;
+        } else {
+            return Util.encode(rootUrl + relativeURL);
+        }
+    }
 }
