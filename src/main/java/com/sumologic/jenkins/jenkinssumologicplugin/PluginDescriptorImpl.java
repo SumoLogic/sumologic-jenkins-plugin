@@ -5,8 +5,10 @@ import com.sumologic.jenkins.jenkinssumologicplugin.constants.EventSourceEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.LogTypeEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.metrics.SumoMetricDataPublisher;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
+import com.sumologic.jenkins.jenkinssumologicplugin.utility.SumoLogHandler;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.init.Initializer;
 import hudson.init.TermMilestone;
 import hudson.init.Terminator;
 import hudson.model.AbstractProject;
@@ -14,6 +16,7 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
+import jenkins.util.Timer;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
@@ -26,8 +29,12 @@ import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.DATETIME_FORMATTER;
+import static hudson.init.InitMilestone.JOB_LOADED;
 
 /**
  * Sumo Logic plugin for Jenkins model.
@@ -83,6 +90,7 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         sourceCategory = StringUtils.isNotEmpty(formData.getString("sourceCategory")) ? formData.getString("sourceCategory") : "jenkinsSourceCategory";
 
         metricDataPrefix = StringUtils.isNotEmpty(formData.getString("metricDataPrefix")) ? formData.getString("metricDataPrefix") : "jenkinsMetricDataPrefix";
+
         auditLogEnabled = formData.getBoolean("auditLogEnabled");
         metricDataEnabled = formData.getBoolean("metricDataEnabled");
         periodicLogEnabled = formData.getBoolean("periodicLogEnabled");
@@ -99,6 +107,10 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
     public static void shutdown() {
         PluginDescriptorImpl pluginDescriptor = checkIfPluginInUse();
         pluginDescriptor.getSumoMetricDataPublisher().stopReporter();
+
+        if(Logger.getLogger("") != null){
+            Logger.getLogger("").removeHandler(SumoLogHandler.getInstance());
+        }
         Map<String, Object> shutDown = new HashMap<>();
         shutDown.put("logType", LogTypeEnum.SLAVE_EVENT.getValue());
         shutDown.put("eventTime", DATETIME_FORMATTER.format(new Date()));
@@ -216,5 +228,33 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
     public void setSourceCategory(String sourceCategory) {
         this.sourceCategory = sourceCategory;
+    }
+
+
+    private boolean isHandlerStarted;
+
+    public boolean isHandlerStarted() {
+        return isHandlerStarted;
+    }
+
+    public void setHandlerStarted(boolean handlerStarted) {
+        isHandlerStarted = handlerStarted;
+    }
+
+    //Handler to get all the jenkins Logs
+    @Initializer(after = JOB_LOADED)
+    public void startSumoJenkinsLogHandler() {
+        Timer.get().schedule(PluginDescriptorImpl.getInstance()::registerHandler, 3, TimeUnit.MINUTES);
+    }
+
+    private void registerHandler() {
+        Handler[] handlers = Logger.getLogger("").getHandlers();
+        for (Handler handler : handlers) {
+            if (handler instanceof SumoLogHandler) {
+                return;
+            }
+        }
+        Logger.getLogger("").addHandler(SumoLogHandler.getInstance());
+        isHandlerStarted = true;
     }
 }

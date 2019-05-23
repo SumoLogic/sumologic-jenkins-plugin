@@ -21,7 +21,7 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstan
  * Created by Lukasz on 20/03/2017
  */
 public class LogSender {
-    private final static Logger LOG = Logger.getLogger(LogSender.class.getName());
+    public final static Logger LOG = Logger.getLogger(LogSender.class.getName());
     private static LogSender INSTANCE = null;
 
     private final HttpClient httpClient;

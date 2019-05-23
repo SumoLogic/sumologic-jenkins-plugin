@@ -5,25 +5,20 @@ import com.sumologic.jenkins.jenkinssumologicplugin.constants.EventSourceEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.LogTypeEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.*;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
-import hudson.EnvVars;
 import hudson.Util;
 import hudson.console.ConsoleNote;
 import hudson.model.*;
 import hudson.node_monitors.NodeMonitor;
-import hudson.scm.ChangeLogSet;
-import hudson.scm.SCM;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
 import jenkins.model.CauseOfInterruption;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
-import jenkins.triggers.SCMTriggerItem;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -382,6 +377,15 @@ public class CommonModelFactory {
         slaveModel.setNodeStatus("updated");
         slaveModel.setNumberOfExecutors(computer.getNumExecutors());
         slaveModel.setIdle(computer.isIdle());
+        AtomicInteger countFreeExecutors = new AtomicInteger();
+        if(computer.getExecutors() != null){
+            computer.getExecutors().forEach(executor -> {
+                if(executor.isIdle()){
+                    countFreeExecutors.incrementAndGet();
+                }
+            });
+        }
+        slaveModel.setNumberOfFreeExecutors(countFreeExecutors.get());
         slaveModel.setOnline(computer.isOnline());
         if (computer.isOffline()) {
             slaveModel.setNumberOfExecutors(0);

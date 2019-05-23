@@ -14,7 +14,8 @@ public enum LogTypeEnum {
     AUDIT_EVENT("Audit_Event"),
     QUEUE_EVENT("Queue_Event"),
     SLAVE_EVENT("Slave_Event"),
-    SCM_STATUS("Scm_Status");
+    SCM_STATUS("Scm_Status"),
+    JENKINS_LOG("Jenkins_Log");
     private String value;
 
     LogTypeEnum(final String value) {

@@ -1,8 +1,11 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.constants;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSender;
 import org.apache.commons.lang.time.FastDateFormat;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Sumo Logic plugin for Jenkins model.
@@ -41,6 +44,8 @@ public class SumoConstants {
 
     public static final int DIVIDER_FOR_MESSAGES = 100;
 
-
     public static final String MONITOR_PATTERN_MATCHER = "error.*?>(.*?)</span>";
+
+    public static final List<String> skipLoggerNames = Arrays.asList(LogSender.class.getName(), "hudson.Extension", "hudson.node_monitors",
+            "jenkins.InitReactorRunner", "hudson.util.BootFailure", "shaded.splk.org.apache.http");
 }

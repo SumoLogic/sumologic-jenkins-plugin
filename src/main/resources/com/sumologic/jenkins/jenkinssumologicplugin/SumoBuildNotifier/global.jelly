@@ -21,19 +21,19 @@
 	<f:section title="Sumo Logic Jenkins plugin">
 		<f:entry title="SumoLogic Portal Name" field="queryPortal"
                                          description="Sumo Logic Portal for querying data. Default: service.sumologic.com">
-			<f:textbox name="sumoplugin.queryPortal" default="service.sumologic.com"/>
+			<f:textbox name="sumoplugin.queryPortal" Default="service.sumologic.com"/>
 		</f:entry>
 
-		<f:entry title="Metric Data Prefix" description="Provide a Metric data Prefix to Identify Metric for Jenkins Master.">
-			<f:textbox field="metricDataPrefix" default="jenkinsMetricDataPrefix"/>
+		<f:entry title="Metric Data Prefix" field="metricDataPrefix" description="Provide a Metric data Prefix to Identify Metric for Jenkins Master.">
+			<f:textbox name="sumoplugin.metricDataPrefix" default="jenkinsMetricDataPrefix"/>
 		</f:entry>
 
-		<f:entry title="Http Source URL" description="Http Source URL as created in SumoLogic Collector">
-			<f:textbox field="url"/>
+		<f:entry title="Http Source URL" field="url" description="Http Source URL as created in SumoLogic Collector">
+			<f:textbox name="sumoplugin.url"/>
 		</f:entry>
 
-		<f:entry title="Source Category" description="As provided in SumoLogic source">
-			<f:textbox field="dataSourceCategory" default="jenkinsSourceCategory"/>
+		<f:entry title="Source Category" field="sourceCategory" description="As provided in SumoLogic source">
+			<f:textbox name="sumoplugin.sourceCategory" default="jenkinsSourceCategory"/>
 		</f:entry>
 
 		<f:entry title="Logs" description="Select Log Types for Ingestion">

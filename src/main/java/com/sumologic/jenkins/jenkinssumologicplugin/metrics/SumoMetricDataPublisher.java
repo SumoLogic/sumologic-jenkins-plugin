@@ -85,8 +85,7 @@ public class SumoMetricDataPublisher {
         whitelist.add("vm.deadlock.count");
         whitelist.add("vm.runnable.count");
         whitelist.add("vm.waiting.count");
-        whitelist.add("vm.gc.*.count");
-        whitelist.add("vm.gc.*.time");
+        whitelist.add("vm.gc.");
 
         return whitelist;
     }
@@ -101,7 +100,7 @@ public class SumoMetricDataPublisher {
         @Override
         public boolean matches(String name, Metric metric) {
             for (String whitelisted : whitelist) {
-                if (whitelisted.endsWith(name) || whitelisted.matches(name))
+                if (whitelisted.endsWith(name) || name.contains(whitelisted))
                     return true;
             }
             return false;
