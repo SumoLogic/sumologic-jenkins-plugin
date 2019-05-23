@@ -17,7 +17,7 @@ public class SumoConstants {
 
     }
 
-    public static final String END_OF_SUMO_PIPELINE = "[Pipeline] // SumoPipelineLogCollection";
+    public static final String SUMO_PIPELINE = "[Pipeline] SumoPipelineLogCollection";
     public static final String COMMA_SEPARATOR = ", ";
     public static final String MASTER = "master";
 

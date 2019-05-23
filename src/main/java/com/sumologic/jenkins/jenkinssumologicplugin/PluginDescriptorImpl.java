@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.EventSourceEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.LogTypeEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.metrics.SumoMetricDataPublisher;
-import com.sumologic.jenkins.jenkinssumologicplugin.model.SlaveModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -16,6 +15,7 @@ import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
@@ -38,33 +38,30 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstan
  */
 @Extension
 public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
-    private final int MAX_LINES_DEFAULT = 2000;
-    private String collectorUrl = "";
-    private String maxLines = Integer.toString(MAX_LINES_DEFAULT);
-    private String queryPortal = "service.sumologic.com";
 
-    private String sourceNamePeriodic = "jenkinsStatus";
-    private String sourceNameJobStatus = "jenkinsJobStatus";
-
-    private String sourceCategoryPeriodic = "jenkinsStatus";
-    private String sourceCategoryJobStatus = "jenkinsJobStatus";
-    private String sourceCategoryBuildLogs = "jenkinsBuildLogs";
-
-    private boolean buildLogEnabled = true;
-
+    private String url;
     private transient SumoMetricDataPublisher sumoMetricDataPublisher;
     private static LogSenderHelper logSenderHelper = null;
+    private String queryPortal;
+    private String sourceCategory;
+    private String metricDataPrefix;
+    private boolean auditLogEnabled;
+    private boolean metricDataEnabled;
+    private boolean periodicLogEnabled;
+    private boolean jobStatusLogEnabled;
+    private boolean jobConsoleLogEnabled;
+    private boolean scmLogEnabled;
 
     public PluginDescriptorImpl() {
         super(SumoBuildNotifier.class);
         load();
         sumoMetricDataPublisher = new SumoMetricDataPublisher();
-        getSumoMetricDataPublisher().publishMetricData();
+        getSumoMetricDataPublisher().publishMetricData(metricDataPrefix);
         logSenderHelper = LogSenderHelper.getInstance();
     }
 
     public static PluginDescriptorImpl getInstance() {
-        return (PluginDescriptorImpl) Jenkins.getInstance().getDescriptor(SumoBuildNotifier.class);
+        return (PluginDescriptorImpl) Jenkins.get().getDescriptor(SumoBuildNotifier.class);
     }
 
     @Override
@@ -80,19 +77,20 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
     @Override
     public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
         boolean configOk = super.configure(req, formData);
-        collectorUrl = formData.getString("url");
-        queryPortal = formData.getString("queryPortal");
-        maxLines = formData.getString("maxLines");
-        buildLogEnabled = formData.getBoolean("buildLogEnabled");
+        url = formData.getString("url");
+        queryPortal = StringUtils.isNotEmpty(formData.getString("queryPortal")) ? formData.getString("queryPortal") : "service.sumologic.com";
 
-        sourceNamePeriodic = formData.getString("sourceNamePeriodic");
-        sourceNameJobStatus = formData.getString("sourceNameJobStatus");
-        sourceCategoryPeriodic = formData.getString("sourceCategoryPeriodic");
-        sourceCategoryJobStatus = formData.getString("sourceCategoryJobStatus");
-        sourceCategoryBuildLogs = formData.getString("sourceCategoryBuildLogs");
+        sourceCategory = StringUtils.isNotEmpty(formData.getString("sourceCategory")) ? formData.getString("sourceCategory") : "jenkinsSourceCategory";
 
+        metricDataPrefix = StringUtils.isNotEmpty(formData.getString("metricDataPrefix")) ? formData.getString("metricDataPrefix") : "jenkinsMetricDataPrefix";
+        auditLogEnabled = formData.getBoolean("auditLogEnabled");
+        metricDataEnabled = formData.getBoolean("metricDataEnabled");
+        periodicLogEnabled = formData.getBoolean("periodicLogEnabled");
+        jobStatusLogEnabled = formData.getBoolean("jobStatusLogEnabled");
+        jobConsoleLogEnabled = formData.getBoolean("jobConsoleLogEnabled");
+        scmLogEnabled = formData.getBoolean("scmLogEnabled");
         save();
-        getSumoMetricDataPublisher().publishMetricData();
+        //getSumoMetricDataPublisher().publishMetricData();
         return configOk;
     }
 
@@ -107,10 +105,6 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         shutDown.put("eventSource", EventSourceEnum.SHUTDOWN.getValue());
         Gson gson = new Gson();
         logSenderHelper.sendLogsToPeriodicSourceCategory(gson.toJson(shutDown));
-    }
-
-    public SumoMetricDataPublisher getSumoMetricDataPublisher() {
-        return sumoMetricDataPublisher;
     }
 
     private static PluginDescriptorImpl checkIfPluginInUse() {
@@ -136,50 +130,12 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         return FormValidation.ok();
     }
 
-    public FormValidation doCheckMaxLines(@QueryParameter String value) {
-        if (value.isEmpty()) {
-            return FormValidation.error("You must provide a value. Default is 200.");
-        }
-        int test = 0;
-        try {
-            test = Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            return FormValidation.error("Invalid input. Must be a number.");
-        }
-
-        if (test < -1) {
-            return FormValidation.error("Invalid number. Must be non negative or -1 for batching a whole log.");
-        }
-
-        return FormValidation.ok();
+    public SumoMetricDataPublisher getSumoMetricDataPublisher() {
+        return sumoMetricDataPublisher;
     }
 
-
-    public String getUrl() {
-        return collectorUrl;
-    }
-
-    public void setUrl(String url) {
-        this.collectorUrl = url;
-    }
-
-    public String getMaxLines() {
-        return maxLines;
-    }
-
-    public void setMaxLines(String maxLines) {
-        this.maxLines = maxLines;
-    }
-
-    public int getMaxLinesInt() {
-        int value = 0;
-        try {
-            value = Integer.parseInt(maxLines);
-        } catch (NumberFormatException e) {
-            value = MAX_LINES_DEFAULT;
-        }
-
-        return value;
+    public void setSumoMetricDataPublisher(SumoMetricDataPublisher sumoMetricDataPublisher) {
+        this.sumoMetricDataPublisher = sumoMetricDataPublisher;
     }
 
     public String getQueryPortal() {
@@ -190,52 +146,75 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         this.queryPortal = queryPortal;
     }
 
-    public boolean isBuildLogEnabled() {
-        return buildLogEnabled;
+    public boolean isAuditLogEnabled() {
+        return auditLogEnabled;
     }
 
-    public void setBuildLogEnabled(boolean value) {
-
-        buildLogEnabled = value;
+    public void setAuditLogEnabled(boolean auditLogEnabled) {
+        this.auditLogEnabled = auditLogEnabled;
     }
 
-    public String getSourceNamePeriodic() {
-        return sourceNamePeriodic;
+    public boolean isMetricDataEnabled() {
+        return metricDataEnabled;
     }
 
-    public void setSourceNamePeriodic(String sourceNamePeriodic) {
-        this.sourceNamePeriodic = sourceNamePeriodic;
+    public void setMetricDataEnabled(boolean metricDataEnabled) {
+        this.metricDataEnabled = metricDataEnabled;
     }
 
-    public String getSourceNameJobStatus() {
-        return sourceNameJobStatus;
+    public boolean isPeriodicLogEnabled() {
+        return periodicLogEnabled;
     }
 
-    public void setSourceNameJobStatus(String sourceNameJobStatus) {
-        this.sourceNameJobStatus = sourceNameJobStatus;
+    public void setPeriodicLogEnabled(boolean periodicLogEnabled) {
+        this.periodicLogEnabled = periodicLogEnabled;
     }
 
-    public String getSourceCategoryPeriodic() {
-        return sourceCategoryPeriodic;
+    public boolean isJobStatusLogEnabled() {
+        return jobStatusLogEnabled;
     }
 
-    public void setSourceCategoryPeriodic(String sourceCategoryPeriodic) {
-        this.sourceCategoryPeriodic = sourceCategoryPeriodic;
+    public void setJobStatusLogEnabled(boolean jobStatusLogEnabled) {
+        this.jobStatusLogEnabled = jobStatusLogEnabled;
     }
 
-    public String getSourceCategoryJobStatus() {
-        return sourceCategoryJobStatus;
+    public boolean isJobConsoleLogEnabled() {
+        return jobConsoleLogEnabled;
     }
 
-    public void setSourceCategoryJobStatus(String sourceCategoryJobStatus) {
-        this.sourceCategoryJobStatus = sourceCategoryJobStatus;
+    public void setJobConsoleLogEnabled(boolean jobConsoleLogEnabled) {
+        this.jobConsoleLogEnabled = jobConsoleLogEnabled;
     }
 
-    public String getSourceCategoryBuildLogs() {
-        return sourceCategoryBuildLogs;
+    public boolean isScmLogEnabled() {
+        return scmLogEnabled;
     }
 
-    public void setSourceCategoryBuildLogs(String sourceCategoryBuildLogs) {
-        this.sourceCategoryBuildLogs = sourceCategoryBuildLogs;
+    public void setScmLogEnabled(boolean scmLogEnabled) {
+        this.scmLogEnabled = scmLogEnabled;
+    }
+
+    public String getMetricDataPrefix() {
+        return metricDataPrefix;
+    }
+
+    public void setMetricDataPrefix(String metricDataPrefix) {
+        this.metricDataPrefix = metricDataPrefix;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getSourceCategory() {
+        return sourceCategory;
+    }
+
+    public void setSourceCategory(String sourceCategory) {
+        this.sourceCategory = sourceCategory;
     }
 }

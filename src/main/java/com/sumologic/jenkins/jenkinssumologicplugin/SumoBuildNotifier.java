@@ -20,6 +20,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.GENERATION_ERROR;
+import static com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory.sendConsoleLogs;
 
 /**
  * This publisher will sendLogs build metadata to a Sumo Logic HTTP collector.
@@ -84,14 +85,17 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
 
         PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
 
-        LOG.info("Uploading build status to sumologic: " + json);
-
         String url = descriptor.getUrl();
-        String sourceName = descriptor.getSourceNameJobStatus();
-        String category = descriptor.getSourceCategoryJobStatus();
+        String sourceName = null;
+        String category = descriptor.getSourceCategory();
         byte[] bytes = json.getBytes();
-
-        logSender.sendLogs(url, bytes, sourceName, category);
+        if(!descriptor.isJobStatusLogEnabled()){
+            LOG.info("Uploading build status to sumologic: " + json);
+            logSender.sendLogs(url, bytes, sourceName, category);
+        }
+        if(!descriptor.isJobConsoleLogEnabled()){
+            sendConsoleLogs(build, taskListener);
+        }
     }
 
     @Override

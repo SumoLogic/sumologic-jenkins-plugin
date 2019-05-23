@@ -30,12 +30,13 @@ public class LogSenderHelper {
     public void sendLogsToPeriodicSourceCategory(String data) {
 
         PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
-        //TODO add flag for periodic and audit data
-        LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), data.getBytes()
-                , pluginDescriptor.getSourceNamePeriodic(), pluginDescriptor.getSourceCategoryPeriodic());
+        if (pluginDescriptor.isPeriodicLogEnabled()) {
+            LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), data.getBytes()
+                    , null, pluginDescriptor.getSourceCategory());
+        }
     }
 
-    public void sendMultipleLogsToPeriodicSourceCategory(final List<String> messages) {
+    public void sendMultiplePeriodicLogs(final List<String> messages) {
         List<String> strings = divideDataIntoEquals(messages);
         for (String data : strings) {
             sendLogsToPeriodicSourceCategory(data);
@@ -44,20 +45,29 @@ public class LogSenderHelper {
 
     public void sendLogsToMetricDataCategory(final List<String> messages) {
         PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
-        //TODO add flag for Metric data category
-        List<String> strings = divideDataIntoEquals(messages);
-        for (String data : strings) {
-            LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), data.getBytes()
-                    , pluginDescriptor.getSourceNamePeriodic(), pluginDescriptor.getSourceCategoryPeriodic(), GRAPHITE_CONTENT_TYPE);
+        if (pluginDescriptor.isMetricDataEnabled()) {
+            List<String> strings = divideDataIntoEquals(messages);
+            for (String data : strings) {
+                LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), data.getBytes()
+                        , null, pluginDescriptor.getSourceCategory(), GRAPHITE_CONTENT_TYPE);
+            }
         }
+
     }
 
-    public void sendLogsToStatusDataCategory(String data) {
+    public void sendJobStatusLogs(String data) {
         PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
 
-        //TODO add flag for for Status data
         LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), data.getBytes()
-                , pluginDescriptor.getSourceNameJobStatus(), pluginDescriptor.getSourceCategoryJobStatus());
+                , null, pluginDescriptor.getSourceCategory());
+    }
+
+    public void sendAuditLogs(String data) {
+        PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+        if (pluginDescriptor.isAuditLogEnabled()) {
+            LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), data.getBytes()
+                    , null, pluginDescriptor.getSourceCategory());
+        }
     }
 
     private static List<String> divideDataIntoEquals(final List<String> messages) {

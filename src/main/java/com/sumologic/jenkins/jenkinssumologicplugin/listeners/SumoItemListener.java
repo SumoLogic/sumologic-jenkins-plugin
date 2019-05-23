@@ -46,7 +46,6 @@ public class SumoItemListener extends ItemListener {
     @Override
     public void onBeforeShutdown() {
         //Can stop any process like sending logs, Metrics sending
-        PluginDescriptorImpl.getInstance().getSumoMetricDataPublisher().stopReporter();
     }
 
 

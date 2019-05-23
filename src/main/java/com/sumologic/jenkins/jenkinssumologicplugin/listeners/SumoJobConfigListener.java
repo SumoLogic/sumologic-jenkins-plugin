@@ -118,6 +118,7 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
         }
         return null;
     }
+
     /*private static List<Map<String, Object>> compare(File oldFile, File newFile) throws Exception {
         List<Map<String, Object>> diff = new ArrayList<>();
 

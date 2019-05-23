@@ -1,12 +1,12 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.listeners;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.AuditEventTypeEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.EventSourceEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import hudson.Extension;
 import hudson.Util;
-import hudson.console.ConsoleNote;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
 import jenkins.model.CauseOfInterruption;
@@ -17,9 +17,7 @@ import javax.annotation.Nonnull;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,28 +61,23 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
             */
             List log = run.getLog(10);
             BuildModel buildModel = generateJobStatusInformation(run);
-            if (log.contains(END_OF_SUMO_PIPELINE) || "ABORTED".equals(buildModel.getResult())) {
-                logSenderHelper.sendLogsToStatusDataCategory(buildModel.toJson());
+
+            PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+
+            //For all jobs status || or for specific pipeline jobs
+            if (pluginDescriptor.isJobStatusLogEnabled() || isPipeLineJobWithSpecificFlagEnabled(run, listener)) {
+                logSenderHelper.sendJobStatusLogs(buildModel.toJson());
             }
 
-            /*BufferedReader bufferedReader = new BufferedReader(new FileReader(run.getLogFile()));
-            StringBuilder stringBuilder = new StringBuilder();
-            AtomicInteger count = new AtomicInteger();
-            count.addAndGet(1);
-            bufferedReader.lines().forEach(s -> {
-                String s1 = ConsoleNote.removeNotes(s);
-                stringBuilder.append("[").append(DATE_FORMAT.format(new Date())).append("] ").append(" ").append(run.getParent().getDisplayName()).append("#").append(run.getNumber()).append(" ")
-                        .append(s1).append("\n");
-                count.incrementAndGet();
-                if(count.get()%DIVIDER_FOR_MESSAGES==1){
-                    logSenderHelper.sendLogsToStatusDataCategory();
-                }
+            if (pluginDescriptor.isJobConsoleLogEnabled() || isPipeLineJobWithSpecificFlagEnabled(run, listener)) {
+                sendConsoleLogs(run, listener);
+            }
 
-            });*/
+
             updateSlaveInfoAfterJobRun(run);
 
             //Send audit event for job finish
-            if(!"ABORTED".equals(buildModel.getResult())){
+            if (!"ABORTED".equals(buildModel.getResult())) {
                 String message = String.format(AuditEventTypeEnum.JOB_FINISHED.getMessage(), run.getParent().getDisplayName(), run.getNumber(), buildModel.getResult());
                 captureAuditEvent(buildModel.getUser(), AuditEventTypeEnum.JOB_FINISHED, message, null);
             }
@@ -112,14 +105,32 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
         //Update slave information as build has been done
         BuildModel buildModel = new BuildModel();
         getLabelAndNodeName(buildInfo, buildModel);
-        Computer.threadPoolForRemoting.submit(() -> {
-            if (buildModel.getNodeName() != null) {
-                Node node = Jenkins.get().getNode(buildModel.getNodeName());
-                if (node != null && node.toComputer() != null) {
-                    Computer computer = node.toComputer();
-                    updateStatus(computer, EventSourceEnum.PERIODIC_UPDATE.getValue());
+        if (buildModel.getNodeName() != null) {
+            Node node = Jenkins.get().getNode(buildModel.getNodeName());
+            if (node != null && node.toComputer() != null) {
+                Computer computer = node.toComputer();
+                updateStatus(computer, EventSourceEnum.PERIODIC_UPDATE.getValue());
+            }
+        }
+    }
+
+    private boolean isPipeLineJobWithSpecificFlagEnabled(Run run, TaskListener listener) {
+        BufferedReader bufferedReader = null;
+        try {
+            bufferedReader = new BufferedReader(new FileReader(run.getLogFile()));
+            long length = Math.min(15, bufferedReader.lines().count());
+            for (int i = 0; i < length; i++) {
+                if (bufferedReader.readLine().contains(SUMO_PIPELINE)) {
+                    return true;
                 }
             }
-        });
+            bufferedReader.close();
+        } catch (Exception e) {
+            String errorMessage = CONSOLE_ERROR + Arrays.toString(e.getStackTrace());
+            LOG.log(Level.WARNING, errorMessage);
+            listener.error(errorMessage);
+        }
+        return false;
     }
+
 }

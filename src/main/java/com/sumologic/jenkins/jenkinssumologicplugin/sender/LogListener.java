@@ -56,9 +56,9 @@ public class LogListener extends ConsoleLogFilter implements Serializable {
 
     @Override
     public OutputStream decorateLogger(Run build, OutputStream outputStream) throws IOException, InterruptedException {
-        try {
+        /*try {
             PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
-            if (pluginDescriptor.isBuildLogEnabled()) {
+            if (!pluginDescriptor.isJobConsoleLogEnabled()) {
                 if (build != null) {
                     build.addAction(new SearchAction(build));
                     return new SumologicOutputStream(outputStream, build, pluginDescriptor, streamState);
@@ -70,7 +70,7 @@ public class LogListener extends ConsoleLogFilter implements Serializable {
             String errorMessage = CONSOLE_ERROR + Arrays.toString(e.getStackTrace());
             LOG.log(Level.WARNING, errorMessage);
             outputStream.write(errorMessage.getBytes());
-        }
+        }*/
         return outputStream;
     }
 

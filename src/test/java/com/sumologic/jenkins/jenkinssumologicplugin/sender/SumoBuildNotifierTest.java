@@ -39,6 +39,7 @@ public class SumoBuildNotifierTest {
     // report how to access the server
     System.out.println("LocalTestServer available at " + serverUrl);
     j.get(PluginDescriptorImpl.class).setUrl(serverUrl);
+    j.get(PluginDescriptorImpl.class).setPeriodicLogEnabled(true);
 
   }
 

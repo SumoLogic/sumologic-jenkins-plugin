@@ -7,6 +7,7 @@ import com.sumologic.jenkins.jenkinssumologicplugin.model.*;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import hudson.EnvVars;
 import hudson.Util;
+import hudson.console.ConsoleNote;
 import hudson.model.*;
 import hudson.node_monitors.NodeMonitor;
 import hudson.scm.ChangeLogSet;
@@ -20,8 +21,14 @@ import jenkins.model.Jenkins;
 import jenkins.triggers.SCMTriggerItem;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -312,7 +319,7 @@ public class CommonModelFactory {
         AuditModel auditModel = new AuditModel(userFullName, userId, auditEventTypeEnum.getValue(),
                 DATETIME_FORMATTER.format(new Date()), message, LogTypeEnum.AUDIT_EVENT.getValue(), fileDetails);
 
-        logSenderHelper.sendLogsToPeriodicSourceCategory(auditModel.toString());
+        logSenderHelper.sendAuditLogs(auditModel.toString());
     }
 
     private static String getUserId() {
@@ -439,6 +446,34 @@ public class CommonModelFactory {
             return relativeURL;
         } else {
             return Util.encode(rootUrl + relativeURL);
+        }
+    }
+
+    public static void sendConsoleLogs(Run run, TaskListener listener) {
+        BufferedReader bufferedReader = null;
+        try {
+            bufferedReader = new BufferedReader(new FileReader(run.getLogFile()));
+            AtomicReference<StringBuilder> stringBuilder = new AtomicReference<>(new StringBuilder());
+            AtomicInteger count = new AtomicInteger();
+            count.addAndGet(1);
+            bufferedReader.lines().forEach(s -> {
+                String s1 = ConsoleNote.removeNotes(s);
+                stringBuilder.get().append("[").append(DATE_FORMAT.format(new Date()))
+                        .append("] ").append(" ").append(run.getParent().getDisplayName())
+                        .append("#").append(run.getNumber()).append(" ")
+                        .append(s1).append("\n");
+                count.incrementAndGet();
+                if (count.get() % DIVIDER_FOR_MESSAGES == 1) {
+                    logSenderHelper.sendJobStatusLogs(stringBuilder.toString());
+                    stringBuilder.set(new StringBuilder());
+                }
+            });
+            logSenderHelper.sendJobStatusLogs(stringBuilder.toString());
+            bufferedReader.close();
+        } catch (Exception e) {
+            String errorMessage = CONSOLE_ERROR + Arrays.toString(e.getStackTrace());
+            LOG.log(Level.WARNING, errorMessage);
+            listener.error(errorMessage);
         }
     }
 }

@@ -9,6 +9,8 @@ import org.apache.http.util.ByteArrayBuffer;
 import java.io.*;
 import java.util.logging.Logger;
 
+import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.DIVIDER_FOR_MESSAGES;
+
 /**
  * OutputStream decorator that adds functionality of forwarding the stream to Sumo Logic Http Source.
  * Does not modify the original stream content.
@@ -38,7 +40,6 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
     private String url;
     private String jobName;
     private String jobNumber;
-    private int maxLinesPerBatch;
     private PluginDescriptorImpl descriptor;
 
     private State state;
@@ -51,7 +52,6 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
         this.descriptor = descriptor;
         this.jobName = build.getParent().getDisplayName();
         this.jobNumber = String.valueOf(build.getNumber());
-        maxLinesPerBatch = descriptor.getMaxLinesInt();
 
         this.url = descriptor.getUrl();
 
@@ -89,7 +89,7 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
 
         wrappedStream.write(bytes, 0, i);
 
-        if (state.currentLines >= maxLinesPerBatch) {
+        if (state.currentLines >= DIVIDER_FOR_MESSAGES) {
             flushBuffer();
         }
 
@@ -107,7 +107,7 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
         try {
             // jobNumber is a build number with #, e.g. #42
             LOGGER.info("Sending " + lines.length + " bytes of build logs to sumo");
-            logSender.sendLogs(url, lines, descriptor.getSourceNameJobStatus(), descriptor.getSourceCategoryBuildLogs());
+            logSender.sendLogs(url, lines, null, descriptor.getSourceCategory());
         } catch (Exception e) {
             e.printStackTrace(new PrintStream(wrappedStream));
         }

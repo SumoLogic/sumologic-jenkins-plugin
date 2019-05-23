@@ -48,7 +48,7 @@ public class SearchAction implements Action {
 
         PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
         String queryPortal = descriptor.getQueryPortal();
-        String sourceCategory = descriptor.getSourceCategoryBuildLogs();
+        String sourceCategory = descriptor.getSourceCategory();
 
         String query = String.format(" _sourceCategory=%s %s#%s", sourceCategory, buildName, buildNumber);
         String encodedQuery = "";

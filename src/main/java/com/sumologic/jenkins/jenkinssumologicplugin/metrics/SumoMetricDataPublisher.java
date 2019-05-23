@@ -3,6 +3,7 @@ package com.sumologic.jenkins.jenkinssumologicplugin.metrics;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
+import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import jenkins.metrics.api.Metrics;
 import org.slf4j.Logger;
@@ -25,6 +26,7 @@ public class SumoMetricDataPublisher {
 
     private transient SumoMetricReporter sumoMetricReporter;
 
+
     public void stopReporter() {
         LOGGER.info("Stopping Reporter");
         if (sumoMetricReporter != null) {
@@ -32,14 +34,13 @@ public class SumoMetricDataPublisher {
         }
     }
 
-    public synchronized void publishMetricData() {
+    public synchronized void publishMetricData(String metricDataPrefix) {
         LOGGER.info("Starting Reporter");
         MetricRegistry metricRegistry = Metrics.metricRegistry();
 
-        //TODO take prefix from plugin descriptor
         sumoMetricReporter = SumoMetricReporter
                 .forRegistry(metricRegistry)
-                .prefixedWith("jenkins")
+                .prefixedWith(metricDataPrefix)
                 .convertRatesTo(TimeUnit.SECONDS)
                 .convertDurationsTo(TimeUnit.MILLISECONDS)
                 .filter(new WhitelistMetricFilter(createMetricFilter()))
@@ -84,6 +85,8 @@ public class SumoMetricDataPublisher {
         whitelist.add("vm.deadlock.count");
         whitelist.add("vm.runnable.count");
         whitelist.add("vm.waiting.count");
+        whitelist.add("vm.gc.*.count");
+        whitelist.add("vm.gc.*.time");
 
         return whitelist;
     }
@@ -98,7 +101,7 @@ public class SumoMetricDataPublisher {
         @Override
         public boolean matches(String name, Metric metric) {
             for (String whitelisted : whitelist) {
-                if (whitelisted.endsWith(name))
+                if (whitelisted.endsWith(name) || whitelisted.matches(name))
                     return true;
             }
             return false;

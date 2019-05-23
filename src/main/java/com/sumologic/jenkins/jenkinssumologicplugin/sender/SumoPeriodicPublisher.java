@@ -55,8 +55,10 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
         PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
         String url = descriptor.getUrl();
 
-        logSender.sendLogs(url, logs.getBytes(),
-                descriptor.getSourceNamePeriodic(), descriptor.getSourceCategoryPeriodic());
+        if(descriptor.isPeriodicLogEnabled()){
+            logSender.sendLogs(url, logs.getBytes(),
+                    null, descriptor.getSourceCategory());
+        }
 
         sendTasksInQueue();
         sendNodeDetailsForJenkins();
@@ -89,7 +91,7 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
             queueModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
             queueModels.add(queueModel.toString());
         }
-        logSenderHelper.sendMultipleLogsToPeriodicSourceCategory(queueModels);
+        logSenderHelper.sendMultiplePeriodicLogs(queueModels);
     }
 
     public void sendNodeDetailsForJenkins() {
@@ -97,7 +99,7 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
         if (CollectionUtils.isNotEmpty(slaveModels)) {
             List<String> messages = new ArrayList<>();
             slaveModels.forEach(slaveModel -> messages.add(slaveModel.toString()));
-            logSenderHelper.sendMultipleLogsToPeriodicSourceCategory(messages);
+            logSenderHelper.sendMultiplePeriodicLogs(messages);
         }
 
         Set<String> slavesUp = slaveModels.stream().map(SlaveModel::getNodeName).collect(Collectors.toSet());
@@ -114,7 +116,7 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
             }
         });
         if (CollectionUtils.isNotEmpty(removedSlaves)) {
-            logSenderHelper.sendMultipleLogsToPeriodicSourceCategory(removedSlaves);
+            logSenderHelper.sendMultiplePeriodicLogs(removedSlaves);
         }
         slaveNames = slavesUp;
     }
@@ -149,7 +151,7 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
             }
         }
         if (CollectionUtils.isNotEmpty(currentBuildDetails)) {
-            logSenderHelper.sendMultipleLogsToPeriodicSourceCategory(currentBuildDetails);
+            logSenderHelper.sendMultiplePeriodicLogs(currentBuildDetails);
         }
     }
 

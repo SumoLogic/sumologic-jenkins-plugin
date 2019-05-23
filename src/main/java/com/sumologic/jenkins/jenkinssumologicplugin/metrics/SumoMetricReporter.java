@@ -132,14 +132,14 @@ public class SumoMetricReporter extends ScheduledReporter {
                 snapshot.get99thPercentile(), snapshot.get999thPercentile()};*/
     }
 
-    /*private String[] prepareDataFromMeterForRate(final Metered metered) {
+    private String[] prepareDataFromMeterForRate(final Metered metered) {
         return new String[]{
                 format(convertRate(metered.getOneMinuteRate())),
                 format(convertRate(metered.getFiveMinuteRate())),
                 format(convertRate(metered.getFifteenMinuteRate())),
                 format(convertRate(metered.getMeanRate()))
         };
-    }*/
+    }
 
     private String buildMessage(String name, String value, long timeStamp) {
         return name + " " + value + " " + timeStamp;

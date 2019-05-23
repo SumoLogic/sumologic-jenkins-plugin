@@ -1,5 +1,7 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.listeners;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
+import com.sumologic.jenkins.jenkinssumologicplugin.SumoBuildNotifier;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.LogTypeEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.ScmModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
@@ -51,7 +53,11 @@ public class SumoSCMListener extends SCMListener {
 
             populateGitScmDetails(scm, scmModel, build);
             populateSubversionDetails(scm, scmModel, build);
-            logSenderHelper.sendLogsToStatusDataCategory(scmModel.toString());
+
+            PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+            if(pluginDescriptor.isScmLogEnabled()){
+                logSenderHelper.sendJobStatusLogs(scmModel.toString());
+            }
         } catch (Exception exception) {
             String errorMessage = SCM_ERROR + Arrays.toString(exception.getStackTrace());
             LOG.log(Level.WARNING, errorMessage);
