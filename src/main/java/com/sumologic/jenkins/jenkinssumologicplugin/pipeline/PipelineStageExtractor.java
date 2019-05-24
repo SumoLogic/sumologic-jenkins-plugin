@@ -4,7 +4,6 @@ import com.cloudbees.workflow.rest.external.ErrorExt;
 import com.cloudbees.workflow.rest.external.FlowNodeExt;
 import com.cloudbees.workflow.rest.external.StageNodeExt;
 import com.cloudbees.workflow.rest.external.StatusExt;
-import com.sumologic.jenkins.jenkinssumologicplugin.model.ErrorModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.PipelineStageModel;
 import hudson.Extension;
 import hudson.model.Result;
@@ -17,7 +16,6 @@ import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 import java.util.*;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.DATETIME_FORMATTER;
 
@@ -80,7 +78,7 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
 
         stringBuilder.append("StepName - ").append(stageNodeExt.getName()).append(",")
                 .append("StepStatus - ").append(convertToResult(stageNodeExt.getStatus())).append(",")
-                .append("StepDuration - ").append(stageNodeExt.getDurationMillis()/1000f).append(",")
+                .append("StepDuration - ").append(stageNodeExt.getDurationMillis() / 1000f).append(",")
                 .append("StepArguments - ").append(stageNodeExt.getParameterDescription()).append(",");
 
         String execNodeName = stageNodeExt.getExecNode();
@@ -89,7 +87,7 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
         }
         stringBuilder.append("StepExecutedOn - ").append(execNodeName);
 
-        if(stageNodeExt.getError() != null){
+        if (stageNodeExt.getError() != null) {
             stringBuilder.append(",StepErrorType - ").append(stageNodeExt.getError().getType()).append(",")
                     .append("StepErrorMessage - ").append(stageNodeExt.getError().getMessage());
         }
@@ -115,7 +113,7 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
 
         ErrorExt error = stageNodeExt.getError();
         if (error != null) {
-            String errorMessage = "StepErrorType - "+stageNodeExt.getError().getType()+","+"StepErrorMessage - "+stageNodeExt.getError().getMessage()+"";
+            String errorMessage = "StepErrorType - " + stageNodeExt.getError().getType() + "," + "StepErrorMessage - " + stageNodeExt.getError().getMessage() + "";
             pipelineStageDTO.setError(errorMessage);
         }
         return pipelineStageDTO;

@@ -3,6 +3,7 @@ package com.sumologic.jenkins.jenkinssumologicplugin.listeners;
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.AuditEventTypeEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.EventSourceEnum;
+import com.sumologic.jenkins.jenkinssumologicplugin.integration.SearchAction;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import hudson.Extension;
@@ -70,6 +71,7 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
             }
 
             if (pluginDescriptor.isJobConsoleLogEnabled() || isPipeLineJobWithSpecificFlagEnabled(run, listener)) {
+                run.addAction(new SearchAction(run));
                 sendConsoleLogs(run, listener);
             }
 
@@ -106,7 +108,7 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
         BuildModel buildModel = new BuildModel();
         getLabelAndNodeName(buildInfo, buildModel);
         if (buildModel.getNodeName() != null) {
-            Node node = Jenkins.get().getNode(buildModel.getNodeName());
+            Node node = Jenkins.getInstance().getNode(buildModel.getNodeName());
             if (node != null && node.toComputer() != null) {
                 Computer computer = node.toComputer();
                 updateStatus(computer, EventSourceEnum.PERIODIC_UPDATE.getValue());

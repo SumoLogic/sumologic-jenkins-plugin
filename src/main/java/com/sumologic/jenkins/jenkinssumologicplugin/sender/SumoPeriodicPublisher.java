@@ -50,7 +50,7 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
 
     @Override
     protected void execute(TaskListener listener) throws IOException, InterruptedException {
-        String logs = ModelFactory.createJenkinsModel(Jenkins.get()).toJson();
+        String logs = ModelFactory.createJenkinsModel(Jenkins.getInstance()).toJson();
 
         PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
         String url = descriptor.getUrl();
@@ -72,7 +72,7 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
     }
 
     public void sendTasksInQueue() {
-        final Queue.Item[] items = Jenkins.get().getQueue().getItems();
+        final Queue.Item[] items = Jenkins.getInstance().getQueue().getItems();
         List<String> queueModels = new ArrayList<>();
         for (Queue.Item item : items) {
             QueueModel queueModel = new QueueModel();
@@ -123,7 +123,7 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
 
     public void sendRunningJobDetails() {
         List<String> currentBuildDetails = new ArrayList<>();
-        for (Computer computer : Jenkins.get().getComputers()) {
+        for (Computer computer : Jenkins.getInstance().getComputers()) {
             List<Run> runList = new ArrayList<>();
             for (Executor executor : computer.getExecutors()) {
                 Run run = getRunningJob(executor);

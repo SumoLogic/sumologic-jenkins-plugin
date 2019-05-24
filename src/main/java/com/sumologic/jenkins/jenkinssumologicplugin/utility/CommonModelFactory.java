@@ -187,7 +187,7 @@ public class CommonModelFactory {
      * @return URL for the JOB
      */
     public static String getAbsoluteUrl(Run buildInfo) {
-        String rootUrl = Jenkins.get().getRootUrl();
+        String rootUrl = Jenkins.getInstance().getRootUrl();
         if (rootUrl == null) {
             return buildInfo.getUrl();
         } else {
@@ -327,7 +327,7 @@ public class CommonModelFactory {
     }
 
     public static String getRelativeJenkinsHomePath(String configPath) {
-        String jenkinsHome = Jenkins.get().getRootDir().getPath();
+        String jenkinsHome = Jenkins.getInstance().getRootDir().getPath();
         String relativePath = configPath;
         if (configPath.startsWith(jenkinsHome)) {
             relativePath = configPath.substring(jenkinsHome.length() + 1);
@@ -346,7 +346,7 @@ public class CommonModelFactory {
 
     public static List<SlaveModel> getNodeMonitorsDetails() {
         List<SlaveModel> slaveModels = new ArrayList<>();
-        Computer[] computers = Jenkins.get().getComputers();
+        Computer[] computers = Jenkins.getInstance().getComputers();
 
         if (computers == null || computers.length == 0) {
             return slaveModels;
@@ -397,7 +397,7 @@ public class CommonModelFactory {
     }
 
     private static String getAbsoluteUrl(Computer computer) {
-        String rootUrl = Jenkins.get().getRootUrl();
+        String rootUrl = Jenkins.getInstance().getRootUrl();
         if (rootUrl == null) {
             return computer.getUrl();
         } else {
@@ -445,7 +445,7 @@ public class CommonModelFactory {
      * @return URL for the JOB
      */
     public static String getAbsoluteUrl(String relativeURL) {
-        String rootUrl = Jenkins.get().getRootUrl();
+        String rootUrl = Jenkins.getInstance().getRootUrl();
         if (rootUrl == null) {
             return relativeURL;
         } else {

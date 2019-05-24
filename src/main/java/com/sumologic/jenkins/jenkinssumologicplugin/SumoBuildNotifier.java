@@ -1,6 +1,7 @@
 package com.sumologic.jenkins.jenkinssumologicplugin;
 
 import com.google.gson.Gson;
+import com.sumologic.jenkins.jenkinssumologicplugin.integration.SearchAction;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.ModelFactory;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSender;
 import hudson.FilePath;
@@ -94,6 +95,7 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
             logSender.sendLogs(url, bytes, sourceName, category);
         }
         if(!descriptor.isJobConsoleLogEnabled()){
+            build.addAction(new SearchAction(build));
             sendConsoleLogs(build, taskListener);
         }
     }
