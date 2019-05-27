@@ -118,7 +118,7 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
     }
 
     private boolean isPipeLineJobWithSpecificFlagEnabled(Run run) throws IOException {
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(run.getLogFile()))) {
+        try (BufferedReader bufferedReader = new BufferedReader(run.getLogReader())) {
             long length = Math.min(15, bufferedReader.lines().count());
             for (int i = 0; i < length; i++) {
                 String value = bufferedReader.readLine();

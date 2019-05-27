@@ -486,7 +486,7 @@ public class CommonModelFactory {
     public static void sendConsoleLogs(Run run, TaskListener listener) {
         BufferedReader bufferedReader = null;
         try {
-            bufferedReader = new BufferedReader(new FileReader(run.getLogFile()));
+            bufferedReader = new BufferedReader(run.getLogReader());
             AtomicReference<StringBuilder> stringBuilder = new AtomicReference<>(new StringBuilder());
             AtomicInteger count = new AtomicInteger();
             count.addAndGet(1);
