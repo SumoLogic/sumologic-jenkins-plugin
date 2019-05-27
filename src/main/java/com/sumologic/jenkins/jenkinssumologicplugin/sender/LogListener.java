@@ -1,6 +1,5 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
-import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.integration.SearchAction;
 import hudson.Extension;
 import hudson.console.ConsoleLogFilter;
@@ -12,11 +11,7 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.CONSOLE_ERROR;
 
 /**
  * This class intercepts console output stream for every jenkins build and decorates it with additional functionality.
@@ -30,7 +25,9 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstan
  */
 @Extension(ordinal = -1)
 public class LogListener extends ConsoleLogFilter implements Serializable {
+
     private final static Logger LOG = Logger.getLogger(LogListener.class.getName());
+    private static final long serialVersionUID = -131194971357180671L;
 
     private transient Run run;
     private SumologicOutputStream.State streamState;

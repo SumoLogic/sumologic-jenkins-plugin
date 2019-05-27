@@ -17,14 +17,12 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstan
  */
 public class LogSenderHelper {
 
-    private static LogSenderHelper INSTANCE = null;
+    private static class LogSenderHelperHolder {
+        public static LogSenderHelper logSenderHelper = new LogSenderHelper();
+    }
 
     public static LogSenderHelper getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new LogSenderHelper();
-        }
-
-        return INSTANCE;
+        return LogSenderHelperHolder.logSenderHelper;
     }
 
     public void sendLogsToPeriodicSourceCategory(String data) {

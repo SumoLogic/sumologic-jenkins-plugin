@@ -22,6 +22,7 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstan
 public class SumologicOutputStream extends LineTransformationOutputStream {
 
     static public class State implements Serializable {
+        private static final long serialVersionUID = 1695678360532122143L;
         ByteArrayBuffer buffer;
         Integer currentLines;
 

@@ -36,6 +36,8 @@ public class SumoPipelineLogCollection extends Step {
      */
     public static class Execution extends StepExecution {
 
+        private static final long serialVersionUID = 731578971545010547L;
+
         protected Execution(StepContext context) {
             super(context);
         }

@@ -81,22 +81,27 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
     }
 
     protected void send(Run build, TaskListener taskListener) {
-        Gson gson = new Gson();
-        String json = gson.toJson(ModelFactory.createBuildModel(build, taskListener));
+        try{
+            Gson gson = new Gson();
+            String json = gson.toJson(ModelFactory.createBuildModel(build, taskListener));
 
-        PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
+            PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
 
-        String url = descriptor.getUrl();
-        String sourceName = null;
-        String category = descriptor.getSourceCategory();
-        byte[] bytes = json.getBytes();
-        if(!descriptor.isJobStatusLogEnabled()){
-            LOG.info("Uploading build status to sumologic: " + json);
-            logSender.sendLogs(url, bytes, sourceName, category);
-        }
-        if(!descriptor.isJobConsoleLogEnabled()){
-            build.addAction(new SearchAction(build));
-            sendConsoleLogs(build, taskListener);
+            String url = descriptor.getUrl();
+            String category = descriptor.getSourceCategory();
+            byte[] bytes = json.getBytes();
+            if(!descriptor.isJobStatusLogEnabled()){
+                LOG.info("Uploading build status to sumologic: " + json);
+                logSender.sendLogs(url, bytes, null, category);
+            }
+            if(!descriptor.isJobConsoleLogEnabled()){
+                build.addAction(new SearchAction(build));
+                sendConsoleLogs(build, taskListener);
+            }
+        } catch(Exception e){
+            String errorMessage = GENERATION_ERROR + Arrays.toString(e.getStackTrace());
+            LOG.log(Level.WARNING, errorMessage);
+            taskListener.error(errorMessage);
         }
     }
 

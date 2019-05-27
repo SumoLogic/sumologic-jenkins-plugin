@@ -64,7 +64,11 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         load();
         sumoMetricDataPublisher = new SumoMetricDataPublisher();
         getSumoMetricDataPublisher().publishMetricData(metricDataPrefix);
-        logSenderHelper = LogSenderHelper.getInstance();
+        setLogSenderHelper(LogSenderHelper.getInstance());
+    }
+
+    private static void setLogSenderHelper(LogSenderHelper logSenderHelper){
+        PluginDescriptorImpl.logSenderHelper = logSenderHelper;
     }
 
     public static PluginDescriptorImpl getInstance() {
@@ -108,9 +112,8 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         PluginDescriptorImpl pluginDescriptor = checkIfPluginInUse();
         pluginDescriptor.getSumoMetricDataPublisher().stopReporter();
 
-        if(Logger.getLogger("") != null){
-            Logger.getLogger("").removeHandler(SumoLogHandler.getInstance());
-        }
+        Logger.getLogger("").removeHandler(SumoLogHandler.getInstance());
+
         Map<String, Object> shutDown = new HashMap<>();
         shutDown.put("logType", LogTypeEnum.SLAVE_EVENT.getValue());
         shutDown.put("eventTime", DATETIME_FORMATTER.format(new Date()));

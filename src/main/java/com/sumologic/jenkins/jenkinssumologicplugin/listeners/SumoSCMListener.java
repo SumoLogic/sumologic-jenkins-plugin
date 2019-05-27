@@ -12,6 +12,7 @@ import hudson.model.listeners.SCMListener;
 import hudson.plugins.git.Branch;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.Revision;
+import hudson.plugins.git.util.BuildData;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
 import hudson.scm.SubversionSCM;
@@ -70,18 +71,21 @@ public class SumoSCMListener extends SCMListener {
             GitSCM gitSCM = (GitSCM) scm;
             scmModel.setScmType(gitSCM.getType());
             scmModel.setScmURLs(gitSCM.getKey());
-            Revision rev = Objects.requireNonNull(gitSCM.getBuildData(build)).getLastBuiltRevision();
-            if (rev != null) {
-                String sha1 = fixEmpty(rev.getSha1String());
-                if (sha1 != null && !sha1.isEmpty()) {
-                    scmModel.setRevision(sha1);
+            BuildData buildData = gitSCM.getBuildData(build);
+            if(buildData != null){
+                Revision rev = buildData.getLastBuiltRevision();
+                if (rev != null) {
+                    String sha1 = fixEmpty(rev.getSha1String());
+                    if (sha1 != null && !sha1.isEmpty()) {
+                        scmModel.setRevision(sha1);
+                    }
+                    StringBuilder stringBuilder = new StringBuilder();
+                    rev.getBranches().forEach(branch -> {
+                        String branchName = getBranchName(branch);
+                        stringBuilder.append(branchName).append(" ");
+                    });
+                    scmModel.setBranches(stringBuilder.toString());
                 }
-                StringBuilder stringBuilder = new StringBuilder();
-                rev.getBranches().forEach(branch -> {
-                    String branchName = getBranchName(branch);
-                    stringBuilder.append(branchName).append(" ");
-                });
-                scmModel.setBranches(stringBuilder.toString());
             }
         }
     }

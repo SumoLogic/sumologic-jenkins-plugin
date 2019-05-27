@@ -62,7 +62,6 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
             Get the Last 10 Log Lines from the log file. Check if the lines have SumoPipelineLogCollection, then it is
             eligible for Job status sending.
             */
-            List log = run.getLog(10);
             BuildModel buildModel = generateJobStatusInformation(run);
 
             PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
@@ -119,16 +118,17 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
     }
 
     private boolean isPipeLineJobWithSpecificFlagEnabled(Run run) throws IOException {
-        BufferedReader bufferedReader = null;
-        bufferedReader = new BufferedReader(new FileReader(run.getLogFile()));
-        long length = Math.min(15, bufferedReader.lines().count());
-        for (int i = 0; i < length; i++) {
-            if (bufferedReader.readLine().contains(SUMO_PIPELINE)) {
-                return true;
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(run.getLogFile()))) {
+            long length = Math.min(15, bufferedReader.lines().count());
+            for (int i = 0; i < length; i++) {
+                String value = bufferedReader.readLine();
+                if (value != null && value.contains(SUMO_PIPELINE)) {
+                    return true;
+                }
             }
+            bufferedReader.close();
+            return false;
         }
-        bufferedReader.close();
-        return false;
     }
 
 }

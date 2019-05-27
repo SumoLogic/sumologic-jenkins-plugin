@@ -27,7 +27,7 @@ public class SumoMetricDataPublisher {
     private transient SumoMetricReporter sumoMetricReporter;
 
 
-    public void stopReporter() {
+    public synchronized void stopReporter() {
         LOGGER.info("Stopping Reporter");
         if (sumoMetricReporter != null) {
             sumoMetricReporter.stop();

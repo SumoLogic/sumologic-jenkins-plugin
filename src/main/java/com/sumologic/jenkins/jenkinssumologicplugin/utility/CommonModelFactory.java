@@ -8,7 +8,6 @@ import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import hudson.Util;
 import hudson.console.ConsoleNote;
 import hudson.model.*;
-import hudson.node_monitors.NodeMonitor;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
@@ -363,7 +362,6 @@ public class CommonModelFactory {
         if (computers == null || computers.length == 0) {
             return slaveModels;
         }
-        Collection<NodeMonitor> monitors = ComputerSet.getMonitors();
         for (Computer computer : computers) {
             if (computer != null) {
                 SlaveModel slaveModel = new SlaveModel();
@@ -371,9 +369,29 @@ public class CommonModelFactory {
                 slaveModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
                 slaveModel.setEventSource(EventSourceEnum.PERIODIC_UPDATE.getValue());
                 getComputerStatus(computer, slaveModel);
-                for (NodeMonitor monitor : monitors) {
-                    slaveModel.getMonitorData().putAll(getMonitorData(computer, monitor));
-                }
+
+                computer.getMonitorData().forEach((key, value) -> {
+                    String monitorName = key.split("\\.")[2];
+                    String monitorData = null;
+                    if (value != null) {
+                        Method method = getAccessibleMethod(value.getClass(), "toHtml", new Class<?>[0]);
+                        if (method != null) {
+                            try {
+                                monitorData = (String) method.invoke(value, new Object[0]);
+                            } catch (Exception e) {
+                                monitorData = value.toString();
+                            }
+                        } else {
+                            monitorData = value.toString();
+                        }
+                        Pattern compile = Pattern.compile(MONITOR_PATTERN_MATCHER, Pattern.CASE_INSENSITIVE);
+                        Matcher matcher = compile.matcher(monitorData);
+                        if (matcher.find()) {
+                            monitorData = matcher.group(1);
+                        }
+                    }
+                    slaveModel.getMonitorData().put(monitorName, monitorData);
+                });
                 slaveModels.add(slaveModel);
             }
         }
@@ -425,11 +443,11 @@ public class CommonModelFactory {
         }
     }
 
-    private static Map<String, Object> getMonitorData(Computer computer, NodeMonitor monitor) {
+    /*private static Map<String, Object> getMonitorData(Computer computer, NodeMonitor monitor) {
         Map<String, Object> monitorDetails = new HashMap<>();
         Object data = monitor.data(computer);
         if (data != null) {
-            String monitorName = monitor.getClass().getSimpleName();
+
             String monitorData;
             Method method = getAccessibleMethod(data.getClass(), "toHtml", new Class<?>[0]);
             if (method != null) {
@@ -450,7 +468,7 @@ public class CommonModelFactory {
             }
         }
         return monitorDetails;
-    }
+    }*/
 
     /**
      * @param relativeURL Relative URL
@@ -474,7 +492,7 @@ public class CommonModelFactory {
             count.addAndGet(1);
             bufferedReader.lines().forEach(s -> {
                 String s1 = ConsoleNote.removeNotes(s);
-                stringBuilder.get().append("[").append(DATE_FORMAT.format(new Date()))
+                stringBuilder.get().append("[").append(DATETIME_FORMATTER.format(new Date()))
                         .append("] ").append(" ").append(run.getParent().getDisplayName())
                         .append("#").append(run.getNumber()).append(" ")
                         .append(s1).append("\n");
@@ -486,6 +504,8 @@ public class CommonModelFactory {
             });
             logSenderHelper.sendJobStatusLogs(stringBuilder.toString());
             bufferedReader.close();
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             String errorMessage = CONSOLE_ERROR + Arrays.toString(e.getStackTrace());
             LOG.log(Level.WARNING, errorMessage);

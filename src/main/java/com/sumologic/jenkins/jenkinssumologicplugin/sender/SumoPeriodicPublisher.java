@@ -41,6 +41,10 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
     private LogSenderHelper logSenderHelper;
     private static Set<String> slaveNames = new HashSet<>();
 
+    private static void setSlaves(Set<String> slaveNames){
+        SumoPeriodicPublisher.slaveNames = slaveNames;
+    }
+
     public SumoPeriodicPublisher() {
         super("Sumo Logic Periodic Data Publisher");
         logSender = LogSender.getInstance();
@@ -123,7 +127,7 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
         if (CollectionUtils.isNotEmpty(removedSlaves)) {
             logSenderHelper.sendMultiplePeriodicLogs(removedSlaves);
         }
-        slaveNames = slavesUp;
+        setSlaves(slavesUp);
     }
 
     public void sendRunningJobDetails() {

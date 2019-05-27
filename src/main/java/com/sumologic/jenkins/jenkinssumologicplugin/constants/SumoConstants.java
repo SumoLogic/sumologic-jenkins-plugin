@@ -5,6 +5,7 @@ import org.apache.commons.lang.time.FastDateFormat;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -27,8 +28,6 @@ public class SumoConstants {
     public static final FastDateFormat DATETIME_FORMATTER
             = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss,SSS ZZZZ");
 
-    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS ZZZZ");
-
     public static final String GENERATION_ERROR = "Job Status Generation ended with exception as ";
 
     public static final String CONSOLE_ERROR = "Job Console Logs Sender ended with exception as ";
@@ -46,6 +45,6 @@ public class SumoConstants {
 
     public static final String MONITOR_PATTERN_MATCHER = "error.*?>(.*?)</span>";
 
-    public static final List<String> skipLoggerNames = Arrays.asList(LogSender.class.getName(), "hudson.Extension", "hudson.node_monitors",
-            "jenkins.InitReactorRunner", "hudson.util.BootFailure", "shaded.splk.org.apache.http");
+    public static final List<String> skipLoggerNames = Collections.unmodifiableList(Arrays.asList(LogSender.class.getName(), "hudson.Extension", "hudson.node_monitors",
+            "jenkins.InitReactorRunner", "hudson.util.BootFailure", "shaded.splk.org.apache.http"));
 }

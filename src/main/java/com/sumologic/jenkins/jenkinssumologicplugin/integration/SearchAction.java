@@ -13,8 +13,8 @@ import java.util.Calendar;
  */
 public class SearchAction implements Action {
 
-    private final String URL_TEMPLATE = "https://%s/ui/index.html?reason=st#section/search/@%d,%d@%s";
-    private final int MILLIS_IN_MINUTE = 1000 * 60;
+    private final static String URL_TEMPLATE = "https://%s/ui/index.html?reason=st#section/search/@%d,%d@%s";
+    private final static int MILLIS_IN_MINUTE = 1000 * 60;
     private Run build;
 
     public SearchAction(Run build) {

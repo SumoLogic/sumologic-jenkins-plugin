@@ -8,8 +8,8 @@ import com.google.gson.Gson;
  * Updates by Sourabh Jain 05/2019
  */
 public class QueueModel extends BaseModel {
-    protected int NumItemsInQueue, NumBlockedItemsInQueue;
-    protected long MaxWaitingTime, AverageWaitingTime;
+    protected int numItemsInQueue, numBlockedItemsInQueue;
+    protected long maxWaitingTime, averageWaitingTime;
 
     private long queueId;
     private float queueTime;
@@ -24,42 +24,42 @@ public class QueueModel extends BaseModel {
     }
 
     public QueueModel(int numItemsInQueue, int numBlockedItemsInQueue, long maxWaitingTime, long averageWaitingTime) {
-        NumItemsInQueue = numItemsInQueue;
-        NumBlockedItemsInQueue = numBlockedItemsInQueue;
-        MaxWaitingTime = maxWaitingTime;
-        AverageWaitingTime = averageWaitingTime;
+        this.numItemsInQueue = numItemsInQueue;
+        this.numBlockedItemsInQueue = numBlockedItemsInQueue;
+        this.maxWaitingTime = maxWaitingTime;
+        this.averageWaitingTime = averageWaitingTime;
     }
 
     public int getNumItemsInQueue() {
-        return NumItemsInQueue;
+        return numItemsInQueue;
     }
 
     public void setNumItemsInQueue(int numItemsInQueue) {
-        NumItemsInQueue = numItemsInQueue;
+        this.numItemsInQueue = numItemsInQueue;
     }
 
     public int getNumBlockedItemsInQueue() {
-        return NumBlockedItemsInQueue;
+        return numBlockedItemsInQueue;
     }
 
     public void setNumBlockedItemsInQueue(int numBlockedItemsInQueue) {
-        NumBlockedItemsInQueue = numBlockedItemsInQueue;
+        this.numBlockedItemsInQueue = numBlockedItemsInQueue;
     }
 
     public long getMaxWaitingTime() {
-        return MaxWaitingTime;
+        return maxWaitingTime;
     }
 
     public void setMaxWaitingTime(long maxWaitingTime) {
-        MaxWaitingTime = maxWaitingTime;
+        this.maxWaitingTime = maxWaitingTime;
     }
 
     public long getAverageWaitingTime() {
-        return AverageWaitingTime;
+        return averageWaitingTime;
     }
 
     public void setAverageWaitingTime(long averageWaitingTime) {
-        AverageWaitingTime = averageWaitingTime;
+        this.averageWaitingTime = averageWaitingTime;
     }
 
     public void setQueueId(long queueId) {

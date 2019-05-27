@@ -22,7 +22,6 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstan
  */
 public class LogSender {
     public final static Logger LOG = Logger.getLogger(LogSender.class.getName());
-    private static LogSender INSTANCE = null;
 
     private final HttpClient httpClient;
 
@@ -41,12 +40,12 @@ public class LogSender {
         return "unkown";
     }
 
-    public static LogSender getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new LogSender();
-        }
+    private static class LogSenderHolder {
+        public static LogSender logSender = new LogSender();
+    }
 
-        return INSTANCE;
+    public static LogSender getInstance() {
+        return LogSenderHolder.logSender;
     }
 
     public void sendLogs(String url, byte[] msg, String sumoName, String sumoCategory, String contentType) {

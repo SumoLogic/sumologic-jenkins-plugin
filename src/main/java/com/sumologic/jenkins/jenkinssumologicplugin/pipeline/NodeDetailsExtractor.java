@@ -98,7 +98,8 @@ public class NodeDetailsExtractor extends ChunkVisitor {
         if (ParallelNodeTypeEnum.NORMAL.toString().equals(String.valueOf(scan.getCurrentType()))
                 && ParallelNodeTypeEnum.PARALLEL_BRANCH_START.toString().equals(String.valueOf(scan.getNextType()))
                 && scan.getCurrentParallelStartNode() != null) {
-            List<String> parentIds = scan.getCurrentParallelStartNode().getParents().stream().map(FlowNode::getId).collect(Collectors.toList());
+            FlowNode currentParallelStartNode = scan.getCurrentParallelStartNode();
+            List<String> parentIds = currentParallelStartNode.getParents().stream().map(FlowNode::getId).collect(Collectors.toList());
             Set<String> childrenInParallel = atomNode.getParents().stream().map(FlowNode::getId).collect(Collectors.toSet());
             parentIds.forEach(parentId -> {
                 if (parallelNodes.containsKey(parentId)) {

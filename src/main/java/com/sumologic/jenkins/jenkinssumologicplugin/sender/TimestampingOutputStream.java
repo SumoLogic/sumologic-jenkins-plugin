@@ -13,6 +13,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Logger;
 
+import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.DATETIME_FORMATTER;
+
 /**
  * OutputStream decorator that for each new line in the stream additionally adds a consistent timestamp
  * and forwards the rest of the stream line without modifications.
@@ -22,7 +24,6 @@ import java.util.logging.Logger;
 public class TimestampingOutputStream extends LineTransformationOutputStream {
 
   private static final Logger LOGGER = Logger.getLogger(TimestampingOutputStream.class.getName());
-  private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS ZZZZ");
 
   private OutputStream wrappedStream;
 
@@ -50,14 +51,14 @@ public class TimestampingOutputStream extends LineTransformationOutputStream {
   }
 
   public static byte[] getTimestampAsByteArray(String jobName, String jobNumber) {
-    String timeStampStr = "[" + DATE_FORMAT.format(new Date()) + "] "+" "+jobName+"#"+jobNumber+" ";
+    String timeStampStr = "[" + DATETIME_FORMATTER.format(new Date()) + "] "+" "+jobName+"#"+jobNumber+" ";
     byte[] timestampBytes = timeStampStr.getBytes();
 
     return timestampBytes;
   }
 
   public static byte[] getTimestampAsByteArray() {
-    String timeStampStr = "[" + DATE_FORMAT.format(new Date()) + "] ";
+    String timeStampStr = "[" + DATETIME_FORMATTER.format(new Date()) + "] ";
     byte[] timestampBytes = timeStampStr.getBytes();
 
     return timestampBytes;
