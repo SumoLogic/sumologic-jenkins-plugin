@@ -1,4 +1,4 @@
-[![SumoLogic ICON](/src/main/webapp/SumoLogic_Logo.png)](http://sumologic.com)
+![SumoLogic ICON](/src/main/webapp/sumologic.ico)
 
 # sumologic-publisher
 
