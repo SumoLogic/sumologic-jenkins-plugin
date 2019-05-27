@@ -1,8 +1,56 @@
-![SumoLogic ICON](/src/main/webapp/SumoLogic_Logo.ico)
+[![SumoLogic ICON](/src/main/webapp/SumoLogic_Logo.ico)](http://sumologic.com)
 
 # sumologic-publisher
 
+## Installation
+
+In `manage plugins`, search for `sumologic-publisher` version `2.0` and install the plugin.
+
 ## Configuration
+
+![configuration](/src/main/webapp/Configuration.png)
+
+* **SumoLogic Portal Name** - Eg- service.sumologic.com (where hosted collector resides).
+* **Metric Data Prefix** - Can be the name of the Jenkins Master on which plugin is installed or name with you can distinguish Jenkins Master.
+* **Http Source URL** - Source configured on the sumologic server.
+* **Source Category** - Source Category defined for the source provided in the **Http Source URL**.
+* types of Logs
+	* **Metric Data** - To send metric information.
+	* **Audit Logs** - To send audit information like login, Logout, Login Failure, configuration changes to jobs, changes to jenkins.
+	* **Periodic Logs** - To send periodic information like Node information, Master information, Shutdown events, Jenkins system logs.
+	* **SCM Logs** - To send Source control Management logs related to builds.
+* **Enable Job Status for All Jobs**
+	* Select to send status for all jobs
+* **Enable Console Logs for All Jobs**
+	* Select to send status for all jobs.
+	
+**_`In case of specific Jobs`_**
+
+* For Freestyle and maven Project
+	* Go To Job Configuration
+		* In the Post build Actions, select `Sumo Logic Build Logger`
+		
+		![freestyle](/src/main/webapp/FreeStyle.png)
+		
+* For Pipeline Jobs
+	* Go To Job Configuration
+		* In the pipeline configuration, for normal script make below as the top level.
+		
+		`SumoPipelineLogCollection {
+			// your script
+		 }`
+		 
+         ![pipeline_Normal](/src/main/webapp/Pipeline_Normal.png)
+		
+		* In the pipeline configuration, for declarative pipeline script update the option.
+		
+		`options {
+			SumoPipelineLogCollection()
+			}`
+
+		![pipeline_Dec](/src/main/webapp/Pipeline_Dec.png)
+
+
 
 
 ## Developer Version
