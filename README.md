@@ -12,7 +12,7 @@
 
 In `manage plugins`, search for `sumologic-publisher` version `2.0` and install the plugin.
 
-Tested with version `2.100 - 2.178`.
+Tested with version `2.100 - 2.178`. Later version will be supported. In case of any issue, please raise a [issue](https://github.com/SumoLogic/sumologic-jenkins-plugin/issues)
 
 ## Configuration
 
