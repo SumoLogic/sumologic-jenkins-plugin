@@ -53,17 +53,17 @@ public class SumoMetricReporter extends ScheduledReporter {
     public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters,
                        SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters,
                        SortedMap<String, Timer> timers) {
-        final long timeInMilli = this.clock.getTime() / 1000;
+        final long timeInSec = this.clock.getTime() / 1000;
 
         List<String> messages = new ArrayList<>();
 
         try {
             for (Map.Entry<String, Gauge> gauge : gauges.entrySet()) {
-                reportGauge(gauge.getKey(), gauge.getValue(), timeInMilli, messages);
+                reportGauge(gauge.getKey(), gauge.getValue(), timeInSec, messages);
             }
 
             for (Map.Entry<String, Counter> counter : counters.entrySet()) {
-                reportCounter(counter.getKey(), counter.getValue(), timeInMilli, messages);
+                reportCounter(counter.getKey(), counter.getValue(), timeInSec, messages);
             }
 
             /*for (Map.Entry<String, Histogram> histogram : histograms.entrySet()) {
@@ -75,7 +75,7 @@ public class SumoMetricReporter extends ScheduledReporter {
             }*/
 
             for (Map.Entry<String, Timer> timer : timers.entrySet()) {
-                reportTimer(timer.getKey(), timer.getValue(), timeInMilli, messages);
+                reportTimer(timer.getKey(), timer.getValue(), timeInSec, messages);
             }
 
             logSenderHelper.sendLogsToMetricDataCategory(messages);
@@ -96,10 +96,9 @@ public class SumoMetricReporter extends ScheduledReporter {
     }
 
     private void reportTimer(String name, Timer timer, long timestamp, List<String> messages) throws IOException {
-
         double[] values = prepareDataFromSnapshotForStatistics(timer.getSnapshot());
         for (int i = 0; i < snapshotStatisticsKeys.length; i++) {
-            messages.add(buildMessage(prefix(name, snapshotStatisticsKeys[i]), format(convertDuration(values[i])*1000), timestamp));
+            messages.add(buildMessage(prefix(name, snapshotStatisticsKeys[i]), format(convertDuration(values[i])), timestamp));
         }
 
         //reportMetered(name, timer, timestamp, messages);
