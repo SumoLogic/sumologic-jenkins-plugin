@@ -1,24 +1,27 @@
 # sumologic-publisher
 
+## Configuration
+
+
 ## Developer Version
 
-### Environment
+- ### Environment
 
-The following build environment is required to build the plugin
+	The following build environment is required to build the plugin
 
-* 'Java 1.8' and 'Maven 3.6.x'.
+	* `Java 1.8` and `Maven 3.6.x`.
 
-### Build
+- ### Build
 
-Run 'mvn clean install' or 'mvn package'.
+	Run `mvn clean install` or `mvn package`.
 
-Commands will create a sumologic-publisher.hpi in *target* folder.
+	Commands will create a `sumologic-publisher.hpi` in **_target_** folder.
 
-### Deploy
+- ### Deploy
 
-Upload the sumologic-publisher.hpi in advanced section of *manage plugin* in Jenkins.
+	Upload the `sumologic-publisher.hpi` in advanced section of **_manage plugin_** in Jenkins.
 
-![uploadPlugin.png](/src/main/webapp/uploadPlugin.png)
+	![uploadPlugin.png](/src/main/webapp/uploadPlugin.png)
 
 ## License
 
