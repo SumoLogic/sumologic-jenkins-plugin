@@ -29,7 +29,7 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFa
  * Created by deven on 8/6/15.
  * <p>
  * Periodically publish jenkins system metadata to sumo
- *
+ * <p>
  * Updated by Sourabh Jain 05/2019
  */
 @Extension
@@ -50,19 +50,24 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
 
     @Override
     protected void execute(TaskListener listener) throws IOException, InterruptedException {
-        String logs = ModelFactory.createJenkinsModel(Jenkins.getInstance()).toJson();
+        try {
+            String logs = ModelFactory.createJenkinsModel(Jenkins.getInstance()).toJson();
 
-        PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
-        String url = descriptor.getUrl();
+            PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
+            String url = descriptor.getUrl();
 
-        if(descriptor.isPeriodicLogEnabled()){
-            logSender.sendLogs(url, logs.getBytes(),
-                    null, descriptor.getSourceCategory());
+            //TODO need to uncomment this if same app is used
+            if (descriptor.isPeriodicLogEnabled()) {
+                logSender.sendLogs(url, logs.getBytes(),
+                        null, descriptor.getSourceCategory());
+            }
+
+            sendTasksInQueue();
+            sendNodeDetailsForJenkins();
+            sendRunningJobDetails();
+        } catch (Exception exception) {
+            LOGGER.warning("An error occurred while sending periodic data " + Arrays.toString(exception.getStackTrace()));
         }
-
-        sendTasksInQueue();
-        sendNodeDetailsForJenkins();
-        sendRunningJobDetails();
     }
 
 

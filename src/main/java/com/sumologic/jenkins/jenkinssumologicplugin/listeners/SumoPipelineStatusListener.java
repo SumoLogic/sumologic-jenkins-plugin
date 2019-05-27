@@ -17,12 +17,14 @@ import jenkins.model.Jenkins;
 import javax.annotation.Nonnull;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.*;
+import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.GENERATION_ERROR;
+import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.SUMO_PIPELINE;
 import static com.sumologic.jenkins.jenkinssumologicplugin.pipeline.SumoPipelineJobStatusGenerator.generateJobStatusInformation;
 import static com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory.*;
 
@@ -66,11 +68,11 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
             PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
 
             //For all jobs status || or for specific pipeline jobs
-            if (pluginDescriptor.isJobStatusLogEnabled() || isPipeLineJobWithSpecificFlagEnabled(run, listener)) {
+            if (pluginDescriptor.isJobStatusLogEnabled() || isPipeLineJobWithSpecificFlagEnabled(run)) {
                 logSenderHelper.sendJobStatusLogs(buildModel.toJson());
             }
 
-            if (pluginDescriptor.isJobConsoleLogEnabled() || isPipeLineJobWithSpecificFlagEnabled(run, listener)) {
+            if (pluginDescriptor.isJobConsoleLogEnabled() || isPipeLineJobWithSpecificFlagEnabled(run)) {
                 run.addAction(new SearchAction(run));
                 sendConsoleLogs(run, listener);
             }
@@ -116,22 +118,16 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
         }
     }
 
-    private boolean isPipeLineJobWithSpecificFlagEnabled(Run run, TaskListener listener) {
+    private boolean isPipeLineJobWithSpecificFlagEnabled(Run run) throws IOException {
         BufferedReader bufferedReader = null;
-        try {
-            bufferedReader = new BufferedReader(new FileReader(run.getLogFile()));
-            long length = Math.min(15, bufferedReader.lines().count());
-            for (int i = 0; i < length; i++) {
-                if (bufferedReader.readLine().contains(SUMO_PIPELINE)) {
-                    return true;
-                }
+        bufferedReader = new BufferedReader(new FileReader(run.getLogFile()));
+        long length = Math.min(15, bufferedReader.lines().count());
+        for (int i = 0; i < length; i++) {
+            if (bufferedReader.readLine().contains(SUMO_PIPELINE)) {
+                return true;
             }
-            bufferedReader.close();
-        } catch (Exception e) {
-            String errorMessage = CONSOLE_ERROR + Arrays.toString(e.getStackTrace());
-            LOG.log(Level.WARNING, errorMessage);
-            listener.error(errorMessage);
         }
+        bufferedReader.close();
         return false;
     }
 

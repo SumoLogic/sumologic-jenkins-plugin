@@ -79,8 +79,8 @@ public class SumoMetricReporter extends ScheduledReporter {
             }
 
             logSenderHelper.sendLogsToMetricDataCategory(messages);
-        } catch (IOException e) {
-            LOGGER.warn("Unable to send metrics to SumoLogic");
+        } catch (Exception e) {
+            LOGGER.warn("An error occurred while Sending Metrics " + Arrays.toString(e.getStackTrace()));
         }
     }
 

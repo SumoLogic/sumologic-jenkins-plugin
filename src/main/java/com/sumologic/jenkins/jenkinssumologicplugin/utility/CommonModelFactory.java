@@ -275,20 +275,28 @@ public class CommonModelFactory {
     }
 
     public static void captureUserLoginEvent(final String userName, final AuditEventTypeEnum auditEventTypeEnum) {
-        String message = String.format(auditEventTypeEnum.getMessage(), userName);
-        captureAuditEvent(userName, auditEventTypeEnum, message, null);
+        try {
+            String message = String.format(auditEventTypeEnum.getMessage(), userName);
+            captureAuditEvent(userName, auditEventTypeEnum, message, null);
+        } catch (Exception exception) {
+            LOG.warning("An error occurred while Capturing user login Event " + Arrays.toString(exception.getStackTrace()));
+        }
     }
 
     public static void captureItemAuditEvent(AuditEventTypeEnum auditEventTypeEnum, String itemName, String itemOldValue) {
-        String userName = getUserId();
-        String message = "";
-        if (AuditEventTypeEnum.COPIED.equals(auditEventTypeEnum) || AuditEventTypeEnum.LOCATION_CHANGED.equals(auditEventTypeEnum)) {
-            message = String.format(auditEventTypeEnum.getMessage(), userName, itemName, itemOldValue);
-        } else {
-            message = String.format(auditEventTypeEnum.getMessage(), userName, itemName);
-        }
+        try {
+            String userName = getUserId();
+            String message = "";
+            if (AuditEventTypeEnum.COPIED.equals(auditEventTypeEnum) || AuditEventTypeEnum.LOCATION_CHANGED.equals(auditEventTypeEnum)) {
+                message = String.format(auditEventTypeEnum.getMessage(), userName, itemName, itemOldValue);
+            } else {
+                message = String.format(auditEventTypeEnum.getMessage(), userName, itemName);
+            }
 
-        captureAuditEvent(userName, auditEventTypeEnum, message, null);
+            captureAuditEvent(userName, auditEventTypeEnum, message, null);
+        } catch (Exception exception) {
+            LOG.warning("An error occurred while Capturing Item Audit Event " + Arrays.toString(exception.getStackTrace()));
+        }
     }
 
     public static void captureConfigChanges(final String fileData, final String oldFileData, final AuditEventTypeEnum auditEventTypeEnum,
@@ -336,12 +344,16 @@ public class CommonModelFactory {
     }
 
     public static void updateStatus(Computer computer, String eventSource) {
-        SlaveModel slaveModel = new SlaveModel();
-        slaveModel.setLogType(LogTypeEnum.SLAVE_EVENT.getValue());
-        slaveModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
-        slaveModel.setEventSource(eventSource);
-        getComputerStatus(computer, slaveModel);
-        logSenderHelper.sendLogsToPeriodicSourceCategory(slaveModel.toString());
+        try {
+            SlaveModel slaveModel = new SlaveModel();
+            slaveModel.setLogType(LogTypeEnum.SLAVE_EVENT.getValue());
+            slaveModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
+            slaveModel.setEventSource(eventSource);
+            getComputerStatus(computer, slaveModel);
+            logSenderHelper.sendLogsToPeriodicSourceCategory(slaveModel.toString());
+        } catch (Exception exception) {
+            LOG.warning("An error occurred while Capturing Slave Event " + Arrays.toString(exception.getStackTrace()));
+        }
     }
 
     public static List<SlaveModel> getNodeMonitorsDetails() {
@@ -378,9 +390,9 @@ public class CommonModelFactory {
         slaveModel.setNumberOfExecutors(computer.getNumExecutors());
         slaveModel.setIdle(computer.isIdle());
         AtomicInteger countFreeExecutors = new AtomicInteger();
-        if(computer.getExecutors() != null){
+        if (computer.getExecutors() != null) {
             computer.getExecutors().forEach(executor -> {
-                if(executor.isIdle()){
+                if (executor.isIdle()) {
                     countFreeExecutors.incrementAndGet();
                 }
             });
