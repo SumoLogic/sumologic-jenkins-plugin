@@ -6,6 +6,8 @@
 
 In `manage plugins`, search for `sumologic-publisher` version `2.0` and install the plugin.
 
+Tested with version `2.100 - 2.178`.
+
 ## Configuration
 
 ![configuration](/src/main/webapp/Configuration.png)
