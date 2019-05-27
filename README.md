@@ -14,7 +14,7 @@ In `manage plugins`, search for `sumologic-publisher` version `2.0` and install 
 * **Metric Data Prefix** - Can be the name of the Jenkins Master on which plugin is installed or name with you can distinguish Jenkins Master.
 * **Http Source URL** - Source configured on the sumologic server.
 * **Source Category** - Source Category defined for the source provided in the **Http Source URL**.
-* types of Logs
+* Types of Logs
 	* **Metric Data** - To send metric information.
 	* **Audit Logs** - To send audit information like login, Logout, Login Failure, configuration changes to jobs, changes to jenkins.
 	* **Periodic Logs** - To send periodic information like Node information, Master information, Shutdown events, Jenkins system logs.
@@ -36,17 +36,17 @@ In `manage plugins`, search for `sumologic-publisher` version `2.0` and install 
 	* Go To Job Configuration
 		* In the pipeline configuration, for normal script make below as the top level.
 		
-		`SumoPipelineLogCollection {
-			// your script
-		 }`
+			`SumoPipelineLogCollection {
+				// your script
+		 	}`
 		 
          ![pipeline_Normal](/src/main/webapp/Pipeline_Normal.png)
 		
 		* In the pipeline configuration, for declarative pipeline script update the option.
 		
-		`options {
-			SumoPipelineLogCollection()
-			}`
+			`options {
+				SumoPipelineLogCollection()
+				}`
 
 		![pipeline_Dec](/src/main/webapp/Pipeline_Dec.png)
 
