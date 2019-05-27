@@ -1,3 +1,5 @@
+[![SumoLogic ICON](/src/main/webapp/SumoLogic_Logo.png)](http://sumologic.com)
+
 # sumologic-publisher
 
 ## Configuration
