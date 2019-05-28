@@ -13,10 +13,10 @@ import hudson.model.listeners.RunListener;
 import jenkins.model.CauseOfInterruption;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
+import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -67,15 +67,16 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
             PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
 
             //For all jobs status || or for specific pipeline jobs
-            if (pluginDescriptor.isJobStatusLogEnabled() || isPipeLineJobWithSpecificFlagEnabled(run)) {
-                logSenderHelper.sendJobStatusLogs(buildModel.toJson());
-            }
+            if (StringUtils.isNotEmpty(buildModel.getJobType())) {
+                if (pluginDescriptor.isJobStatusLogEnabled() || isPipeLineJobWithSpecificFlagEnabled(run)) {
+                    logSenderHelper.sendJobStatusLogs(buildModel.toJson());
+                }
 
-            if (pluginDescriptor.isJobConsoleLogEnabled() || isPipeLineJobWithSpecificFlagEnabled(run)) {
-                run.addAction(new SearchAction(run));
-                sendConsoleLogs(run, listener);
+                if (pluginDescriptor.isJobConsoleLogEnabled() || isPipeLineJobWithSpecificFlagEnabled(run)) {
+                    run.addAction(new SearchAction(run));
+                    sendConsoleLogs(run, listener);
+                }
             }
-
 
             updateSlaveInfoAfterJobRun(run);
 

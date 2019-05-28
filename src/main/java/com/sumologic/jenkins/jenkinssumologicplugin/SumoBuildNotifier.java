@@ -2,6 +2,7 @@ package com.sumologic.jenkins.jenkinssumologicplugin;
 
 import com.google.gson.Gson;
 import com.sumologic.jenkins.jenkinssumologicplugin.integration.SearchAction;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.ModelFactory;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSender;
 import hudson.FilePath;
@@ -11,6 +12,7 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import jenkins.tasks.SimpleBuildStep;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
@@ -83,20 +85,23 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
     protected void send(Run build, TaskListener taskListener) {
         try{
             Gson gson = new Gson();
-            String json = gson.toJson(ModelFactory.createBuildModel(build, taskListener));
+            BuildModel buildModel = ModelFactory.createBuildModel(build, taskListener);
+            String json = gson.toJson(buildModel);
 
             PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
 
             String url = descriptor.getUrl();
             String category = descriptor.getSourceCategory();
             byte[] bytes = json.getBytes();
-            if(!descriptor.isJobStatusLogEnabled()){
-                LOG.info("Uploading build status to sumologic: " + json);
-                logSender.sendLogs(url, bytes, null, category);
-            }
-            if(!descriptor.isJobConsoleLogEnabled()){
-                build.addAction(new SearchAction(build));
-                sendConsoleLogs(build, taskListener);
+            if(StringUtils.isNotEmpty(buildModel.getJobType())){
+                if(!descriptor.isJobStatusLogEnabled()){
+                    LOG.info("Uploading build status to sumologic: " + json);
+                    logSender.sendLogs(url, bytes, null, category);
+                }
+                if(!descriptor.isJobConsoleLogEnabled()){
+                    build.addAction(new SearchAction(build));
+                    sendConsoleLogs(build, taskListener);
+                }
             }
         } catch(Exception e){
             String errorMessage = GENERATION_ERROR + Arrays.toString(e.getStackTrace());
