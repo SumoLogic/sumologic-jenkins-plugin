@@ -33,25 +33,25 @@
 		</f:entry>
 
 		<f:entry title="Source Category" field="sourceCategory" description="As provided in SumoLogic source">
-			<f:textbox name="sumoplugin.sourceCategory" default="jenkinsSourceCategory"/>
+			<f:textbox name="sumoplugin.sourceCategory" default="jenkins"/>
 		</f:entry>
 
 		<f:entry title="Logs" description="Select Log Types for Ingestion">
-			<f:checkbox title="Metric Data" field="metricDataEnabled" default="true"/>
-			<f:checkbox title="Audit Logs" field="auditLogEnabled" default="true"/>
-			<f:checkbox title="Periodic Logs" field="periodicLogEnabled" default="true"/>
-			<f:checkbox title="SCM Logs" field="scmLogEnabled" default="false"/>
+			<f:checkbox title="${%Metric Data}" field="metricDataEnabled" default="true"/>
+            <f:checkbox title="${%Audit Logs}" field="auditLogEnabled" default="true"/>
+            <f:checkbox title="${%Periodic Logs}" field="periodicLogEnabled" default="true"/>
+            <f:checkbox title="${%SCM Logs}" field="scmLogEnabled" default="true"/>
 		</f:entry>
 
 		<f:entry
-                title="Enable Job Status for All Jobs"
+                title="Job Status Information"
                 field="jobStatusLogEnabled"
                 description="Check to automatically send Job Status for all Jobs. By default for specific jobs.">
 			<f:checkbox default="false"/>
 		</f:entry>
 
 		<f:entry
-                title="Enable Console Logs for All Jobs"
+                title="Console Logs Information"
                 field="jobConsoleLogEnabled"
                 description="Check to automatically send console logs for all Jobs. By default for specific jobs.">
 			<f:checkbox default="false"/>
