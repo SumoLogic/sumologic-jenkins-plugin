@@ -6,7 +6,7 @@ import hudson.model.TaskListener;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
-import org.apache.http.localserver.LocalTestServer;
+import org.apache.http.localserver.LocalServerTestBase;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestHandler;
 import org.junit.*;
@@ -17,37 +17,33 @@ import org.mockito.Mockito;
 
 import static org.mockito.Mockito.atLeast;
 
-public class SumoBuildNotifierTest {
+public class SumoBuildNotifierTest extends LocalServerTestBase {
   @Rule
   public JenkinsRule j = new JenkinsRule();
   @Mock
   HttpRequestHandler handler;
-  private LocalTestServer server = null;
   private String serverUrl;
 
 
  @Before
   public void setUp() throws Exception {
+    super.setUp();
     handler = Mockito.mock(HttpRequestHandler.class);
-    server = new LocalTestServer(null, null);
-    server.register("/jenkinstest/*", handler);
-    server.start();
+    this.serverBootstrap.registerHandler("/jenkinstest/*", handler);
+    start();
 
-    serverUrl = "http://" + server.getServiceHostName() + ":"
-        + server.getServicePort() + "/jenkinstest/123";
+    serverUrl = "http://" + server.getInetAddress().getCanonicalHostName() + ":"
+        + server.getLocalPort() + "/jenkinstest/123";
 
     // report how to access the server
     System.out.println("LocalTestServer available at " + serverUrl);
     j.get(PluginDescriptorImpl.class).setUrl(serverUrl);
     j.get(PluginDescriptorImpl.class).setPeriodicLogEnabled(true);
-
   }
 
   @After
   public void tearDown() throws Exception {
-
-    server.stop();
-
+    super.shutDown();
   }
 
 
@@ -66,8 +62,5 @@ public class SumoBuildNotifierTest {
     HttpEntityEnclosingRequest request = (HttpEntityEnclosingRequest) captor.getValue();
 
     Assert.assertTrue("Wrong message length.", ModelFactory.createJenkinsModel(j.getInstance()).toJson().length() >= request.getEntity().getContentLength());
-
-
-
   }
 }
