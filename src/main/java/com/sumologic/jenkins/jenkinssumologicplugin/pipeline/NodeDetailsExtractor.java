@@ -50,7 +50,6 @@ public class NodeDetailsExtractor extends ChunkVisitor {
 
     @Override
     public void atomNode(@CheckForNull FlowNode before, @Nonnull FlowNode atomNode, @CheckForNull FlowNode after, @Nonnull ForkScanner scan) {
-        //reverse-order, traverse from end node to start node
         try {
             findWhereCurrentNodeIsExecuting(atomNode);
             findParallelNode(scan, atomNode);
@@ -60,25 +59,17 @@ public class NodeDetailsExtractor extends ChunkVisitor {
         super.atomNode(before, atomNode, after, scan);
     }
 
-    /**
-     * store the jenkins node name where pluginextension ran
-     *
-     * @param atomNode flow  node
-     */
     private void findWhereCurrentNodeIsExecuting(FlowNode atomNode) {
         if (execNodeName == null) {
             StepStartNode nodeStep = getPipelineBlockBoundaryStartNode(atomNode, "node");
             if (nodeStep != null) {
-                //WorkspaceAction is recorded in node start
                 WorkspaceAction workspaceAction = nodeStep.getAction(WorkspaceAction.class);
                 if (workspaceAction != null) {
-                    //store which jenkins node it is built on
                     execNodeName = workspaceAction.getNode();
                     execNodeStartId = nodeStep.getId();
                     if (StringUtils.isEmpty(execNodeName)) {
                         execNodeName = "(master)";
                     }
-                    LOG.log(Level.FINE, "found workspace node id={0}, name={1}", new String[]{execNodeStartId, execNodeName});
                 }
             }
         } else if (atomNode instanceof StepStartNode && atomNode.getId().equals(execNodeStartId)) {
@@ -89,11 +80,6 @@ public class NodeDetailsExtractor extends ChunkVisitor {
         }
     }
 
-    /**
-     * store parallel node info
-     *
-     * @param scan Scanner
-     */
     private void findParallelNode(@Nonnull ForkScanner scan, FlowNode atomNode) {
         if (ParallelNodeTypeEnum.NORMAL.toString().equals(String.valueOf(scan.getCurrentType()))
                 && ParallelNodeTypeEnum.PARALLEL_BRANCH_START.toString().equals(String.valueOf(scan.getNextType()))
@@ -111,12 +97,8 @@ public class NodeDetailsExtractor extends ChunkVisitor {
         }
     }
 
-    /**
-     * Check whether it is an enclose functional node (with BodyInvocationAction)
-     */
     private StepStartNode getPipelineBlockBoundaryStartNode(FlowNode atomNode, String functionName) {
         StepStartNode startNode = null;
-        // it should have BodyInvocationAction
         if (atomNode instanceof StepEndNode) {
             StepEndNode stepEndNode = (StepEndNode) atomNode;
             if (stepEndNode.getStartNode().getDescriptor() != null
