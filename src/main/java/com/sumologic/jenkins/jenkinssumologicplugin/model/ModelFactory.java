@@ -54,7 +54,7 @@ public class ModelFactory {
     return new JenkinsModel(queueModel, slaveModel, jenkins.getDescription());
   }
 
-  public static BuildModel createBuildModel(Run build, TaskListener taskListener) {
+  public static BuildModel createBuildModel(Run build) {
     BuildModel buildModel = null;
     if (build instanceof MavenModuleSetBuild) {
       MavenModuleSetBuildModel mBuildModel = new MavenModuleSetBuildModel();
@@ -72,7 +72,7 @@ public class ModelFactory {
       Map<MavenModule, MavenBuild> modules = mbuild.getModuleLastBuilds();
 
       for (MavenBuild module : modules.values()) {
-        mBuildModel.addModule((MavenModuleBuildModel) createBuildModel(module, taskListener));
+        mBuildModel.addModule((MavenModuleBuildModel) createBuildModel(module));
       }
       buildModel = mBuildModel;
     } else if (build instanceof MavenBuild) {

@@ -43,7 +43,7 @@ public class ModelFactoryTest {
 
     String jsonExpected = "{\"name\":\"MockJob\",\"hudsonVersion\":\"?\",\"result\":\"SUCCESS\",\"number\":101,\"start_time\":0,\"duration\":";
     String replace = jsonExpected.replace("?", Hudson.getVersion().toString());
-    String json = ModelFactory.createBuildModel(build, null).toJson();
+    String json = ModelFactory.createBuildModel(build).toJson();
 
     assertThat(json, new StringContains(replace));
   }
