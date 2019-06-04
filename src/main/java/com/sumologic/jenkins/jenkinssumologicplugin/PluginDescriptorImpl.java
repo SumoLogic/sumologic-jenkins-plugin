@@ -67,6 +67,9 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
             getSumoMetricDataPublisher().stopReporter();
             getSumoMetricDataPublisher().publishMetricData(metricDataPrefix);
         }
+        if(!metricDataEnabled){
+            getSumoMetricDataPublisher().stopReporter();
+        }
         setLogSenderHelper(LogSenderHelper.getInstance());
     }
 
@@ -108,6 +111,9 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         if(metricDataEnabled && metricDataPrefix != null){
             getSumoMetricDataPublisher().stopReporter();
             getSumoMetricDataPublisher().publishMetricData(metricDataPrefix);
+        }
+        if(!metricDataEnabled){
+            getSumoMetricDataPublisher().stopReporter();
         }
         return configOk;
     }
