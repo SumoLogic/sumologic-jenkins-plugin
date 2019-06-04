@@ -17,7 +17,6 @@ import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,7 +46,7 @@ public class CommonModelFactory {
     public static void populateGeneric(BuildModel buildModel, Run buildInfo) {
 
         buildModel.setLogType(LogTypeEnum.JOB_STATUS.getValue());
-        buildModel.setName(buildInfo.getParent().getDisplayName());
+        buildModel.setName(buildInfo.getParent().getFullName());
         buildModel.setNumber(buildInfo.getNumber());
         buildModel.setDescription(buildInfo.getParent().getDescription());
         if (Hudson.getVersion() != null) {
