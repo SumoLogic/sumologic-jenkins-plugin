@@ -63,7 +63,10 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         super(SumoBuildNotifier.class);
         load();
         sumoMetricDataPublisher = new SumoMetricDataPublisher();
-        getSumoMetricDataPublisher().publishMetricData(metricDataPrefix);
+        if(metricDataEnabled && metricDataPrefix != null){
+            getSumoMetricDataPublisher().stopReporter();
+            getSumoMetricDataPublisher().publishMetricData(metricDataPrefix);
+        }
         setLogSenderHelper(LogSenderHelper.getInstance());
     }
 
@@ -102,7 +105,10 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         jobConsoleLogEnabled = formData.getBoolean("jobConsoleLogEnabled");
         scmLogEnabled = formData.getBoolean("scmLogEnabled");
         save();
-        //getSumoMetricDataPublisher().publishMetricData();
+        if(metricDataEnabled && metricDataPrefix != null){
+            getSumoMetricDataPublisher().stopReporter();
+            getSumoMetricDataPublisher().publishMetricData(metricDataPrefix);
+        }
         return configOk;
     }
 

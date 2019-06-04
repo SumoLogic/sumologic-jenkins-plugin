@@ -3,7 +3,6 @@ package com.sumologic.jenkins.jenkinssumologicplugin.metrics;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
-import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import jenkins.metrics.api.Metrics;
 import org.slf4j.Logger;
@@ -35,7 +34,7 @@ public class SumoMetricDataPublisher {
     }
 
     public synchronized void publishMetricData(String metricDataPrefix) {
-        LOGGER.info("Starting Reporter");
+        LOGGER.info("Starting Reporter with prefix as "+metricDataPrefix);
         MetricRegistry metricRegistry = Metrics.metricRegistry();
 
         sumoMetricReporter = SumoMetricReporter
