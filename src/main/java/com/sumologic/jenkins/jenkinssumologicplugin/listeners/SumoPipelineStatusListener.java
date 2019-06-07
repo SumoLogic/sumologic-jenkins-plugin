@@ -69,7 +69,8 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
             //For all jobs status || or for specific pipeline jobs
             if (StringUtils.isNotEmpty(buildModel.getJobType())) {
                 if (pluginDescriptor.isJobStatusLogEnabled() || isPipeLineJobWithSpecificFlagEnabled(run)) {
-                    logSenderHelper.sendJobStatusLogs(buildModel.toJson());
+                    //LOG.info("Job Status is "+buildModel.toJson());
+                    logSenderHelper.sendJobStatusBySeparatingTestResultAndStages(buildModel);
                 }
 
                 if (pluginDescriptor.isJobConsoleLogEnabled() || isPipeLineJobWithSpecificFlagEnabled(run)) {

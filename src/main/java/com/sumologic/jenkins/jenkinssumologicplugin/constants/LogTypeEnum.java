@@ -11,6 +11,8 @@ package com.sumologic.jenkins.jenkinssumologicplugin.constants;
 public enum LogTypeEnum {
 
     JOB_STATUS("Job_Status"),
+    TEST_RESULT("Test_Result"),
+    PIPELINE_STAGES("Pipeline_Stages"),
     AUDIT_EVENT("Audit_Event"),
     QUEUE_EVENT("Queue_Event"),
     SLAVE_EVENT("Slave_Event"),

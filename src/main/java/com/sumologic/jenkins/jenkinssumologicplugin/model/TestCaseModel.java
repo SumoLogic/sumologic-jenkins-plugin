@@ -71,4 +71,8 @@ public class TestCaseModel {
     public void setTotalDuration(double totalDuration) {
         this.totalDuration = totalDuration;
     }
+
+    public void setTestResults(List<TestCaseResultModel> testResults) {
+        this.testResults = testResults;
+    }
 }

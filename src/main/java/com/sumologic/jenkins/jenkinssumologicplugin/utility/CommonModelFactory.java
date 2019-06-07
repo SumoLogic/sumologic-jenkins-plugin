@@ -447,33 +447,6 @@ public class CommonModelFactory {
         }
     }
 
-    /*private static Map<String, Object> getMonitorData(Computer computer, NodeMonitor monitor) {
-        Map<String, Object> monitorDetails = new HashMap<>();
-        Object data = monitor.data(computer);
-        if (data != null) {
-
-            String monitorData;
-            Method method = getAccessibleMethod(data.getClass(), "toHtml", new Class<?>[0]);
-            if (method != null) {
-                try {
-                    monitorData = (String) method.invoke(data, new Object[0]);
-                } catch (Exception e) {
-                    monitorData = data.toString();
-                }
-            } else {
-                monitorData = data.toString();
-            }
-            Pattern compile = Pattern.compile(MONITOR_PATTERN_MATCHER, Pattern.CASE_INSENSITIVE);
-            Matcher matcher = compile.matcher(monitorData);
-            if (matcher.find()) {
-                monitorDetails.put(monitorName, "warning:" + matcher.group(1));
-            } else {
-                monitorDetails.put(monitorName, monitorData);
-            }
-        }
-        return monitorDetails;
-    }*/
-
     /**
      * @param relativeURL Relative URL
      * @return URL for the JOB
@@ -500,11 +473,11 @@ public class CommonModelFactory {
                         .append("] ").append(" ").append(run.getParent().getDisplayName())
                         .append("#").append(run.getNumber()).append(" ")
                         .append(s1).append("\n");
-                count.incrementAndGet();
-                if (count.get() % DIVIDER_FOR_MESSAGES == 1) {
+                if (count.get() % DIVIDER_FOR_MESSAGES == 0) {
                     logSenderHelper.sendJobStatusLogs(stringBuilder.toString());
                     stringBuilder.set(new StringBuilder());
                 }
+                count.incrementAndGet();
             });
             logSenderHelper.sendJobStatusLogs(stringBuilder.toString());
             bufferedReader.close();
