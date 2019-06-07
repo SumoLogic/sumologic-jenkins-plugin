@@ -53,6 +53,7 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
     private String sourceCategory;
     private String metricDataPrefix;
     private boolean auditLogEnabled;
+    private boolean keepOldConfigData;
     private boolean metricDataEnabled;
     private boolean periodicLogEnabled;
     private boolean jobStatusLogEnabled;
@@ -107,6 +108,8 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         jobStatusLogEnabled = formData.getBoolean("jobStatusLogEnabled");
         jobConsoleLogEnabled = formData.getBoolean("jobConsoleLogEnabled");
         scmLogEnabled = formData.getBoolean("scmLogEnabled");
+        keepOldConfigData = formData.getBoolean("keepOldConfigData");
+
         save();
         if(metricDataEnabled && metricDataPrefix != null){
             getSumoMetricDataPublisher().stopReporter();
@@ -245,6 +248,13 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         this.sourceCategory = sourceCategory;
     }
 
+    public boolean isKeepOldConfigData() {
+        return keepOldConfigData;
+    }
+
+    public void setKeepOldConfigData(boolean keepOldConfigData) {
+        this.keepOldConfigData = keepOldConfigData;
+    }
 
     private boolean isHandlerStarted;
 

@@ -12,7 +12,8 @@ import java.util.Set;
  */
 public class PipelineStageModel {
 
-    private String id;
+    private int id;
+    private String stageId;
     private String name;
     private String status;
     private String startTime;
@@ -24,7 +25,7 @@ public class PipelineStageModel {
     private List<String> steps;
     private String error;
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -60,7 +61,7 @@ public class PipelineStageModel {
         this.steps = steps;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
@@ -110,5 +111,13 @@ public class PipelineStageModel {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public String getStageId() {
+        return stageId;
+    }
+
+    public void setStageId(String stageId) {
+        this.stageId = stageId;
     }
 }

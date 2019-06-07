@@ -312,11 +312,16 @@ public class CommonModelFactory {
 
     public static void captureAuditEvent(final String userId, final AuditEventTypeEnum auditEventTypeEnum,
                                          final String message, Map<String, Object> fileDetails) {
-        User user = User.getById(userId, false);
-        String userFullName = userId;
-        if (user != null) {
-            userFullName = user.getFullName();
+        String userFullName = null;
+        try {
+            User user = User.getById(userId, false);
+            if (user != null) {
+                userFullName = user.getFullName();
+            }
+        } catch (Exception exception) {
+            userFullName = userId;
         }
+
         AuditModel auditModel = new AuditModel(userFullName, userId, auditEventTypeEnum.getValue(),
                 DATETIME_FORMATTER.format(new Date()), message, LogTypeEnum.AUDIT_EVENT.getValue(), fileDetails);
 

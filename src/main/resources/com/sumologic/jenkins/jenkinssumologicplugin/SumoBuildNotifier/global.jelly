@@ -36,6 +36,13 @@
 			<f:textbox name="sumoplugin.sourceCategory" default="jenkins"/>
 		</f:entry>
 
+		<f:entry
+                title="Keep Old Configuration for Jobs"
+                field="keepOldConfigData"
+                description="Check to save old configuration for the jobs.">
+			<f:checkbox default="false"/>
+		</f:entry>
+
 		<f:entry title="Logs" description="Select Log Types for Ingestion">
 			<f:checkbox title="${%Metric Data}" field="metricDataEnabled" default="true"/>
             <f:checkbox title="${%Audit Logs}" field="auditLogEnabled" default="true"/>

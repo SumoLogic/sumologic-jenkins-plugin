@@ -1,5 +1,6 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.listeners;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.AuditEventTypeEnum;
 import hudson.Extension;
 import hudson.XmlFile;
@@ -15,7 +16,6 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Objects;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -58,18 +58,24 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
 
             String encodeFileToString = Base64.getEncoder().encodeToString(file.asString().getBytes());
 
-            File oldFile = getOldFile(file);
-            byte[] bytes = fileToString(oldFile);
-            String oldFileAsString = Base64.getEncoder().encodeToString(bytes);
+            PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+            String oldFileAsString = null;
+
+            if(pluginDescriptor.isKeepOldConfigData()){
+                File oldFile = getOldFile(file);
+                byte[] bytes = fileToString(oldFile);
+                oldFileAsString = Base64.getEncoder().encodeToString(bytes);
+
+                try {
+                    Files.copy(file.getFile().toPath(), oldFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    LOG.warning("Can not copy the data to old file");
+                }
+            }
+
 
             if (!encodeFileToString.equals(oldFileAsString)) {
                 captureConfigChanges(encodeFileToString, oldFileAsString, AuditEventTypeEnum.CHANGES_IN_CONFIG, getRelativeJenkinsHomePath(file.getFile().getAbsolutePath()));
-            }
-
-            try {
-                Files.copy(file.getFile().toPath(), oldFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
-                LOG.warning("Can not copy the data to old file");
             }
             if (!(saveable instanceof Item)) {
                 captureItemAuditEvent(AuditEventTypeEnum.UPDATED, file.getFile().getName(), null);

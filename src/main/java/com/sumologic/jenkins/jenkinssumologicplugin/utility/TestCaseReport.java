@@ -56,7 +56,9 @@ public class TestCaseReport {
             hudson.tasks.junit.TestResult result1 = (hudson.tasks.junit.TestResult) result;
             for (SuiteResult suite : result1.getSuites()) {
                 for (CaseResult testCase : suite.getCases()) {
-                    caseResults.add(convertTestResult(testCase));
+                    if (!testCase.isSkipped()) {
+                        caseResults.add(convertTestResult(testCase));
+                    }
                 }
             }
         }
@@ -69,16 +71,9 @@ public class TestCaseReport {
         testCaseResultModel.setClassName(testCase.getClassName());
         testCaseResultModel.setDuration(testCase.getDuration());
         testCaseResultModel.setTestName(testCase.getName());
-        testCaseResultModel.setSkipped(testCase.isSkipped());
-        testCaseResultModel.setSkippedMessage(testCase.getSkippedMessage());
-        testCaseResultModel.setFailedSince(testCase.getFailedSince());
         testCaseResultModel.setErrorDetails(testCase.getErrorDetails());
         testCaseResultModel.setErrorStackTrace(testCase.getErrorStackTrace());
-        if (!testCase.isSkipped()) {
-            testCaseResultModel.setStatus(testCase.isFailed() ? "Failed" : "Passed");
-        } else {
-            testCaseResultModel.setStatus("Skipped");
-        }
+        testCaseResultModel.setStatus(testCase.isFailed() ? "Failed" : "Passed");
         return testCaseResultModel;
     }
 }

@@ -15,6 +15,7 @@ import org.jenkinsci.plugins.workflow.graphanalysis.LabelledChunkFinder;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.DATETIME_FORMATTER;
@@ -36,7 +37,12 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
         if (flowExecution != null) {
             NodeDetailsExtractor visitor = new NodeDetailsExtractor(workflowRun);
             ForkScanner.visitSimpleChunks(flowExecution.getCurrentHeads(), visitor, new LabelledChunkFinder());
-            return createStages(visitor);
+            List<PipelineStageModel> stages = createStages(visitor);
+            AtomicInteger counter = new AtomicInteger(1);
+            stages.forEach(pipelineStageModel -> {
+                pipelineStageModel.setId(counter.getAndIncrement());
+            });
+            return stages;
         }
         return new ArrayList<>();
     }
@@ -51,7 +57,6 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
             stageNodes.forEach(stageNodeExt -> {
                 PipelineStageModel stage = getNodeDetails(stageNodeExt, workspaceNodes);
                 List<String> steps = new ArrayList<>();
-
 
                 stageNodeExt.getStageFlowNodes().forEach(atomFlowNodeExt -> {
                     String stepDetails = getStepDetails(atomFlowNodeExt, workspaceNodes);
@@ -91,12 +96,15 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
             stringBuilder.append(",StepErrorType - ").append(stageNodeExt.getError().getType()).append(",")
                     .append("StepErrorMessage - ").append(stageNodeExt.getError().getMessage());
         }
-        return stringBuilder.toString();
+        String step = stringBuilder.toString();
+        step = step.replace("{", "(");
+        step = step.replace("}", ")");
+        return step;
     }
 
     private PipelineStageModel getNodeDetails(FlowNodeExt stageNodeExt, Map<String, String> workspaceNodes) {
         final PipelineStageModel pipelineStageDTO = new PipelineStageModel();
-        pipelineStageDTO.setId(stageNodeExt.getId());
+        pipelineStageDTO.setStageId(stageNodeExt.getId());
         pipelineStageDTO.setName(stageNodeExt.getName());
         pipelineStageDTO.setStatus(convertToResult(stageNodeExt.getStatus()));
         pipelineStageDTO.setStartTime(DATETIME_FORMATTER.format(new Date(stageNodeExt.getStartTimeMillis())));
@@ -113,7 +121,9 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
 
         ErrorExt error = stageNodeExt.getError();
         if (error != null) {
-            String errorMessage = "StepErrorType - " + stageNodeExt.getError().getType() + "," + "StepErrorMessage - " + stageNodeExt.getError().getMessage() + "";
+            String errorMessage = "StageErrorType - " + stageNodeExt.getError().getType() + "," + "StageErrorMessage - " + stageNodeExt.getError().getMessage() + "";
+            errorMessage = errorMessage.replace("{", "(");
+            errorMessage = errorMessage.replace("}", ")");
             pipelineStageDTO.setError(errorMessage);
         }
         return pipelineStageDTO;
