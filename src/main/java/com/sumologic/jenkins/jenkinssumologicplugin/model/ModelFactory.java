@@ -39,7 +39,7 @@ public class ModelFactory {
       averagewait = averagewait / queueLength;
     }
 
-    QueueModel queueModel = new QueueModel(queueLength,queueLength - queue.countBuildableItems(), maxwait, averagewait);
+    QueueModel queueModel = new QueueModel();
 
     int numFreeExecutors=0;
 
@@ -49,7 +49,7 @@ public class ModelFactory {
       }
 
     }
-    SlaveModel slaveModel = new SlaveModel(jenkins.getComputers().length - 1, jenkins.getNumExecutors(), numFreeExecutors);
+    SlaveModel slaveModel = new SlaveModel(jenkins.getNumExecutors(), numFreeExecutors);
 
     return new JenkinsModel(queueModel, slaveModel, jenkins.getDescription());
   }

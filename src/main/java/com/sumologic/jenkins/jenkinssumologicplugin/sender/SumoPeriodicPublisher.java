@@ -60,14 +60,16 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
             PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
             String url = descriptor.getUrl();
 
-            //TODO need to uncomment this if same app is used
-            if (descriptor.isPeriodicLogEnabled()) {
+            //comment this if same app is used
+            /*if (descriptor.isPeriodicLogEnabled()) {
                 logSender.sendLogs(url, logs.getBytes(),
                         null, descriptor.getSourceCategory());
-            }
+            }*/
+
+            sendNodeDetailsForJenkins();
 
             sendTasksInQueue();
-            sendNodeDetailsForJenkins();
+
             sendRunningJobDetails();
         } catch (Exception exception) {
             LOGGER.warning("An error occurred while sending periodic data " + Arrays.toString(exception.getStackTrace()));

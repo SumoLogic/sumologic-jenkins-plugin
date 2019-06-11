@@ -51,7 +51,7 @@ public class SumoBuildNotifierTest extends LocalServerTestBase {
         super.shutDown();
     }
 
-    @Ignore
+    @Test
     public void testSendBuildData() throws Exception {
         ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
         FreeStyleProject project = j.createFreeStyleProject();
@@ -70,7 +70,8 @@ public class SumoBuildNotifierTest extends LocalServerTestBase {
 
         HttpEntityEnclosingRequest request = (HttpEntityEnclosingRequest) captor.getValue();
 
-        //Assert.assertTrue("Message too short.", ModelFactory.createBuildModel(build).toJson().length() <= request.getEntity().getContentLength());
+        Assert.assertTrue("Message too short.", ModelFactory
+                .createBuildModel(build, (PluginDescriptorImpl) j.getInstance().getDescriptor(SumoBuildNotifier.class)).toJson().length() <= request.getEntity().getContentLength());
     }
 
     @Test

@@ -11,7 +11,7 @@ import java.util.Map;
  * Updated by Sourabh Jain 05/2019
  */
 public class SlaveModel extends BaseModel {
-    protected int numberOfSlaves, numberOfExecutors, numberOfFreeExecutors;
+    protected int numberOfExecutors, numberOfFreeExecutors;
 
     private String nodeName;
     private String nodeLabel;
@@ -29,19 +29,19 @@ public class SlaveModel extends BaseModel {
 
     }
 
-    public SlaveModel(int numberOfSlaves, int numberOfExecutors, int numberOfFreeExecutors) {
-        this.numberOfSlaves = numberOfSlaves;
+    public SlaveModel(int numberOfExecutors, int numberOfFreeExecutors) {
+        //this.numberOfSlaves = numberOfSlaves;
         this.numberOfExecutors = numberOfExecutors;
         this.numberOfFreeExecutors = numberOfFreeExecutors;
     }
 
-    public int getNumberOfSlaves() {
+    /*public int getNumberOfSlaves() {
         return numberOfSlaves;
     }
 
     public void setNumberOfSlaves(int numberOfSlaves) {
         this.numberOfSlaves = numberOfSlaves;
-    }
+    }*/
 
     public int getNumberOfExecutors() {
         return numberOfExecutors;

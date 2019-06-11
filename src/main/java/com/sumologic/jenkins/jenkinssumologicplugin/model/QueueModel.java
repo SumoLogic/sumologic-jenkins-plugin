@@ -8,8 +8,8 @@ import com.google.gson.Gson;
  * Updates by Sourabh Jain 05/2019
  */
 public class QueueModel extends BaseModel {
-    protected int numItemsInQueue, numBlockedItemsInQueue;
-    protected long maxWaitingTime, averageWaitingTime;
+    /*protected int numItemsInQueue, numBlockedItemsInQueue;
+    protected long maxWaitingTime, averageWaitingTime;*/
 
     private long queueId;
     private float queueTime;
@@ -23,7 +23,7 @@ public class QueueModel extends BaseModel {
 
     }
 
-    public QueueModel(int numItemsInQueue, int numBlockedItemsInQueue, long maxWaitingTime, long averageWaitingTime) {
+    /*public QueueModel(int numItemsInQueue, int numBlockedItemsInQueue, long maxWaitingTime, long averageWaitingTime) {
         this.numItemsInQueue = numItemsInQueue;
         this.numBlockedItemsInQueue = numBlockedItemsInQueue;
         this.maxWaitingTime = maxWaitingTime;
@@ -61,7 +61,7 @@ public class QueueModel extends BaseModel {
     public void setAverageWaitingTime(long averageWaitingTime) {
         this.averageWaitingTime = averageWaitingTime;
     }
-
+*/
     public void setQueueId(long queueId) {
         this.queueId = queueId;
     }
