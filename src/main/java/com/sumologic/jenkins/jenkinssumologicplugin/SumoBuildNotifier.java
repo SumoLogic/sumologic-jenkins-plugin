@@ -83,27 +83,27 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
     }
 
     protected void send(Run build, TaskListener taskListener) {
-        try{
+        try {
+            PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
             Gson gson = new Gson();
-            BuildModel buildModel = ModelFactory.createBuildModel(build);
+            BuildModel buildModel = ModelFactory.createBuildModel(build, descriptor);
             String json = gson.toJson(buildModel);
 
-            PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
 
             String url = descriptor.getUrl();
             String category = descriptor.getSourceCategory();
             byte[] bytes = json.getBytes();
-            if(StringUtils.isNotEmpty(buildModel.getJobType())){
-                if(!descriptor.isJobStatusLogEnabled()){
+            if (StringUtils.isNotEmpty(buildModel.getJobType())) {
+                if (!descriptor.isJobStatusLogEnabled()) {
                     LOG.info("Uploading build status to sumologic: " + json);
                     logSender.sendLogs(url, bytes, null, category);
                 }
-                if(!descriptor.isJobConsoleLogEnabled()){
+                if (!descriptor.isJobConsoleLogEnabled()) {
                     build.addAction(new SearchAction(build));
                     sendConsoleLogs(build, taskListener);
                 }
             }
-        } catch(Exception e){
+        } catch (Exception e) {
             String errorMessage = GENERATION_ERROR + Arrays.toString(e.getStackTrace());
             LOG.log(Level.WARNING, errorMessage);
             taskListener.error(errorMessage);

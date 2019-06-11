@@ -58,21 +58,19 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
     @Override
     public void onCompleted(Run run, @Nonnull TaskListener listener) {
         try {
+            PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
             /*
             Get the Last 10 Log Lines from the log file. Check if the lines have SumoPipelineLogCollection, then it is
             eligible for Job status sending.
             */
-            BuildModel buildModel = generateJobStatusInformation(run);
-
-            PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+            BuildModel buildModel = generateJobStatusInformation(run, pluginDescriptor);
 
             //For all jobs status || or for specific pipeline jobs
             if (StringUtils.isNotEmpty(buildModel.getJobType())) {
                 if (pluginDescriptor.isJobStatusLogEnabled() || isPipeLineJobWithSpecificFlagEnabled(run)) {
                     //LOG.info("Job Status is "+buildModel.toJson());
-                    logSenderHelper.sendJobStatusBySeparatingTestResultAndStages(buildModel);
+                    logSenderHelper.sendJobStatusLogs(buildModel.toJson());
                 }
-
                 if (pluginDescriptor.isJobConsoleLogEnabled() || isPipeLineJobWithSpecificFlagEnabled(run)) {
                     run.addAction(new SearchAction(run));
                     sendConsoleLogs(run, listener);
@@ -119,7 +117,7 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
         }
     }
 
-    private boolean isPipeLineJobWithSpecificFlagEnabled(Run run) throws IOException {
+    public static boolean isPipeLineJobWithSpecificFlagEnabled(Run run) throws IOException {
         try (BufferedReader bufferedReader = new BufferedReader(run.getLogReader())) {
             long length = Math.min(15, bufferedReader.lines().count());
             for (int i = 0; i < length; i++) {

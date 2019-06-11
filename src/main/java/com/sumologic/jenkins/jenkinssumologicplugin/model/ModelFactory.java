@@ -1,5 +1,6 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenModule;
@@ -8,7 +9,6 @@ import hudson.maven.reporters.SurefireAggregatedReport;
 import hudson.model.Computer;
 import hudson.model.Queue;
 import hudson.model.Run;
-import hudson.model.TaskListener;
 import hudson.tasks.test.TestResult;
 import jenkins.model.Jenkins;
 
@@ -54,11 +54,11 @@ public class ModelFactory {
     return new JenkinsModel(queueModel, slaveModel, jenkins.getDescription());
   }
 
-  public static BuildModel createBuildModel(Run build) {
+  public static BuildModel createBuildModel(Run build, PluginDescriptorImpl pluginDescriptor) {
     BuildModel buildModel = null;
     if (build instanceof MavenModuleSetBuild) {
       MavenModuleSetBuildModel mBuildModel = new MavenModuleSetBuildModel();
-      CommonModelFactory.populateGeneric(mBuildModel, build);
+      CommonModelFactory.populateGeneric(mBuildModel, build, pluginDescriptor);
       MavenModuleSetBuild mbuild = (MavenModuleSetBuild) build;
       SurefireAggregatedReport surefireAggregatedReport = mbuild.getAction(SurefireAggregatedReport.class);
       if (surefireAggregatedReport != null) {
@@ -72,17 +72,17 @@ public class ModelFactory {
       Map<MavenModule, MavenBuild> modules = mbuild.getModuleLastBuilds();
 
       for (MavenBuild module : modules.values()) {
-        mBuildModel.addModule((MavenModuleBuildModel) createBuildModel(module));
+        mBuildModel.addModule((MavenModuleBuildModel) createBuildModel(module, pluginDescriptor));
       }
       buildModel = mBuildModel;
     } else if (build instanceof MavenBuild) {
       MavenBuild mbuild = (MavenBuild) build;
       MavenModuleBuildModel mBuildModel = new MavenModuleBuildModel();
-      CommonModelFactory.populateGeneric(mBuildModel, mbuild);
+      CommonModelFactory.populateGeneric(mBuildModel, mbuild, pluginDescriptor);
       buildModel = mBuildModel;
     } else {
       buildModel = new BuildModel();
-      CommonModelFactory.populateGeneric(buildModel, build);
+      CommonModelFactory.populateGeneric(buildModel, build, pluginDescriptor);
     }
     return buildModel;
   }

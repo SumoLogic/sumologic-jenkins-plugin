@@ -36,13 +36,13 @@ public class TestCaseReportTest {
         build.addAction(abstractTestResultAction);
 
         List<TestCaseResultModel> testCaseReport = TestCaseReport.getTestCaseReport(build);
-        assertEquals(testCaseReport.size(), 3);
+        assertEquals(testCaseReport.size(), 6);
         assertEquals(testCaseReport.stream()
                 .filter(testCaseResultModel -> "Failed".equals(testCaseResultModel.getStatus())).count(), 1);
         System.out.println(testCaseReport);
     }
 
-    private TestResult createTestResult() throws IOException {
+    public static TestResult createTestResult() throws IOException {
         TestResult testResult = new TestResult();
 
         URL resource = Thread.currentThread().getContextClassLoader().getResource("xml/testReport.xml");

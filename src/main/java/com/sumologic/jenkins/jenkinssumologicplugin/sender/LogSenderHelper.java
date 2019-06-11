@@ -16,8 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.DIVIDER_FOR_MESSAGES;
-import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.GRAPHITE_CONTENT_TYPE;
+import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.*;
 
 /**
  * Sumo Logic plugin for Jenkins model.
@@ -71,6 +70,17 @@ public class LogSenderHelper {
                 , null, pluginDescriptor.getSourceCategory());
     }
 
+    public void sendConsoleLogs(String data, String jobName, int buildNumber, String stageName){
+        PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+
+        String sourceName = jobName+"#"+buildNumber;
+        if(StringUtils.isNotEmpty(stageName)){
+            sourceName = sourceName+"#"+stageName;
+        }
+        LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), data.getBytes()
+                , sourceName, pluginDescriptor.getSourceCategory());
+    }
+
     public void sendAuditLogs(String data) {
         PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
         if (pluginDescriptor.isAuditLogEnabled()) {
@@ -97,38 +107,22 @@ public class LogSenderHelper {
         return convertedMessages;
     }
 
-    public void sendJobStatusBySeparatingTestResultAndStages(BuildModel buildModel) {
+    public static void sendTestResult(TestCaseModel testCaseModel, BuildModel buildModel) {
         PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
         Gson gson = new Gson();
 
-        sendTestResult(buildModel, pluginDescriptor, gson);
-        sendPipelineStages(buildModel, pluginDescriptor, gson);
-
-        if(CollectionUtils.isNotEmpty(buildModel.getStages())){
-            buildModel.getStages().clear();
-        }
-        if(buildModel.getTestResult() != null && CollectionUtils.isNotEmpty(buildModel.getTestResult().getTestResults())){
-            buildModel.getTestResult().getTestResults().clear();
-        }
-
-        LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), buildModel.toJson().getBytes()
-                , null, pluginDescriptor.getSourceCategory());
-    }
-
-    private void sendTestResult(BuildModel buildModel, PluginDescriptorImpl pluginDescriptor, Gson gson) {
         Map<String, Object> data = new HashMap<>();
 
         data.put("logType", LogTypeEnum.TEST_RESULT.getValue());
         data.put("name", buildModel.getName());
         data.put("number", buildModel.getNumber());
 
-        if (buildModel.getTestResult() != null) {
-            TestCaseModel testResult = buildModel.getTestResult();
-            if (CollectionUtils.isNotEmpty(testResult.getTestResults())) {
-                List<TestCaseResultModel> testResults = testResult.getTestResults();
+        if (testCaseModel != null) {
+            if (CollectionUtils.isNotEmpty(testCaseModel.getTestResults())) {
+                List<TestCaseResultModel> testResults = testCaseModel.getTestResults();
 
                 //100 test cases at a time
-                List<List<TestCaseResultModel>> partition = Lists.partition(testResults, 100);
+                List<List<TestCaseResultModel>> partition = Lists.partition(testResults, NUMBER_OF_TEST_CASES);
                 for(List<TestCaseResultModel> testCaseResultModels : partition){
                     testCaseResultModels.forEach(testCase -> {
                         if("Failed".equals(testCase.getStatus())){
@@ -144,18 +138,18 @@ public class LogSenderHelper {
         }
     }
 
-    private void sendPipelineStages(BuildModel buildModel, PluginDescriptorImpl pluginDescriptor, Gson gson) {
+    public static void sendPipelineStages(List<PipelineStageModel> stages, BuildModel buildModel) {
+        PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+        Gson gson = new Gson();
         Map<String, Object> data = new HashMap<>();
 
         data.put("logType", LogTypeEnum.PIPELINE_STAGES.getValue());
         data.put("name", buildModel.getName());
         data.put("number", buildModel.getNumber());
 
-        if (CollectionUtils.isNotEmpty(buildModel.getStages())) {
-            List<PipelineStageModel> stages = buildModel.getStages();
-
+        if (CollectionUtils.isNotEmpty(stages)) {
             //20 Stages at a time
-            List<List<PipelineStageModel>> partition = Lists.partition(stages, 20);
+            List<List<PipelineStageModel>> partition = Lists.partition(stages, NUMBER_OF_STAGES);
             for(List<PipelineStageModel> stageModels : partition){
                 data.put("stages", stageModels);
                 LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), gson.toJson(data).getBytes()
@@ -164,7 +158,7 @@ public class LogSenderHelper {
         }
     }
 
-    private String format(String data) {
+    private static String format(String data) {
         if(StringUtils.isNotEmpty(data)){
             data = data.replace("{", "(");
             return data.replace("}", ")");

@@ -1,5 +1,6 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.utility;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.AuditEventTypeEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.EventSourceEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.LogTypeEnum;
@@ -19,6 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import java.io.BufferedReader;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -27,6 +29,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.*;
+import static com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper.sendTestResult;
 import static com.sumologic.jenkins.jenkinssumologicplugin.utility.TestCaseReport.getTestCaseReport;
 import static org.apache.commons.lang.reflect.MethodUtils.getAccessibleMethod;
 
@@ -43,7 +46,7 @@ public class CommonModelFactory {
 
     private static LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
 
-    public static void populateGeneric(BuildModel buildModel, Run buildInfo) {
+    public static void populateGeneric(BuildModel buildModel, Run buildInfo, PluginDescriptorImpl pluginDescriptor) {
 
         buildModel.setLogType(LogTypeEnum.JOB_STATUS.getValue());
         buildModel.setName(buildInfo.getParent().getFullName());
@@ -74,7 +77,10 @@ public class CommonModelFactory {
         getLabelAndNodeName(buildInfo, buildModel);
 
         TestCaseModel testCaseModel = getTestResultSummary(buildInfo);
-        if (testCaseModel != null) {
+        if (testCaseModel != null && pluginDescriptor.isJobStatusLogEnabled()
+                && StringUtils.isNotEmpty(buildModel.getJobType())) {
+            sendTestResult(testCaseModel, buildModel);
+            testCaseModel.setTestResults(null);
             buildModel.setTestResult(testCaseModel);
         }
 
@@ -467,19 +473,32 @@ public class CommonModelFactory {
             AtomicReference<StringBuilder> stringBuilder = new AtomicReference<>(new StringBuilder());
             AtomicInteger count = new AtomicInteger();
             count.addAndGet(1);
+            AtomicBoolean sendLogs = new AtomicBoolean(true);
             bufferedReader.lines().forEach(s -> {
                 String s1 = ConsoleNote.removeNotes(s);
-                stringBuilder.get().append("[").append(DATETIME_FORMATTER.format(new Date()))
-                        .append("] ").append(" ").append(run.getParent().getDisplayName())
-                        .append("#").append(run.getNumber()).append(" ")
-                        .append(s1).append("\n");
-                if (count.get() % DIVIDER_FOR_MESSAGES == 0) {
-                    logSenderHelper.sendJobStatusLogs(stringBuilder.toString());
-                    stringBuilder.set(new StringBuilder());
+
+                // if pipeline jobs all console logs are send via other node. Only logs which are after and before pipeline
+                // will be sent here
+                if(s1.startsWith(START_OF_PIPELINE)){
+                    sendLogs.set(false);
                 }
-                count.incrementAndGet();
+
+                if(!s1.startsWith(PIPELINE) && sendLogs.get()){
+                    stringBuilder.get().append("[").append(DATETIME_FORMATTER.format(new Date()))
+                            .append("] ").append(" ")
+                            .append(s1).append("\n");
+                    if (count.get() % DIVIDER_FOR_MESSAGES == 0) {
+                        logSenderHelper.sendConsoleLogs(stringBuilder.toString(), run.getParent().getFullName(), run.getNumber(), null);
+                        stringBuilder.set(new StringBuilder());
+                    }
+                    count.incrementAndGet();
+                }
+
+                if(s1.startsWith(END_OF_PIPELINE)){
+                    sendLogs.set(true);
+                }
             });
-            logSenderHelper.sendJobStatusLogs(stringBuilder.toString());
+            logSenderHelper.sendConsoleLogs(stringBuilder.toString(), run.getParent().getFullName(), run.getNumber(), null);
             bufferedReader.close();
         } catch (RuntimeException e) {
             throw e;

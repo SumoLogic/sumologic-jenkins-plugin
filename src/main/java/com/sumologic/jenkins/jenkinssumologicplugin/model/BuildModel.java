@@ -2,7 +2,6 @@ package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
 import com.google.gson.Gson;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,7 +30,6 @@ public class BuildModel {
     private String nodeName;
     private TestCaseModel testResult;
     private Map<String, Object> jobMetaData;
-    private List<PipelineStageModel> stages;
 
     public String toJson() {
         Gson gson = new Gson();
@@ -204,13 +202,5 @@ public class BuildModel {
 
     public void setJobMetaData(Map<String, Object> jobMetaData) {
         this.jobMetaData = jobMetaData;
-    }
-
-    public List<PipelineStageModel> getStages() {
-        return stages;
-    }
-
-    public void setStages(List<PipelineStageModel> stages) {
-        this.stages = stages;
     }
 }

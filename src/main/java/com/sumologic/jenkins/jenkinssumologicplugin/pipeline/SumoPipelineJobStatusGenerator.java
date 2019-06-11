@@ -1,17 +1,17 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.pipeline;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.PipelineStageModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory;
-import hudson.model.Result;
 import hudson.model.Run;
-import hudson.model.TaskListener;
 import org.apache.commons.collections.CollectionUtils;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper.sendPipelineStages;
 
 /**
  * Sumo Logic plugin for Jenkins model.
@@ -23,22 +23,21 @@ import java.util.logging.Logger;
 public class SumoPipelineJobStatusGenerator {
     private static final Logger LOG = Logger.getLogger(SumoPipelineJobStatusGenerator.class.getName());
 
-    public static BuildModel generateJobStatusInformation(final Run buildInfo) {
+    public static BuildModel generateJobStatusInformation(final Run buildInfo, PluginDescriptorImpl pluginDescriptor) {
         final BuildModel buildModel = new BuildModel();
 
-        CommonModelFactory.populateGeneric(buildModel, buildInfo);
+        CommonModelFactory.populateGeneric(buildModel, buildInfo, pluginDescriptor);
 
         for (SumoPipelineJobIdentifier extendListener : SumoPipelineJobIdentifier.canApply(buildInfo)) {
             try {
-                List<PipelineStageModel> stages = extendListener.extractPipelineStages(buildInfo);
-                if (CollectionUtils.isNotEmpty(stages)) {
-                    buildModel.setStages(stages);
+                List<PipelineStageModel> stages = extendListener.extractPipelineStages(buildInfo, pluginDescriptor);
+                if (CollectionUtils.isNotEmpty(stages) && pluginDescriptor.isJobStatusLogEnabled()) {
+                    sendPipelineStages(stages, buildModel);
                 }
             } catch (Exception e) {
                 LOG.log(Level.SEVERE, "failed to extract job info", e);
             }
         }
-
         return buildModel;
     }
 }

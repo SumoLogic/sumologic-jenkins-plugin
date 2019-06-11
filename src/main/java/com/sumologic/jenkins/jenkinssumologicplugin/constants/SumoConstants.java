@@ -3,7 +3,6 @@ package com.sumologic.jenkins.jenkinssumologicplugin.constants;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSender;
 import org.apache.commons.lang.time.FastDateFormat;
 
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -47,4 +46,15 @@ public class SumoConstants {
 
     public static final List<String> skipLoggerNames = Collections.unmodifiableList(Arrays.asList(LogSender.class.getName(), "hudson.Extension", "hudson.node_monitors",
             "jenkins.InitReactorRunner", "hudson.util.BootFailure", "shaded.splk.org.apache.http"));
+
+    public static final String PIPELINE = "[Pipeline]";
+
+    public static final String START_OF_PIPELINE = "[Pipeline] Start of Pipeline";
+
+    public static final String END_OF_PIPELINE = "[Pipeline] End of Pipeline";
+
+    public static final int NUMBER_OF_TEST_CASES = 100;
+
+    public static final int NUMBER_OF_STAGES = 20;
+
 }
