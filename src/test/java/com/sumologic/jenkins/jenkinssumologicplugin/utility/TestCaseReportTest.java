@@ -1,15 +1,16 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.utility;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.BaseTest;
+import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.SumoBuildNotifier;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.TestCaseResultModel;
 import hudson.model.FreeStyleProject;
 import hudson.model.Run;
 import hudson.tasks.junit.TestResult;
 import hudson.tasks.junit.TestResultAction;
 import hudson.tasks.test.AbstractTestResultAction;
-import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,10 +19,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestCaseReportTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+public class TestCaseReportTest extends BaseTest {
 
     @Test
     public void getTestCaseReport() throws Exception {
@@ -36,6 +34,7 @@ public class TestCaseReportTest {
         build.addAction(abstractTestResultAction);
 
         List<TestCaseResultModel> testCaseReport = TestCaseReport.getTestCaseReport(build);
+        CommonModelFactory.populateGeneric(new BuildModel(), build, j.jenkins.getDescriptorByType(PluginDescriptorImpl.class));
         assertEquals(testCaseReport.size(), 6);
         assertEquals(testCaseReport.stream()
                 .filter(testCaseResultModel -> "Failed".equals(testCaseResultModel.getStatus())).count(), 1);

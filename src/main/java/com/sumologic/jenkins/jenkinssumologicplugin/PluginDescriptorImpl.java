@@ -272,7 +272,7 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         Timer.get().schedule(PluginDescriptorImpl.getInstance()::registerHandler, 3, TimeUnit.MINUTES);
     }
 
-    private void registerHandler() {
+    public void registerHandler() {
         Handler[] handlers = Logger.getLogger("").getHandlers();
         for (Handler handler : handlers) {
             if (handler instanceof SumoLogHandler) {

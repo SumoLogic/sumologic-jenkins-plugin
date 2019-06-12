@@ -1,6 +1,5 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.listeners;
 
-import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.AuditEventTypeEnum;
 import hudson.Extension;
 import hudson.model.Item;
