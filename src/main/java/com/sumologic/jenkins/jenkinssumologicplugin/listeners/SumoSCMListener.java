@@ -1,7 +1,6 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.listeners;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
-import com.sumologic.jenkins.jenkinssumologicplugin.SumoBuildNotifier;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.LogTypeEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.ScmModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
@@ -17,7 +16,10 @@ import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
 import hudson.scm.SubversionSCM;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,7 +41,7 @@ public class SumoSCMListener extends SCMListener {
 
             scmModel.setLogType(LogTypeEnum.SCM_STATUS.getValue());
             scmModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
-            scmModel.setJobName(build.getParent().getDisplayName());
+            scmModel.setJobName(build.getParent().getFullName());
             scmModel.setBuildNumber(build.getNumber());
 
             List<String> changes = new ArrayList<>();

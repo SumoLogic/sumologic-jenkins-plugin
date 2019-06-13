@@ -1,12 +1,14 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
-import hudson.console.ConsoleNote;
 import hudson.console.LineTransformationOutputStream;
 import hudson.model.Run;
 import org.apache.http.util.ByteArrayBuffer;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.Serializable;
 import java.util.logging.Logger;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.DIVIDER_FOR_MESSAGES;
@@ -51,7 +53,7 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
         logSender = LogSender.getInstance();
 
         this.descriptor = descriptor;
-        this.jobName = build.getParent().getDisplayName();
+        this.jobName = build.getParent().getFullName();
         this.jobNumber = String.valueOf(build.getNumber());
 
         this.url = descriptor.getUrl();
