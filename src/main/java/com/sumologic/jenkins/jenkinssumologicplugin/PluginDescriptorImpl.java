@@ -64,17 +64,17 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         super(SumoBuildNotifier.class);
         load();
         sumoMetricDataPublisher = new SumoMetricDataPublisher();
-        if(metricDataEnabled && metricDataPrefix != null){
+        if (metricDataEnabled && metricDataPrefix != null) {
             getSumoMetricDataPublisher().stopReporter();
             getSumoMetricDataPublisher().publishMetricData(metricDataPrefix);
         }
-        if(!metricDataEnabled){
+        if (!metricDataEnabled) {
             getSumoMetricDataPublisher().stopReporter();
         }
         setLogSenderHelper(LogSenderHelper.getInstance());
     }
 
-    private static void setLogSenderHelper(LogSenderHelper logSenderHelper){
+    private static void setLogSenderHelper(LogSenderHelper logSenderHelper) {
         PluginDescriptorImpl.logSenderHelper = logSenderHelper;
     }
 
@@ -111,11 +111,11 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         keepOldConfigData = formData.getBoolean("keepOldConfigData");
 
         save();
-        if(metricDataEnabled && metricDataPrefix != null){
+        if (metricDataEnabled && metricDataPrefix != null) {
             getSumoMetricDataPublisher().stopReporter();
             getSumoMetricDataPublisher().publishMetricData(metricDataPrefix);
         }
-        if(!metricDataEnabled){
+        if (!metricDataEnabled) {
             getSumoMetricDataPublisher().stopReporter();
         }
         return configOk;

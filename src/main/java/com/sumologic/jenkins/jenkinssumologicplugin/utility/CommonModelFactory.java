@@ -18,6 +18,7 @@ import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -466,7 +467,7 @@ public class CommonModelFactory {
         }
     }
 
-    public static void sendConsoleLogs(Run run, TaskListener listener) {
+    public static void sendConsoleLogs(Run run, TaskListener listener) throws IOException {
         BufferedReader bufferedReader = null;
         try {
             bufferedReader = new BufferedReader(run.getLogReader());
@@ -479,11 +480,11 @@ public class CommonModelFactory {
 
                 // if pipeline jobs all console logs are send via other node. Only logs which are after and before pipeline
                 // will be sent here
-                if(s1.startsWith(START_OF_PIPELINE)){
+                if (s1.startsWith(START_OF_PIPELINE)) {
                     sendLogs.set(false);
                 }
 
-                if(!s1.startsWith(PIPELINE) && sendLogs.get()){
+                if (!s1.startsWith(PIPELINE) && sendLogs.get()) {
                     stringBuilder.get().append("[").append(DATETIME_FORMATTER.format(new Date()))
                             .append("] ").append(" ")
                             .append(s1).append("\n");
@@ -494,18 +495,21 @@ public class CommonModelFactory {
                     count.incrementAndGet();
                 }
 
-                if(s1.startsWith(END_OF_PIPELINE)){
+                if (s1.startsWith(END_OF_PIPELINE)) {
                     sendLogs.set(true);
                 }
             });
             logSenderHelper.sendConsoleLogs(stringBuilder.toString(), run.getParent().getFullName(), run.getNumber(), null);
-            bufferedReader.close();
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
             String errorMessage = CONSOLE_ERROR + Arrays.toString(e.getStackTrace());
             LOG.log(Level.WARNING, errorMessage);
             listener.error(errorMessage);
+        } finally {
+            if (bufferedReader != null) {
+                bufferedReader.close();
+            }
         }
     }
 }

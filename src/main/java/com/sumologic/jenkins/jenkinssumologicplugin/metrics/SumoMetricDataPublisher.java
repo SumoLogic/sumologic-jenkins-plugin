@@ -27,8 +27,8 @@ public class SumoMetricDataPublisher {
 
 
     public synchronized void stopReporter() {
-        LOGGER.info("Stopping Reporter");
         if (sumoMetricReporter != null) {
+            LOGGER.info("Stopping Reporter");
             sumoMetricReporter.stop();
         }
     }

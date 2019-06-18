@@ -186,6 +186,7 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
                         if(StringUtils.isNotEmpty(writer.toString())){
                             messages.add(writer.toString());
                         }
+                        writer.close();
                     }
 
                     ErrorAction error = node.getError();
