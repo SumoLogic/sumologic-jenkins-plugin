@@ -72,7 +72,7 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
 
             sendRunningJobDetails();
         } catch (Exception exception) {
-            LOGGER.warning("An error occurred while sending periodic data " + Arrays.toString(exception.getStackTrace()));
+            LOGGER.log(Level.WARNING, "An error occurred while sending periodic data ", exception);
         }
     }
 

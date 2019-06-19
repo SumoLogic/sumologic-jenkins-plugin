@@ -18,7 +18,6 @@ import org.apache.commons.lang.StringUtils;
 import javax.annotation.Nonnull;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,8 +48,8 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
             captureAuditEvent(userId, AuditEventTypeEnum.JOB_STARTED, message, null);
             updateSlaveInfoAfterJobRun(run);
         } catch (Exception e) {
-            String errorMessage = GENERATION_ERROR + Arrays.toString(e.getStackTrace());
-            LOG.log(Level.WARNING, errorMessage);
+            String errorMessage = GENERATION_ERROR + e.getMessage();
+            LOG.log(Level.WARNING, errorMessage, e);
             listener.error(errorMessage);
         }
     }
@@ -98,8 +97,8 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
                 }
             }
         } catch (Exception e) {
-            String errorMessage = GENERATION_ERROR + Arrays.toString(e.getStackTrace());
-            LOG.log(Level.WARNING, errorMessage);
+            String errorMessage = GENERATION_ERROR + e.getMessage();
+            LOG.log(Level.WARNING, errorMessage, e);
             listener.error(errorMessage);
         }
     }

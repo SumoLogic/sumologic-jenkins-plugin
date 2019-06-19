@@ -17,7 +17,6 @@ import hudson.scm.SCM;
 import hudson.scm.SubversionSCM;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -62,8 +61,8 @@ public class SumoSCMListener extends SCMListener {
                 logSenderHelper.sendJobStatusLogs(scmModel.toString());
             }
         } catch (Exception exception) {
-            String errorMessage = SCM_ERROR + Arrays.toString(exception.getStackTrace());
-            LOG.log(Level.WARNING, errorMessage);
+            String errorMessage = SCM_ERROR + exception.getMessage();
+            LOG.log(Level.WARNING, errorMessage, exception);
             listener.error(errorMessage);
         }
     }

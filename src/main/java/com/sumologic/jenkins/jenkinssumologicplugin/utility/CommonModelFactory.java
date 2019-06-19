@@ -284,7 +284,7 @@ public class CommonModelFactory {
             String message = String.format(auditEventTypeEnum.getMessage(), userName);
             captureAuditEvent(userName, auditEventTypeEnum, message, null);
         } catch (Exception exception) {
-            LOG.warning("An error occurred while Capturing user login Event " + Arrays.toString(exception.getStackTrace()));
+            LOG.log(Level.WARNING, "An error occurred while Capturing user login Event", exception);
         }
     }
 
@@ -300,7 +300,7 @@ public class CommonModelFactory {
 
             captureAuditEvent(userName, auditEventTypeEnum, message, null);
         } catch (Exception exception) {
-            LOG.warning("An error occurred while Capturing Item Audit Event " + Arrays.toString(exception.getStackTrace()));
+            LOG.log(Level.WARNING, "An error occurred while Capturing Item Audit Event", exception);
         }
     }
 
@@ -362,7 +362,7 @@ public class CommonModelFactory {
             getComputerStatus(computer, slaveModel);
             logSenderHelper.sendLogsToPeriodicSourceCategory(slaveModel.toString());
         } catch (Exception exception) {
-            LOG.warning("An error occurred while Capturing Slave Event " + Arrays.toString(exception.getStackTrace()));
+            LOG.log(Level.WARNING, "An error occurred while Capturing Slave Event", exception);
         }
     }
 
@@ -503,8 +503,8 @@ public class CommonModelFactory {
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            String errorMessage = CONSOLE_ERROR + Arrays.toString(e.getStackTrace());
-            LOG.log(Level.WARNING, errorMessage);
+            String errorMessage = CONSOLE_ERROR + e.getMessage();
+            LOG.log(Level.WARNING, errorMessage, e);
             listener.error(errorMessage);
         } finally {
             if (bufferedReader != null) {

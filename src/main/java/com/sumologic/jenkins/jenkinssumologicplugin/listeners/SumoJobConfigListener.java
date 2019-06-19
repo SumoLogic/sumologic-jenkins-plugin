@@ -14,9 +14,9 @@ import org.apache.commons.codec.digest.DigestUtils;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -61,7 +61,7 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
             PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
             String oldFileAsString = null;
 
-            if(pluginDescriptor.isKeepOldConfigData()){
+            if (pluginDescriptor.isKeepOldConfigData()) {
                 File oldFile = getOldFile(file);
                 byte[] bytes = fileToString(oldFile);
                 oldFileAsString = Base64.getEncoder().encodeToString(bytes);
@@ -81,7 +81,7 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
                 captureItemAuditEvent(AuditEventTypeEnum.UPDATED, file.getFile().getName(), null);
             }
         } catch (Exception exception) {
-            LOG.warning("An error occurred while Checking the Job Configuration" + Arrays.toString(exception.getStackTrace()));
+            LOG.log(Level.WARNING, "An error occurred while Checking the Job Configuration", exception);
         }
     }
 
@@ -90,11 +90,11 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
         String pathForOldFile = file.getFile().getParent() + "/" + file.getFile().getName().replace(".xml", "") + "_old.xml";
         if (file.getFile().getParentFile() != null) {
             File parentFile = file.getFile().getParentFile();
-            if(parentFile.listFiles() != null){
+            if (parentFile.listFiles() != null) {
                 File[] files = parentFile.listFiles();
-                if(files != null){
+                if (files != null) {
                     for (File fileNames : files) {
-                        if(fileNames != null){
+                        if (fileNames != null) {
                             if (fileNames.getPath().matches(pathForOldFile)) {
                                 oldFile = fileNames;
                                 break;
@@ -125,7 +125,7 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception ex) {
-            LOG.warning("Conversion to string failed for " + file.toPath());
+            LOG.log(Level.WARNING, "Conversion to string failed for "+file.toPath(), ex);
         } finally {
             if (reader != null) {
                 reader.close();

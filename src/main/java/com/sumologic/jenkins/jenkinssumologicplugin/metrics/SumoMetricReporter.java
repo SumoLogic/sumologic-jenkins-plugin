@@ -2,13 +2,14 @@ package com.sumologic.jenkins.jenkinssumologicplugin.metrics;
 
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.*;
+import com.sumologic.jenkins.jenkinssumologicplugin.listeners.SumoSCMListener;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Sumo Logic plugin for Jenkins model.
@@ -19,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class SumoMetricReporter extends ScheduledReporter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SumoMetricReporter.class);
+    private static final Logger LOG = Logger.getLogger(SumoSCMListener.class.getName());
 
     private final Clock clock;
     private final String prefix;
@@ -80,7 +81,7 @@ public class SumoMetricReporter extends ScheduledReporter {
 
             logSenderHelper.sendLogsToMetricDataCategory(messages);
         } catch (Exception e) {
-            LOGGER.warn("An error occurred while Sending Metrics " + Arrays.toString(e.getStackTrace()));
+            LOG.log(Level.WARNING, "An error occurred while Sending Metrics", e);
         }
     }
 

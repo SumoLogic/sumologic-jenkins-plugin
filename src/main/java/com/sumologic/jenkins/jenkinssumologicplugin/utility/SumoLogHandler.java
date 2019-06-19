@@ -5,7 +5,8 @@ import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.LogTypeEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 
-import java.util.Arrays;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -74,8 +75,11 @@ public class SumoLogHandler extends Handler {
             logMessage.put("logMessage", formatMessage(record));
             logMessage.put("logSource", record.getLoggerName());
             if (record.getThrown() != null) {
-                String errorMessage = Arrays.toString(record.getThrown().getStackTrace());
-                logMessage.put("logStackTrace", errorMessage);
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                record.getThrown().printStackTrace(pw);
+                pw.close();
+                logMessage.put("logStackTrace", sw.toString());
             }
             return gson.toJson(logMessage);
         }

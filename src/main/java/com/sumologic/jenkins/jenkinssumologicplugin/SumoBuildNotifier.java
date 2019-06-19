@@ -17,7 +17,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,8 +58,8 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
         try {
             send(build, null);
         } catch (Exception e) {
-            String errorMessage = GENERATION_ERROR + Arrays.toString(e.getStackTrace());
-            LOG.log(Level.WARNING, errorMessage);
+            String errorMessage = GENERATION_ERROR + e.getMessage();
+            LOG.log(Level.WARNING, errorMessage, e);
             listener.error(errorMessage);
         }
         return true;
@@ -71,8 +70,8 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
         try {
             send(run, taskListener);
         } catch (Exception e) {
-            String errorMessage = GENERATION_ERROR + Arrays.toString(e.getStackTrace());
-            LOG.log(Level.WARNING, errorMessage);
+            String errorMessage = GENERATION_ERROR + e.getMessage();
+            LOG.log(Level.WARNING, errorMessage, e);
             taskListener.error(errorMessage);
         }
     }
@@ -104,8 +103,8 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
                 }
             }
         } catch (Exception e) {
-            String errorMessage = GENERATION_ERROR + Arrays.toString(e.getStackTrace());
-            LOG.log(Level.WARNING, errorMessage);
+            String errorMessage = GENERATION_ERROR + e.getMessage();
+            LOG.log(Level.WARNING, errorMessage, e);
             taskListener.error(errorMessage);
         }
     }

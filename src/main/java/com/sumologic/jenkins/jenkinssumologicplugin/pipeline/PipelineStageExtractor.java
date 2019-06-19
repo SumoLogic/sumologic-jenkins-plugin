@@ -24,6 +24,7 @@ import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import java.io.StringWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -63,7 +64,7 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
                 return stages;
             }
         } catch (Exception e){
-            LOG.warning("Error while generating stages "+Arrays.toString(e.getStackTrace()));
+            LOG.log(Level.WARNING, "Error while generating stages ", e);
         }
         return new ArrayList<>();
     }
@@ -207,7 +208,7 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
                         }
                     }
                 } catch (Exception e) {
-                    LOG.warning(Arrays.toString(e.getStackTrace()));
+                    LOG.log(Level.WARNING, "Error Sending console Logs", e);
                 }
             }
             logsNodeWise.forEach((nodeName, messages) -> {
