@@ -53,8 +53,8 @@ public class SumoConstants {
 
     public static final String END_OF_PIPELINE = "[Pipeline] End of Pipeline";
 
-    public static final int NUMBER_OF_TEST_CASES = 100;
+    public static final int NUMBER_OF_TEST_CASES = 10;
 
-    public static final int NUMBER_OF_STAGES = 20;
+    public static final int NUMBER_OF_STAGES = 5;
 
 }
