@@ -1,5 +1,6 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.BaseTest;
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.SumoBuildNotifier;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.ModelFactory;
@@ -10,82 +11,58 @@ import hudson.tasks.Shell;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
-import org.apache.http.localserver.LocalServerTestBase;
 import org.apache.http.protocol.HttpContext;
-import org.apache.http.protocol.HttpRequestHandler;
-import org.junit.*;
-import org.jvnet.hudson.test.JenkinsRule;
+import org.junit.Assert;
+import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import static org.mockito.Mockito.atLeast;
 
-public class SumoBuildNotifierTest extends LocalServerTestBase {
-  @Rule
-  public JenkinsRule j = new JenkinsRule();
-  @Mock
-  HttpRequestHandler handler;
-  private String serverUrl;
+public class SumoBuildNotifierTest extends BaseTest {
 
+    @Test
+    public void testSendBuildData() throws Exception {
+        j.jenkins.getDescriptorByType(PluginDescriptorImpl.class).setJobStatusLogEnabled(false);
+        j.jenkins.getDescriptorByType(PluginDescriptorImpl.class).setJobConsoleLogEnabled(false);
 
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
-    handler = Mockito.mock(HttpRequestHandler.class);
-    this.serverBootstrap.registerHandler("/jenkinstest/*", handler);
-    start();
+        ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
+        FreeStyleProject project = j.createFreeStyleProject();
+        for (int i = 0; i < 30; i++) {
+            project.getBuildersList().add(new Shell("Echo Hello world for sumo  build notifier"));
+        }
 
-    serverUrl = "http://" + server.getInetAddress().getCanonicalHostName() + ":"
-        + server.getLocalPort() + "/jenkinstest/123";
+        project.getPublishersList().add(new SumoBuildNotifier());
 
-    // report how to access the server
-    System.out.println("LocalTestServer available at " + serverUrl);
-    j.get(PluginDescriptorImpl.class).setUrl(serverUrl);
-  }
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
 
-  @After
-  public void tearDown() throws Exception {
-    super.shutDown();
-  }
+        Mockito.verify(handler, atLeast(1)).handle(
+                captor.capture(),
+                Mockito.isA(HttpResponse.class),
+                Mockito.isA(HttpContext.class));
 
-  @Test
-  public void testSendBuildData() throws Exception {
-    ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
-    FreeStyleProject project = j.createFreeStyleProject();
+        HttpEntityEnclosingRequest request = (HttpEntityEnclosingRequest) captor.getValue();
 
-    project.getBuildersList().add(new Shell("Echo Hello"));
-    project.getBuildersList().add(new Shell("Echo Hello2"));
-    project.getBuildersList().add(new Shell("Echo Hello3"));
-    project.getBuildersList().add(new Shell("Echo Hello4"));
-    project.getPublishersList().add(new SumoBuildNotifier());
+        Assert.assertTrue("Message too short.", ModelFactory
+                .createBuildModel(build, (PluginDescriptorImpl) j.getInstance().getDescriptor(SumoBuildNotifier.class)).toJson().length() >= request.getEntity().getContentLength());
 
-    FreeStyleBuild build = project.scheduleBuild2(0).get();
+        j.jenkins.getDescriptorByType(PluginDescriptorImpl.class).setJobStatusLogEnabled(true);
+        j.jenkins.getDescriptorByType(PluginDescriptorImpl.class).setJobConsoleLogEnabled(true);
+    }
 
-    Mockito.verify(handler, atLeast(1)).handle(
-        captor.capture(),
-        Mockito.isA(HttpResponse.class),
-        Mockito.isA(HttpContext.class));
+    @Test
+    public void testSendJenkinsData() throws Exception {
+        ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
+        SumoPeriodicPublisher publisher = new SumoPeriodicPublisher();
+        publisher.execute(Mockito.mock(TaskListener.class));
 
-    HttpEntityEnclosingRequest request = (HttpEntityEnclosingRequest) captor.getValue();
+        Mockito.verify(handler, atLeast(1)).handle(
+                captor.capture(),
+                Mockito.isA(HttpResponse.class),
+                Mockito.isA(HttpContext.class));
 
+        HttpEntityEnclosingRequest request = (HttpEntityEnclosingRequest) captor.getValue();
 
-    Assert.assertTrue("Message too short.", ModelFactory.createBuildModel(build).toJson().length() <= request.getEntity().getContentLength());
-  }
-
-  @Test
-  public void testSendJenkinsData() throws Exception {
-    ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
-    SumoPeriodicPublisher publisher = new SumoPeriodicPublisher();
-    publisher.execute(Mockito.mock(TaskListener.class));
-
-    Mockito.verify(handler, atLeast(1)).handle(
-        captor.capture(),
-        Mockito.isA(HttpResponse.class),
-        Mockito.isA(HttpContext.class));
-
-    HttpEntityEnclosingRequest request = (HttpEntityEnclosingRequest) captor.getValue();
-
-    Assert.assertTrue("Wrong message length.", ModelFactory.createJenkinsModel(j.getInstance()).toJson().length() >= request.getEntity().getContentLength());
-  }
+        Assert.assertTrue("Wrong message length.", ModelFactory.createJenkinsModel(j.getInstance()).toJson().length() >= request.getEntity().getContentLength());
+    }
 }

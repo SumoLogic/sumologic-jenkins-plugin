@@ -1,103 +1,206 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
 import com.google.gson.Gson;
-import hudson.model.AbstractBuild;
+
+import java.util.Map;
 
 /**
  * Created by deven on 7/10/15.
+ * <p>
+ * Updated by Sourabh Jain 5/2019
  */
 public class BuildModel {
-  protected String name, hudsonVersion, scm, result, description;
-  protected int number;
-  protected long start_time, duration;
+    private String name;
+    private String hudsonVersion;
+    private String scm;
+    private String result;
+    private String description;
+    private int number;
+    private long start_time;
+    private long duration;
+    private String logType;
+    private String user;
+    private String jobStartTime;
+    private String jobType;
+    private float jobRunDuration;
+    private String jobBuildURL;
+    private String upstreamJobURL;
+    private String triggerCauses;
+    private String label;
+    private String nodeName;
+    private TestCaseModel testResult;
+    private Map<String, Object> jobMetaData;
 
-  BuildModel(AbstractBuild build) {
-    this.name = build.getProject().getDisplayName();
-    this.duration = build.getDuration();
-    this.start_time = build.getStartTimeInMillis();
-    this.number = build.getNumber();
-    this.scm = build.getChangeSet().getKind();
-    this.hudsonVersion = build.getHudsonVersion();
-    this.result = build.getResult().toString();
-  }
+    public String toJson() {
+        Gson gson = new Gson();
+        return gson.toJson(this);
+    }
 
-  public BuildModel(String name, String hudsonVersion, String scm, String result, int number, long start_time, long duration) {
-    this.name = name;
-    this.hudsonVersion = hudsonVersion;
-    this.scm = scm;
-    this.result = result;
-    this.number = number;
-    this.start_time = start_time;
-    this.duration = duration;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public BuildModel() {
+    public void setName(String name) {
+        this.name = name;
+    }
 
-  }
+    public String getHudsonVersion() {
+        return hudsonVersion;
+    }
 
-  public String toJson() {
-    Gson gson = new Gson();
-    return gson.toJson(this);
-  }
+    public void setHudsonVersion(String hudsonVersion) {
+        this.hudsonVersion = hudsonVersion;
+    }
 
-  public String getName() {
-    return name;
+    public String getScm() {
+        return scm;
+    }
 
-  }
+    public void setScm(String scm) {
+        this.scm = scm;
+    }
 
-  public void setName(String name) {
-    this.name = name;
-  }
+    public String getResult() {
+        return result;
+    }
 
-  public String getHudsonVersion() {
-    return hudsonVersion;
-  }
+    public void setResult(String result) {
+        this.result = result;
+    }
 
-  public void setHudsonVersion(String hudsonVersion) {
-    this.hudsonVersion = hudsonVersion;
-  }
+    public String getDescription() {
+        return description;
+    }
 
-  public String getScm() {
-    return scm;
-  }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-  public void setScm(String scm) {
-    this.scm = scm;
-  }
+    public int getNumber() {
+        return number;
+    }
 
-  public String getResult() {
-    return result;
-  }
+    public void setNumber(int number) {
+        this.number = number;
+    }
 
-  public void setResult(String result) {
-    this.result = result;
-  }
+    public long getStart() {
+        return start_time;
+    }
 
-  public int getNumber() {
-    return number;
-  }
+    public void setStart(long start_time) {
+        this.start_time = start_time;
+    }
 
-  public void setNumber(int number) {
-    this.number = number;
-  }
+    public long getDuration() {
+        return duration;
+    }
 
-  public long getStart() {
-    return start_time;
-  }
+    public void setDuration(long duration) {
+        this.duration = duration;
+    }
 
-  public void setStart(long start) {
-    this.start_time = start;
-  }
+    public long getStart_time() {
+        return start_time;
+    }
 
-  public long getDuration() {
-    return duration;
-  }
+    public void setStart_time(long start_time) {
+        this.start_time = start_time;
+    }
 
-  public void setDuration(long duration) {
-    this.duration = duration;
-  }
+    public String getLogType() {
+        return logType;
+    }
 
-  public void setDescription(String description) {
-    this.description = description;
-  }
+    public void setLogType(String logType) {
+        this.logType = logType;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public String getJobStartTime() {
+        return jobStartTime;
+    }
+
+    public void setJobStartTime(String jobStartTime) {
+        this.jobStartTime = jobStartTime;
+    }
+
+    public String getJobType() {
+        return jobType;
+    }
+
+    public void setJobType(String jobType) {
+        this.jobType = jobType;
+    }
+
+    public float getJobRunDuration() {
+        return jobRunDuration;
+    }
+
+    public void setJobRunDuration(float jobRunDuration) {
+        this.jobRunDuration = jobRunDuration;
+    }
+
+    public String getJobBuildURL() {
+        return jobBuildURL;
+    }
+
+    public void setJobBuildURL(String jobBuildURL) {
+        this.jobBuildURL = jobBuildURL;
+    }
+
+    public String getUpstreamJobURL() {
+        return upstreamJobURL;
+    }
+
+    public void setUpstreamJobURL(String upstreamJobURL) {
+        this.upstreamJobURL = upstreamJobURL;
+    }
+
+    public String getTriggerCauses() {
+        return triggerCauses;
+    }
+
+    public void setTriggerCauses(String triggerCauses) {
+        this.triggerCauses = triggerCauses;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public String getNodeName() {
+        return nodeName;
+    }
+
+    public void setNodeName(String nodeName) {
+        this.nodeName = nodeName;
+    }
+
+    public TestCaseModel getTestResult() {
+        return testResult;
+    }
+
+    public void setTestResult(TestCaseModel testResult) {
+        this.testResult = testResult;
+    }
+
+    public Map<String, Object> getJobMetaData() {
+        return jobMetaData;
+    }
+
+    public void setJobMetaData(Map<String, Object> jobMetaData) {
+        this.jobMetaData = jobMetaData;
+    }
 }

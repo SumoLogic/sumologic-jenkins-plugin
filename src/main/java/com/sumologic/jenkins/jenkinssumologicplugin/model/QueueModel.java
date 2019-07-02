@@ -1,48 +1,125 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
+import com.google.gson.Gson;
+
 /**
-* Created by deven on 8/6/15.
+ * Created by deven on 8/6/15.
+ *
+ * Updates by Sourabh Jain 05/2019
+ */
+public class QueueModel extends BaseModel {
+    /*protected int numItemsInQueue, numBlockedItemsInQueue;
+    protected long maxWaitingTime, averageWaitingTime;*/
+
+    private long queueId;
+    private float queueTime;
+    private boolean isBlocked;
+    private String reasonForBlock;
+    private boolean isConcurrentBuild;
+    private String jobName;
+    private String jobURL;
+
+    public QueueModel() {
+
+    }
+
+    /*public QueueModel(int numItemsInQueue, int numBlockedItemsInQueue, long maxWaitingTime, long averageWaitingTime) {
+        this.numItemsInQueue = numItemsInQueue;
+        this.numBlockedItemsInQueue = numBlockedItemsInQueue;
+        this.maxWaitingTime = maxWaitingTime;
+        this.averageWaitingTime = averageWaitingTime;
+    }
+
+    public int getNumItemsInQueue() {
+        return numItemsInQueue;
+    }
+
+    public void setNumItemsInQueue(int numItemsInQueue) {
+        this.numItemsInQueue = numItemsInQueue;
+    }
+
+    public int getNumBlockedItemsInQueue() {
+        return numBlockedItemsInQueue;
+    }
+
+    public void setNumBlockedItemsInQueue(int numBlockedItemsInQueue) {
+        this.numBlockedItemsInQueue = numBlockedItemsInQueue;
+    }
+
+    public long getMaxWaitingTime() {
+        return maxWaitingTime;
+    }
+
+    public void setMaxWaitingTime(long maxWaitingTime) {
+        this.maxWaitingTime = maxWaitingTime;
+    }
+
+    public long getAverageWaitingTime() {
+        return averageWaitingTime;
+    }
+
+    public void setAverageWaitingTime(long averageWaitingTime) {
+        this.averageWaitingTime = averageWaitingTime;
+    }
 */
-public class QueueModel {
-  protected int NumItemsInQueue, NumBlockedItemsInQueue;
-  protected long MaxWaitingTime, AverageWaitingTime;
+    public void setQueueId(long queueId) {
+        this.queueId = queueId;
+    }
 
-  public QueueModel(int numItemsInQueue, int numBlockedItemsInQueue, long maxWaitingTime, long averageWaitingTime) {
-    NumItemsInQueue = numItemsInQueue;
-    NumBlockedItemsInQueue = numBlockedItemsInQueue;
-    MaxWaitingTime = maxWaitingTime;
-    AverageWaitingTime = averageWaitingTime;
-  }
+    public void setQueueTime(float queueTime) {
+        this.queueTime = queueTime;
+    }
 
-  public int getNumItemsInQueue() {
-    return NumItemsInQueue;
-  }
+    public void setBlocked(boolean blocked) {
+        isBlocked = blocked;
+    }
 
-  public void setNumItemsInQueue(int numItemsInQueue) {
-    NumItemsInQueue = numItemsInQueue;
-  }
+    public void setReasonForBlock(String reasonForBlock) {
+        this.reasonForBlock = reasonForBlock;
+    }
 
-  public int getNumBlockedItemsInQueue() {
-    return NumBlockedItemsInQueue;
-  }
+    public void setConcurrentBuild(boolean concurrentBuild) {
+        isConcurrentBuild = concurrentBuild;
+    }
 
-  public void setNumBlockedItemsInQueue(int numBlockedItemsInQueue) {
-    NumBlockedItemsInQueue = numBlockedItemsInQueue;
-  }
+    public void setJobName(String jobName) {
+        this.jobName = jobName;
+    }
 
-  public long getMaxWaitingTime() {
-    return MaxWaitingTime;
-  }
+    public void setJobURL(String jobURL) {
+        this.jobURL = jobURL;
+    }
 
-  public void setMaxWaitingTime(long maxWaitingTime) {
-    MaxWaitingTime = maxWaitingTime;
-  }
+    public long getQueueId() {
+        return queueId;
+    }
 
-  public long getAverageWaitingTime() {
-    return AverageWaitingTime;
-  }
+    public float getQueueTime() {
+        return queueTime;
+    }
 
-  public void setAverageWaitingTime(long averageWaitingTime) {
-    AverageWaitingTime = averageWaitingTime;
-  }
+    public boolean isBlocked() {
+        return isBlocked;
+    }
+
+    public String getReasonForBlock() {
+        return reasonForBlock;
+    }
+
+    public boolean isConcurrentBuild() {
+        return isConcurrentBuild;
+    }
+
+    public String getJobName() {
+        return jobName;
+    }
+
+    public String getJobURL() {
+        return jobURL;
+    }
+
+    public String toString() {
+        Gson gson = new Gson();
+        return gson.toJson(this);
+    }
 }

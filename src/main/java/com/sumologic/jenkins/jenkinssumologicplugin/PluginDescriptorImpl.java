@@ -1,192 +1,285 @@
 package com.sumologic.jenkins.jenkinssumologicplugin;
 
+import com.google.gson.Gson;
+import com.sumologic.jenkins.jenkinssumologicplugin.constants.EventSourceEnum;
+import com.sumologic.jenkins.jenkinssumologicplugin.constants.LogTypeEnum;
+import com.sumologic.jenkins.jenkinssumologicplugin.metrics.SumoMetricDataPublisher;
+import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
+import com.sumologic.jenkins.jenkinssumologicplugin.utility.SumoLogHandler;
 import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.init.Initializer;
+import hudson.init.TermMilestone;
+import hudson.init.Terminator;
 import hudson.model.AbstractProject;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
+import jenkins.util.Timer;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+
+import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.DATETIME_FORMATTER;
+import static hudson.init.InitMilestone.JOB_LOADED;
 
 /**
  * Sumo Logic plugin for Jenkins model.
  * Provides options to parametrize plugin.
- *
+ * <p>
  * Created by deven on 7/8/15.
- * Contributors: lukasz
+ * Contributors: lukasz, Sourabh Jain
  */
 @Extension
 public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
-  private final int MAX_LINES_DEFAULT = 2000;
-  private String collectorUrl = "";
-  private String maxLines = Integer.toString(MAX_LINES_DEFAULT);
-  private String queryPortal = "service.sumologic.com";
 
-  private String sourceNamePeriodic = "jenkinsStatus";
-  private String sourceNameJobStatus = "jenkinsJobStatus";
+    private String url;
+    private transient SumoMetricDataPublisher sumoMetricDataPublisher;
+    private static LogSenderHelper logSenderHelper = null;
+    private String queryPortal;
+    private String sourceCategory;
+    private String metricDataPrefix;
+    private boolean auditLogEnabled;
+    private boolean keepOldConfigData;
+    private boolean metricDataEnabled;
+    private boolean periodicLogEnabled;
+    private boolean jobStatusLogEnabled;
+    private boolean jobConsoleLogEnabled;
+    private boolean scmLogEnabled;
 
-  private String sourceCategoryPeriodic = "jenkinsStatus";
-  private String sourceCategoryJobStatus = "jenkinsJobStatus";
-  private String sourceCategoryBuildLogs = "jenkinsBuildLogs";
-
-  private boolean buildLogEnabled = true;
-
-  public PluginDescriptorImpl() {
-    super(SumoBuildNotifier.class);
-    load();
-  }
-
-  public static PluginDescriptorImpl getInstance() {
-    return (PluginDescriptorImpl) Jenkins.getInstance().getDescriptor(SumoBuildNotifier.class);
-  }
-
-  @Override
-  public boolean isApplicable(Class<? extends AbstractProject> aClass) {
-    return true;
-  }
-
-  @Override
-  public String getDisplayName() {
-    return "Sumo Logic build logger";
-  }
-
-  @Override
-  public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
-    boolean configOk = super.configure(req, formData);
-    collectorUrl = formData.getString("url");
-    queryPortal = formData.getString("queryPortal");
-    maxLines = formData.getString("maxLines");
-    buildLogEnabled = formData.getBoolean("buildLogEnabled");
-
-    sourceNamePeriodic = formData.getString("sourceNamePeriodic");
-    sourceNameJobStatus = formData.getString("sourceNameJobStatus");
-    sourceCategoryPeriodic = formData.getString("sourceCategoryPeriodic");
-    sourceCategoryJobStatus = formData.getString("sourceCategoryJobStatus");
-    sourceCategoryBuildLogs = formData.getString("sourceCategoryBuildLogs");
-
-    save();
-    return configOk;
-  }
-
-  public FormValidation doCheckUrl(@QueryParameter String value) {
-    if (value.isEmpty()) {
-      return FormValidation.error("You must provide an URL.");
+    public PluginDescriptorImpl() {
+        super(SumoBuildNotifier.class);
+        load();
+        sumoMetricDataPublisher = new SumoMetricDataPublisher();
+        if (metricDataEnabled && metricDataPrefix != null) {
+            getSumoMetricDataPublisher().stopReporter();
+            getSumoMetricDataPublisher().publishMetricData(metricDataPrefix);
+        }
+        if (!metricDataEnabled) {
+            getSumoMetricDataPublisher().stopReporter();
+        }
+        setLogSenderHelper(LogSenderHelper.getInstance());
     }
 
-    try {
-      new URL(value);
-    } catch (final MalformedURLException e) {
-      return FormValidation.error("This is not a valid URL.");
+    private static void setLogSenderHelper(LogSenderHelper logSenderHelper) {
+        PluginDescriptorImpl.logSenderHelper = logSenderHelper;
     }
 
-    return FormValidation.ok();
-  }
-
-  public FormValidation doCheckMaxLines(@QueryParameter String value) {
-    if (value.isEmpty()) {
-      return FormValidation.error("You must provide a value. Default is 200.");
-    }
-    int test = 0;
-    try {
-      test = Integer.parseInt(value);
-    } catch (NumberFormatException e) {
-      return FormValidation.error("Invalid input. Must be a number.");
+    public static PluginDescriptorImpl getInstance() {
+        return (PluginDescriptorImpl) Jenkins.getInstance().getDescriptor(SumoBuildNotifier.class);
     }
 
-    if (test < -1 ) {
-      return FormValidation.error("Invalid number. Must be non negative or -1 for batching a whole log.");
+    @Override
+    public boolean isApplicable(Class<? extends AbstractProject> aClass) {
+        return true;
     }
 
-    return FormValidation.ok();
-  }
-
-
-  public String getUrl() {
-    return collectorUrl;
-  }
-
-  public void setUrl(String url) {
-    this.collectorUrl = url;
-  }
-
-  public String getMaxLines() {
-    return maxLines;
-  }
-
-  public void setMaxLines(String maxLines) {
-    this.maxLines = maxLines;
-  }
-
-  public int getMaxLinesInt() {
-    int value = 0;
-    try {
-      value = Integer.parseInt(maxLines);
-    } catch (NumberFormatException e) {
-      value = MAX_LINES_DEFAULT;
+    @Override
+    public String getDisplayName() {
+        return "Sumo Logic build logger";
     }
 
-    return value;
-  }
+    @Override
+    public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
+        boolean configOk = super.configure(req, formData);
+        url = formData.getString("url");
+        queryPortal = StringUtils.isNotEmpty(formData.getString("queryPortal")) ? formData.getString("queryPortal") : "service.sumologic.com";
 
-  public String getQueryPortal() {
-    return queryPortal;
-  }
+        sourceCategory = StringUtils.isNotEmpty(formData.getString("sourceCategory")) ? formData.getString("sourceCategory") : "jenkinsSourceCategory";
 
-  public void setQueryPortal (String queryPortal) {
-    this.queryPortal = queryPortal;
-  }
+        metricDataPrefix = StringUtils.isNotEmpty(formData.getString("metricDataPrefix")) ? formData.getString("metricDataPrefix") : "jenkinsMetricDataPrefix";
 
-  public boolean isBuildLogEnabled() {
-    return buildLogEnabled;
-  }
+        auditLogEnabled = formData.getBoolean("auditLogEnabled");
+        metricDataEnabled = formData.getBoolean("metricDataEnabled");
+        periodicLogEnabled = formData.getBoolean("periodicLogEnabled");
+        jobStatusLogEnabled = formData.getBoolean("jobStatusLogEnabled");
+        jobConsoleLogEnabled = formData.getBoolean("jobConsoleLogEnabled");
+        scmLogEnabled = formData.getBoolean("scmLogEnabled");
+        keepOldConfigData = formData.getBoolean("keepOldConfigData");
 
-  public void setBuildLogEnabled(boolean value) {
+        save();
+        if (metricDataEnabled && metricDataPrefix != null) {
+            getSumoMetricDataPublisher().stopReporter();
+            getSumoMetricDataPublisher().publishMetricData(metricDataPrefix);
+        }
+        if (!metricDataEnabled) {
+            getSumoMetricDataPublisher().stopReporter();
+        }
+        return configOk;
+    }
 
-    buildLogEnabled = value;
-  }
+    @Terminator(after = TermMilestone.STARTED)
+    @Restricted(NoExternalUse.class)
+    public static void shutdown() {
+        PluginDescriptorImpl pluginDescriptor = checkIfPluginInUse();
+        pluginDescriptor.getSumoMetricDataPublisher().stopReporter();
 
-  public String getSourceNamePeriodic() {
-    return sourceNamePeriodic;
-  }
+        Logger.getLogger("").removeHandler(SumoLogHandler.getInstance());
 
-  public void setSourceNamePeriodic(String sourceNamePeriodic) {
-    this.sourceNamePeriodic = sourceNamePeriodic;
-  }
+        Map<String, Object> shutDown = new HashMap<>();
+        shutDown.put("logType", LogTypeEnum.SLAVE_EVENT.getValue());
+        shutDown.put("eventTime", DATETIME_FORMATTER.format(new Date()));
+        shutDown.put("eventSource", EventSourceEnum.SHUTDOWN.getValue());
+        Gson gson = new Gson();
+        logSenderHelper.sendLogsToPeriodicSourceCategory(gson.toJson(shutDown));
+    }
 
-  public String getSourceNameJobStatus() {
-    return sourceNameJobStatus;
-  }
+    private static PluginDescriptorImpl checkIfPluginInUse() {
+        PluginDescriptorImpl pluginDescriptor = ExtensionList.lookup(BuildStepDescriptor.class).get(PluginDescriptorImpl.class);
+        if (pluginDescriptor == null) {
+            throw new IllegalStateException("Sumo Logic Publisher is not part of the extension list");
+        }
+        return pluginDescriptor;
+    }
 
-  public void setSourceNameJobStatus(String sourceNameJobStatus) {
-    this.sourceNameJobStatus = sourceNameJobStatus;
-  }
 
-  public String getSourceCategoryPeriodic() {
-    return sourceCategoryPeriodic;
-  }
+    public FormValidation doCheckUrl(@QueryParameter String value) {
+        if (value.isEmpty()) {
+            return FormValidation.error("You must provide an URL.");
+        }
 
-  public void setSourceCategoryPeriodic(String sourceCategoryPeriodic) {
-    this.sourceCategoryPeriodic = sourceCategoryPeriodic;
-  }
+        try {
+            new URL(value);
+        } catch (final MalformedURLException e) {
+            return FormValidation.error("This is not a valid URL.");
+        }
 
-  public String getSourceCategoryJobStatus() {
-    return sourceCategoryJobStatus;
-  }
+        return FormValidation.ok();
+    }
 
-  public void setSourceCategoryJobStatus(String sourceCategoryJobStatus) {
-    this.sourceCategoryJobStatus = sourceCategoryJobStatus;
-  }
+    public SumoMetricDataPublisher getSumoMetricDataPublisher() {
+        return sumoMetricDataPublisher;
+    }
 
-  public String getSourceCategoryBuildLogs() {
-    return sourceCategoryBuildLogs;
-  }
+    public void setSumoMetricDataPublisher(SumoMetricDataPublisher sumoMetricDataPublisher) {
+        this.sumoMetricDataPublisher = sumoMetricDataPublisher;
+    }
 
-  public void setSourceCategoryBuildLogs(String sourceCategoryBuildLogs) {
-    this.sourceCategoryBuildLogs = sourceCategoryBuildLogs;
-  }
+    public String getQueryPortal() {
+        return queryPortal;
+    }
+
+    public void setQueryPortal(String queryPortal) {
+        this.queryPortal = queryPortal;
+    }
+
+    public boolean isAuditLogEnabled() {
+        return auditLogEnabled;
+    }
+
+    public void setAuditLogEnabled(boolean auditLogEnabled) {
+        this.auditLogEnabled = auditLogEnabled;
+    }
+
+    public boolean isMetricDataEnabled() {
+        return metricDataEnabled;
+    }
+
+    public void setMetricDataEnabled(boolean metricDataEnabled) {
+        this.metricDataEnabled = metricDataEnabled;
+    }
+
+    public boolean isPeriodicLogEnabled() {
+        return periodicLogEnabled;
+    }
+
+    public void setPeriodicLogEnabled(boolean periodicLogEnabled) {
+        this.periodicLogEnabled = periodicLogEnabled;
+    }
+
+    public boolean isJobStatusLogEnabled() {
+        return jobStatusLogEnabled;
+    }
+
+    public void setJobStatusLogEnabled(boolean jobStatusLogEnabled) {
+        this.jobStatusLogEnabled = jobStatusLogEnabled;
+    }
+
+    public boolean isJobConsoleLogEnabled() {
+        return jobConsoleLogEnabled;
+    }
+
+    public void setJobConsoleLogEnabled(boolean jobConsoleLogEnabled) {
+        this.jobConsoleLogEnabled = jobConsoleLogEnabled;
+    }
+
+    public boolean isScmLogEnabled() {
+        return scmLogEnabled;
+    }
+
+    public void setScmLogEnabled(boolean scmLogEnabled) {
+        this.scmLogEnabled = scmLogEnabled;
+    }
+
+    public String getMetricDataPrefix() {
+        return metricDataPrefix;
+    }
+
+    public void setMetricDataPrefix(String metricDataPrefix) {
+        this.metricDataPrefix = metricDataPrefix;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getSourceCategory() {
+        return sourceCategory;
+    }
+
+    public void setSourceCategory(String sourceCategory) {
+        this.sourceCategory = sourceCategory;
+    }
+
+    public boolean isKeepOldConfigData() {
+        return keepOldConfigData;
+    }
+
+    public void setKeepOldConfigData(boolean keepOldConfigData) {
+        this.keepOldConfigData = keepOldConfigData;
+    }
+
+    private boolean isHandlerStarted;
+
+    public boolean isHandlerStarted() {
+        return isHandlerStarted;
+    }
+
+    public void setHandlerStarted(boolean handlerStarted) {
+        isHandlerStarted = handlerStarted;
+    }
+
+    //Handler to get all the jenkins Logs
+    @Initializer(after = JOB_LOADED)
+    public void startSumoJenkinsLogHandler() {
+        Timer.get().schedule(PluginDescriptorImpl.getInstance()::registerHandler, 3, TimeUnit.MINUTES);
+    }
+
+    public void registerHandler() {
+        Handler[] handlers = Logger.getLogger("").getHandlers();
+        for (Handler handler : handlers) {
+            if (handler instanceof SumoLogHandler) {
+                return;
+            }
+        }
+        Logger.getLogger("").addHandler(SumoLogHandler.getInstance());
+        isHandlerStarted = true;
+    }
 }
