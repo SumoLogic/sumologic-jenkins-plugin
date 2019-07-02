@@ -21,6 +21,9 @@ Tested with Jenkins version `2.100 - 2.178`. Later version will be supported. In
 * **Metric Data Prefix** - Can be the name of the Jenkins Master on which plugin is installed or name with you can distinguish Jenkins Master.
 * **Http Source URL** - Source configured on the sumologic server.
 * **Source Category** - Source Category defined for the source provided in the **Http Source URL**.
+* **Keep Old Configuration for Jobs**
+	* Enable to keep old configuration for jobs.
+
 * Types of Logs
 	* **Metric Data** - To send metric information.
 	* **Audit Logs** - To send audit information like login, Logout, Login Failure, configuration changes to jobs, changes to jenkins.
