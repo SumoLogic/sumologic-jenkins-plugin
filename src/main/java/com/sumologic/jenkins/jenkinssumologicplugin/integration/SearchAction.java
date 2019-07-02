@@ -7,11 +7,15 @@ import hudson.model.Run;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Calendar;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by lukasz on 3/24/17.
  */
 public class SearchAction implements Action {
+
+    private static final Logger LOG = Logger.getLogger(SearchAction.class.getName());
 
     private final static String URL_TEMPLATE = "https://%s/ui/index.html?reason=st#section/search/@%d,%d@%s";
     private final static int MILLIS_IN_MINUTE = 1000 * 60;
@@ -55,7 +59,7 @@ public class SearchAction implements Action {
         try {
             encodedQuery = URLEncoder.encode(query, "UTF-8").replace("+", "%20");
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            LOG.log(Level.WARNING, "An error occurred while encoding query ", e);
         }
 
         return String.format(URL_TEMPLATE, queryPortal, queryFrom, queryTo, encodedQuery);

@@ -7,8 +7,8 @@ import org.apache.http.util.ByteArrayBuffer;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.DIVIDER_FOR_MESSAGES;
@@ -112,7 +112,7 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
             LOGGER.info("Sending " + lines.length + " bytes of build logs to sumo");
             logSender.sendLogs(url, lines, null, descriptor.getSourceCategory());
         } catch (Exception e) {
-            e.printStackTrace(new PrintStream(wrappedStream));
+            LOGGER.log(Level.WARNING, "An error occurred Sending console logs ", e);
         }
     }
 }

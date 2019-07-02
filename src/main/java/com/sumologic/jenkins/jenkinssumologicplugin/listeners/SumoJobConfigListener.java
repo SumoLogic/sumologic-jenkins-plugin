@@ -69,7 +69,7 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
                 try {
                     Files.copy(file.getFile().toPath(), oldFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 } catch (IOException e) {
-                    LOG.warning("Can not copy the data to old file");
+                    LOG.log(Level.WARNING, "An error occurred while copying the new configuration ", e);
                 }
             }
 
