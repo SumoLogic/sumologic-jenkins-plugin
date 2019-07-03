@@ -130,10 +130,7 @@ public class LogSenderHelper {
                     }
                     size = size + gson.toJson(testCaseResultModel).getBytes().length;
                     if (size > MAX_DATA_SIZE) {
-                        LOG.log(Level.INFO, "Job Name "+buildModel.getName()+", Build Number "+buildModel.getNumber()+", test result count is "+toBeSent.size()+
-                                ", number of bytes is "+gson.toJson(data).getBytes().length);
-                        LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), gson.toJson(data).getBytes()
-                                , null, pluginDescriptor.getSourceCategory());
+                        sendTestResultInChunksOfPreDefinedSize(buildModel, gson, pluginDescriptor, toBeSent, data);
                         toBeSent.clear();
                     }
                     toBeSent.add(testCaseResultModel);
@@ -141,18 +138,20 @@ public class LogSenderHelper {
                     size = gson.toJson(data).getBytes().length;
                 }
                 if (CollectionUtils.isNotEmpty(toBeSent)) {
-                    LOG.log(Level.INFO, "Job Name "+buildModel.getName()+", Build Number "+buildModel.getNumber()+", test result count is "+toBeSent.size()+
-                            ", number of bytes is "+gson.toJson(data).getBytes().length);
-                    LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), gson.toJson(data).getBytes()
-                            , null, pluginDescriptor.getSourceCategory());
+                    sendTestResultInChunksOfPreDefinedSize(buildModel, gson, pluginDescriptor, toBeSent, data);
                     toBeSent.clear();
                 }
             }
         }
     }
 
-    public static void sendTestResultInChunksOfPreDefinedSize() {
-
+    private static void sendTestResultInChunksOfPreDefinedSize(BuildModel buildModel, Gson gson,
+                                                               PluginDescriptorImpl pluginDescriptor,
+                                                               List<TestCaseResultModel> toBeSent, Map<String, Object> data) {
+        LOG.log(Level.INFO, "Job Name " + buildModel.getName() + ", Build Number " + buildModel.getNumber() + ", test result count is " + toBeSent.size() +
+                ", number of bytes is " + gson.toJson(data).getBytes().length);
+        LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), gson.toJson(data).getBytes()
+                , null, pluginDescriptor.getSourceCategory());
     }
 
     public static void sendPipelineStages(List<PipelineStageModel> stages, BuildModel buildModel) {
@@ -165,16 +164,13 @@ public class LogSenderHelper {
         data.put("number", buildModel.getNumber());
 
         if (CollectionUtils.isNotEmpty(stages)) {
-            // send test cases based on the size
+            // send Stages based on the size
             List<PipelineStageModel> toBeSent = new LinkedList<>();
             int size = gson.toJson(data).getBytes().length;
             for (PipelineStageModel pipelineStageModel : stages) {
                 size = size + gson.toJson(pipelineStageModel).getBytes().length;
                 if (size > MAX_DATA_SIZE) {
-                    LOG.log(Level.INFO, "Job Name "+buildModel.getName()+", Build Number "+buildModel.getNumber()+", stage count is "+toBeSent.size()+
-                            ", number of bytes is "+gson.toJson(data).getBytes().length);
-                    LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), gson.toJson(data).getBytes()
-                            , null, pluginDescriptor.getSourceCategory());
+                    sendStagesInChunksOfPreDefinedSize(buildModel, gson, pluginDescriptor, toBeSent, data);
                     toBeSent.clear();
                 }
                 toBeSent.add(pipelineStageModel);
@@ -182,13 +178,19 @@ public class LogSenderHelper {
                 size = gson.toJson(data).getBytes().length;
             }
             if (CollectionUtils.isNotEmpty(toBeSent)) {
-                LOG.log(Level.INFO, "Job Name "+buildModel.getName()+", Build Number "+buildModel.getNumber()+", Stage count is "+toBeSent.size()+
-                        ", number of bytes is "+gson.toJson(data).getBytes().length);
-                LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), gson.toJson(data).getBytes()
-                        , null, pluginDescriptor.getSourceCategory());
+                sendStagesInChunksOfPreDefinedSize(buildModel, gson, pluginDescriptor, toBeSent, data);
                 toBeSent.clear();
             }
         }
+    }
+
+    private static void sendStagesInChunksOfPreDefinedSize(BuildModel buildModel, Gson gson,
+                                                           PluginDescriptorImpl pluginDescriptor,
+                                                           List<PipelineStageModel> toBeSent, Map<String, Object> data) {
+        LOG.log(Level.INFO, "Job Name " + buildModel.getName() + ", Build Number " + buildModel.getNumber() + ", Stage count is " + toBeSent.size() +
+                ", number of bytes is " + gson.toJson(data).getBytes().length);
+        LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), gson.toJson(data).getBytes()
+                , null, pluginDescriptor.getSourceCategory());
     }
 
     private static String format(String data) {
