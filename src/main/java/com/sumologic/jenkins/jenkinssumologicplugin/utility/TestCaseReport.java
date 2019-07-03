@@ -72,8 +72,8 @@ public class TestCaseReport {
         testCaseResultModel.setDuration(testCase.getDuration());
         testCaseResultModel.setTestName(testCase.getName());
         testCaseResultModel.setErrorDetails(testCase.getErrorDetails());
-        if(testCase.getErrorStackTrace() != null && testCase.getErrorStackTrace().length() > 510){
-            testCaseResultModel.setErrorStackTrace(testCase.getErrorStackTrace().substring(0, 500));
+        if(testCase.getErrorStackTrace() != null && testCase.getErrorStackTrace().length() > 1010){
+            testCaseResultModel.setErrorStackTrace(testCase.getErrorStackTrace().substring(0, 1000));
         } else {
             testCaseResultModel.setErrorStackTrace(testCase.getErrorStackTrace());
         }
