@@ -33,9 +33,14 @@
             <email>deven@sumologic.com</email>
         </developer>
         <developer>
-            <id>sourabh</id>
+            <id>sour0205</id>
             <name>Sourabh Jain</name>
             <email>sourabh@sumologic.com</email>
+        </developer>
+        <developer>
+            <id>SumoApps</id>
+            <name>SumoLogic Apps Team</name>
+            <email>apps-team@sumologic.com</email>
         </developer>
     </developers>
 
