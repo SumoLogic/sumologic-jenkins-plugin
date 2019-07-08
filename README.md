@@ -19,7 +19,7 @@ Tested with Jenkins version `2.100 - 2.178`. Later version will be supported. In
 
 * **SumoLogic Portal Name** - Eg- service.sumologic.com (where hosted collector resides).
 * **Metric Data Prefix** - Can be the name of the Jenkins Master on which plugin is installed or name with you can distinguish Jenkins Master.
-* **Http Source URL** - Source configured on the sumologic server.
+* **HTTP Source URL** - URL of the HTTP Logs and Metrics Sumo Logic source.
 * **Source Category** - Source Category defined for the source provided in the **Http Source URL**.
 * **Keep Old Configuration for Jobs**
 	* Enable to keep old configuration for jobs.

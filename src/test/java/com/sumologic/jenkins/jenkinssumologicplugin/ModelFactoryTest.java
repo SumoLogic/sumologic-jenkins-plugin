@@ -27,7 +27,7 @@ public class ModelFactoryTest extends BaseTest {
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();
 
-        String jsonExpected = "{\"name\":\"MockJob\",\"hudsonVersion\":\"2.60.1\",\"result\":\"SUCCESS\",\"number\":1,";
+        String jsonExpected = "\"result\":\"SUCCESS\",\"number\":1,";
         String replace = jsonExpected.replace("?", Hudson.getVersion().toString());
         String json = ModelFactory.createBuildModel(build, (PluginDescriptorImpl) j.getInstance().getDescriptor(SumoBuildNotifier.class)).toJson();
 

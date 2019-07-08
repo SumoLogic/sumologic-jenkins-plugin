@@ -33,9 +33,14 @@
             <email>deven@sumologic.com</email>
         </developer>
         <developer>
-            <id>sourabh</id>
+            <id>sour0205</id>
             <name>Sourabh Jain</name>
             <email>sourabh@sumologic.com</email>
+        </developer>
+        <developer>
+            <id>SumoApps</id>
+            <name>SumoLogic Apps Team</name>
+            <email>apps-team@sumologic.com</email>
         </developer>
     </developers>
 
@@ -68,6 +73,14 @@
                     <effort>Max</effort>
                     <threshold>Low</threshold>
                     <failOnError>false</failOnError>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <source>8</source>
                 </configuration>
             </plugin>
         </plugins>
