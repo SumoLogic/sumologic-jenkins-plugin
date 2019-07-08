@@ -2,6 +2,9 @@ package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
 import com.google.gson.Gson;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
  * Created by deven on 8/6/15.
  */
