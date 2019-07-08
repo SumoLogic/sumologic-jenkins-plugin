@@ -95,7 +95,7 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
                 if (files != null) {
                     for (File fileNames : files) {
                         if (fileNames != null) {
-                            if (fileNames.getPath().matches(pathForOldFile)) {
+                            if (fileNames.getPath().equals(pathForOldFile)) {
                                 oldFile = fileNames;
                                 break;
                             }
