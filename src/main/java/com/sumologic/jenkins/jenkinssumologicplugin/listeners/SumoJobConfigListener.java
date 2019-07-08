@@ -87,7 +87,7 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
 
     private static File getOldFile(XmlFile file) {
         File oldFile = null;
-        String pathForOldFile = file.getFile().getParent() + "/" + file.getFile().getName().replace(".xml", "") + "_old.xml";
+        String pathForOldFile = file.getFile().getParent() + File.separator + file.getFile().getName().replace(".xml", "") + "_old.xml";
         if (file.getFile().getParentFile() != null) {
             File parentFile = file.getFile().getParentFile();
             if (parentFile.listFiles() != null) {
