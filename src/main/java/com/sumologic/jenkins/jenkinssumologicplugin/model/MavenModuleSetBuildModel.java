@@ -1,5 +1,8 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.MavenModuleBuildModel;
+
 import java.util.ArrayList;
 import java.util.List;
 

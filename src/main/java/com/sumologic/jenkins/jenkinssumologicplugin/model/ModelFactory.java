@@ -1,16 +1,19 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
+import com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory;
 import hudson.maven.MavenBuild;
 import hudson.maven.MavenModule;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.maven.reporters.SurefireAggregatedReport;
-import hudson.model.AbstractBuild;
 import hudson.model.Computer;
 import hudson.model.Queue;
+import hudson.model.Run;
 import hudson.tasks.test.TestResult;
 import jenkins.model.Jenkins;
 
 import java.util.Map;
+import java.util.logging.Logger;
 
 
 /**
@@ -20,14 +23,45 @@ import java.util.Map;
  * step to json serialization.
  */
 public class ModelFactory {
-  public static BuildModel generateBuildModelFor(AbstractBuild build) {
+  private final static Logger LOG = Logger.getLogger(ModelFactory.class.getName());
+
+  public static JenkinsModel createJenkinsModel(Jenkins jenkins) {
+    Queue queue = jenkins.getQueue();
+    final Queue.Item[] items = queue.getItems();
+    int queueLength = items.length;
+    long maxwait = 0, averagewait = 0, now = System.currentTimeMillis();
+    for(Queue.Item item : items){
+      long waiting = now - item.getInQueueSince();
+      maxwait = maxwait > waiting ? maxwait : waiting;
+      averagewait += waiting;
+    }
+    if (queueLength > 0 ) {
+      averagewait = averagewait / queueLength;
+    }
+
+    QueueModel queueModel = new QueueModel();
+
+    int numFreeExecutors=0;
+
+    for (Computer computer : jenkins.getComputers()) {
+      if (computer.isOnline()){
+        numFreeExecutors += computer.countIdle();
+      }
+
+    }
+    SlaveModel slaveModel = new SlaveModel(jenkins.getNumExecutors(), numFreeExecutors);
+
+    return new JenkinsModel(queueModel, slaveModel, jenkins.getDescription());
+  }
+
+  public static BuildModel createBuildModel(Run build, PluginDescriptorImpl pluginDescriptor) {
     BuildModel buildModel = null;
     if (build instanceof MavenModuleSetBuild) {
       MavenModuleSetBuildModel mBuildModel = new MavenModuleSetBuildModel();
-      ModelFactory.populateGeneric(mBuildModel, build);
+      CommonModelFactory.populateGeneric(mBuildModel, build, pluginDescriptor);
       MavenModuleSetBuild mbuild = (MavenModuleSetBuild) build;
       SurefireAggregatedReport surefireAggregatedReport = mbuild.getAction(SurefireAggregatedReport.class);
-      if(surefireAggregatedReport != null){
+      if (surefireAggregatedReport != null) {
         mBuildModel.setTotalTestCount(surefireAggregatedReport.getTotalCount());
         mBuildModel.setFailedTestCount(surefireAggregatedReport.getFailCount());
         mBuildModel.setSkippedTestCount(surefireAggregatedReport.getSkipCount());
@@ -38,60 +72,18 @@ public class ModelFactory {
       Map<MavenModule, MavenBuild> modules = mbuild.getModuleLastBuilds();
 
       for (MavenBuild module : modules.values()) {
-        mBuildModel.addModule((MavenModuleBuildModel) generateBuildModelFor(module));
+        mBuildModel.addModule((MavenModuleBuildModel) createBuildModel(module, pluginDescriptor));
       }
       buildModel = mBuildModel;
     } else if (build instanceof MavenBuild) {
       MavenBuild mbuild = (MavenBuild) build;
       MavenModuleBuildModel mBuildModel = new MavenModuleBuildModel();
-      ModelFactory.populateGeneric(mBuildModel, mbuild);
+      CommonModelFactory.populateGeneric(mBuildModel, mbuild, pluginDescriptor);
       buildModel = mBuildModel;
     } else {
       buildModel = new BuildModel();
-      ModelFactory.populateGeneric(buildModel, build);
+      CommonModelFactory.populateGeneric(buildModel, build, pluginDescriptor);
     }
-
     return buildModel;
-  }
-
-  protected static void populateGeneric(BuildModel buildModel, AbstractBuild build) {
-
-    buildModel.setName(build.getProject().getDisplayName());
-    buildModel.setNumber(build.getNumber());
-    buildModel.setDuration(System.currentTimeMillis() - build.getStartTimeInMillis());
-    buildModel.setStart(build.getStartTimeInMillis());
-    buildModel.setResult(build.getResult().toString());
-    buildModel.setHudsonVersion(build.getHudsonVersion());
-    buildModel.setDescription(build.getDescription());
-
-  }
-
-  public static JenkinsModel generateJenkinsModelFor(Jenkins jenkins) {
-    Queue queue = jenkins.getQueue();
-    final Queue.Item[] items = queue.getItems();
-    int queueLength = items.length;
-    long maxwait = 0, averagewait = 0, now = System.currentTimeMillis();
-    for(Queue.Item item : items){
-      long waiting = now - item.getInQueueSince();
-      maxwait = maxwait > waiting ? maxwait : waiting;
-      averagewait += waiting;
-    }
-    if(queueLength > 0 ) {
-      averagewait = averagewait / queueLength;
-    }
-
-    QueueModel queueModel = new QueueModel(queueLength,queueLength - queue.countBuildableItems(), maxwait, averagewait);
-
-    int numFreeExecutors=0;
-
-    for (Computer computer : jenkins.getComputers()) {
-      if (computer.isOnline()){
-        numFreeExecutors += computer.countIdle();
-      }
-
-    }
-    SlaveModel slaveModel = new SlaveModel(jenkins.getComputers().length - 1, jenkins.getNumExecutors(), numFreeExecutors);
-
-    return new JenkinsModel(queueModel, slaveModel, jenkins.getDescription());
   }
 }
