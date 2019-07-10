@@ -22,7 +22,7 @@ Tested with Jenkins version `2.100 - 2.178`. Later version will be supported. In
 * **HTTP Source URL** - URL of the HTTP Logs and Metrics Sumo Logic source.
 * **Source Category** - Source Category defined for the source provided in the **Http Source URL**.
 * **Keep Old Configuration for Jobs**
-	* Enable to keep old configuration for jobs.
+	* Enable to send old configuration for jobs.
 
 * Types of Logs
 	* **Metric Data** - To send metric information.
@@ -32,7 +32,7 @@ Tested with Jenkins version `2.100 - 2.178`. Later version will be supported. In
 * **Enable Job Status for All Jobs**
 	* Select to send status for all jobs
 * **Enable Console Logs for All Jobs**
-	* Select to send status for all jobs.
+	* Select to send console logs for all jobs.
 	
 **_`In case of specific Jobs`_**
 
