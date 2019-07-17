@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.EventSourceEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.LogTypeEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.metrics.SumoMetricDataPublisher;
+import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSender;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import com.sumologic.jenkins.jenkinssumologicplugin.utility.SumoLogHandler;
 import hudson.Extension;
@@ -158,6 +159,20 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         }
 
         return FormValidation.ok();
+    }
+
+    public FormValidation doTestURL(@QueryParameter("url") String url) {
+        try {
+            String test = "Send Test Data to SumoLogic";
+            String output = LogSender.getInstance().sendLogs(url, test.getBytes(), null, null, null);
+            if ("ok".equals(output)) {
+                return FormValidation.ok("Success");
+            } else {
+                return FormValidation.error("URL not valid with message " + output);
+            }
+        } catch (Exception e) {
+            return FormValidation.error("Client error : " + e.getMessage());
+        }
     }
 
     public SumoMetricDataPublisher getSumoMetricDataPublisher() {

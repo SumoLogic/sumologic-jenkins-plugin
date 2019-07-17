@@ -60,6 +60,16 @@ Tested with Jenkins version `2.100 - 2.178`. Later version will be supported. In
 
 		![pipeline_Dec](/src/main/webapp/Pipeline_Dec.png)
 
+## Groovy script to configure the Plugin
+
+Groovy configuration script for Jenkins post-initialisation
+
+The purpose of this script is to automate the global configuration of plugin when Jenkins starts, so that no manual intervention is required via UI afterwards.
+This example of Groovy script file should have `.groovy` extension and be placed in the directory $JENKINS_HOME/init.groovy.d/.
+
+Download the [SumoLogicPublisherConfiguration.groovy](https://github.com/SumoLogic/sumologic-jenkins-plugin/tree/master/src/main/groovy/com/sumologic/jenkins/jenkinssumologicplugin/SumoLogicPublisherConfiguration.groovy) file.
+- Make sure you are adjusting the values for fields according to your need.
+
 ## Developer Version
 
 - ### Environment
