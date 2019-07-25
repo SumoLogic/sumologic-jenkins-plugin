@@ -10,10 +10,7 @@ import java.io.StringWriter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Filter;
-import java.util.logging.Formatter;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
+import java.util.logging.*;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.DATETIME_FORMATTER;
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.skipLoggerNames;
@@ -24,6 +21,7 @@ public class SumoLogHandler extends Handler {
     private Gson gson;
     private LogSenderHelper logSenderHelper;
     private LogRecordFormatter logRecordFormatter;
+    private Level filterLevel = Level.parse(System.getProperty(SumoLogHandler.class.getName() + ".level", "INFO"));
 
     public static SumoLogHandler getInstance() {
         return new SumoLogHandler();
@@ -33,20 +31,28 @@ public class SumoLogHandler extends Handler {
         pluginDescriptor = PluginDescriptorImpl.getInstance();
         gson = new Gson();
         logRecordFormatter = new LogRecordFormatter();
+        setFilter(new LogRecordFilter());
+        setLevel(filterLevel);
         logSenderHelper = LogSenderHelper.getInstance();
     }
 
     @Override
     public void publish(LogRecord record) {
-        if (!pluginDescriptor.isHandlerStarted() || !isLoggable(record)) {
-            return;
-        }
-        if (pluginDescriptor.isPeriodicLogEnabled()) {
-            String message = logRecordFormatter.formatRecord(record);
-            logSenderHelper.sendLogsToPeriodicSourceCategory(message);
+        try{
+            if (!pluginDescriptor.isHandlerStarted()) {
+                return;
+            }
+            if (!isLoggable(record)) {
+                return;
+            }
+            if (pluginDescriptor.isPeriodicLogEnabled()) {
+                String message = logRecordFormatter.formatRecord(record);
+                logSenderHelper.sendLogsToPeriodicSourceCategory(message);
+            }
+        } catch (Exception exception){
+            Logger.getLogger("").removeHandler(SumoLogHandler.getInstance());
         }
     }
-
 
 
     @Override
@@ -74,7 +80,7 @@ public class SumoLogHandler extends Handler {
             logMessage.put("logLevel", record.getLevel().getName());
             logMessage.put("logMessage", formatMessage(record));
             logMessage.put("logSource", record.getLoggerName());
-            if (record.getThrown() != null) {
+            if (record.getLevel().intValue() > Level.INFO.intValue() && record.getThrown() != null) {
                 StringWriter sw = new StringWriter();
                 PrintWriter pw = new PrintWriter(sw);
                 record.getThrown().printStackTrace(pw);

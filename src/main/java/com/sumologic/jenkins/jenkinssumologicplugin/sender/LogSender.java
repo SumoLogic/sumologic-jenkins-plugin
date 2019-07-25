@@ -113,6 +113,8 @@ public class LogSender {
         if (isValidContentType(contentType)) {
             post.addRequestHeader("Content-Type", contentType);
         }
+
+        post.addRequestHeader("X-Sumo-Client", "sumologic-publisher");
     }
 
     private boolean isValidContentType(final String contentType) {
