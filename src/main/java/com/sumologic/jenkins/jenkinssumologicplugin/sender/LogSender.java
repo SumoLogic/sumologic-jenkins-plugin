@@ -28,6 +28,7 @@ public class LogSender {
     private LogSender() {
         MultiThreadedHttpConnectionManager connectionManager = new MultiThreadedHttpConnectionManager();
         httpClient = new HttpClient(connectionManager);
+        httpClient.getParams().setParameter("http.protocol.max-redirects", 10);
     }
 
     protected String getHost() {
@@ -48,12 +49,12 @@ public class LogSender {
         return LogSenderHolder.logSender;
     }
 
-    public void sendLogs(String url, byte[] msg, String sumoName, String sumoCategory, String contentType) {
+    public String sendLogs(String url, byte[] msg, String sumoName, String sumoCategory, String contentType) {
         PostMethod post = null;
 
         if (StringUtils.isBlank(url)) {
             LOG.warning("Trying to send logs with blank url. Update config first!");
-            return;
+            return null;
         }
 
         try {
@@ -68,14 +69,17 @@ public class LogSender {
             int statusCode = post.getStatusCode();
             if (statusCode != 200) {
                 LOG.warning(String.format("Received HTTP error from Sumo Service: %d", statusCode));
+                return post.getStatusText();
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOG.warning(String.format("Could not send log to Sumo Logic: %s", e.toString()));
+            return e.getMessage();
         } finally {
             if (post != null) {
                 post.releaseConnection();
             }
         }
+        return "ok";
     }
 
     public void sendLogs(String url, byte[] msg, String sumoName, String sumoCategory) {
@@ -109,6 +113,8 @@ public class LogSender {
         if (isValidContentType(contentType)) {
             post.addRequestHeader("Content-Type", contentType);
         }
+
+        post.addRequestHeader("X-Sumo-Client", "sumologic-publisher");
     }
 
     private boolean isValidContentType(final String contentType) {
