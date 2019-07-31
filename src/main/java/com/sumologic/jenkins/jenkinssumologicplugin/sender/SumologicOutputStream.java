@@ -90,7 +90,13 @@ public class SumologicOutputStream extends LineTransformationOutputStream {
 
     if (TimestampingOutputStream.shouldPutTimestamp(bytes, i)) {
       byte[] timestamp = TimestampingOutputStream.getTimestampAsByteArray();
-      state.buffer.append(timestamp, 0, timestamp.length);
+      try {
+        state.buffer.append(timestamp, 0, timestamp.length);
+      } catch (ArrayIndexOutOfBoundsException e) {
+        LOGGER.warning("Failed to append timestamp " + new String(timestamp) + ", its length was " +
+            timestamp.length + ". The buffer length was " + state.buffer.buffer().length + " or " +
+            state.buffer.length());
+      }
     }
 
     state.buffer.append(bytes, 0, i);
