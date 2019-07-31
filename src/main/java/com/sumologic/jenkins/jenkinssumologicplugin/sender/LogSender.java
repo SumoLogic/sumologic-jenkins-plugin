@@ -2,6 +2,7 @@ package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.apache.commons.httpclient.StatusLine;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringUtils;
@@ -31,7 +32,7 @@ public class LogSender {
         httpClient.getParams().setParameter("http.protocol.max-redirects", 10);
     }
 
-    protected String getHost() {
+    private String getHost() {
         try {
             return InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
@@ -42,19 +43,19 @@ public class LogSender {
     }
 
     private static class LogSenderHolder {
-        public static LogSender logSender = new LogSender();
+        static LogSender logSender = new LogSender();
     }
 
     public static LogSender getInstance() {
         return LogSenderHolder.logSender;
     }
 
-    public String sendLogs(String url, byte[] msg, String sumoName, String sumoCategory, String contentType) {
+    void sendLogs(String url, byte[] msg, String sumoName, String sumoCategory, String contentType) {
         PostMethod post = null;
 
         if (StringUtils.isBlank(url)) {
             LOG.warning("Trying to send logs with blank url. Update config first!");
-            return null;
+            return;
         }
 
         try {
@@ -69,17 +70,14 @@ public class LogSender {
             int statusCode = post.getStatusCode();
             if (statusCode != 200) {
                 LOG.warning(String.format("Received HTTP error from Sumo Service: %d", statusCode));
-                return post.getStatusText();
             }
         } catch (Exception e) {
             LOG.warning(String.format("Could not send log to Sumo Logic: %s", e.toString()));
-            return e.getMessage();
         } finally {
             if (post != null) {
                 post.releaseConnection();
             }
         }
-        return "ok";
     }
 
     public void sendLogs(String url, byte[] msg, String sumoName, String sumoCategory) {
@@ -124,4 +122,26 @@ public class LogSender {
         return false;
     }
 
+    public StatusLine testHTTPUrl(String url) throws Exception {
+        PostMethod post = null;
+
+        if (StringUtils.isBlank(url)) {
+            throw new Exception("Invalid URL");
+        }
+
+        try {
+            post = new PostMethod(url);
+            byte[] compressedData = compress("testMessage".getBytes());
+
+            post.setRequestEntity(new ByteArrayRequestEntity(compressedData));
+            httpClient.executeMethod(post);
+        } catch (Exception e) {
+            throw new Exception();
+        } finally {
+            if (post != null) {
+                post.releaseConnection();
+            }
+        }
+        return post.getStatusLine();
+    }
 }
