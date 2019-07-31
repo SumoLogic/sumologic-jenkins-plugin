@@ -126,7 +126,7 @@ public class LogSender {
         PostMethod post = null;
 
         if (StringUtils.isBlank(url)) {
-            throw new Exception("Invalid URL");
+            throw new Exception("URL can not be empty.");
         }
 
         try {
