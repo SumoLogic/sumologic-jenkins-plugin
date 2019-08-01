@@ -19,6 +19,7 @@ import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import jenkins.util.Timer;
 import net.sf.json.JSONObject;
+import org.apache.commons.httpclient.StatusLine;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -163,15 +164,14 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
     public FormValidation doTestURL(@QueryParameter("url") String url) {
         try {
-            String test = "Send Test Data to SumoLogic";
-            String output = LogSender.getInstance().sendLogs(url, test.getBytes(), null, null, null);
-            if ("ok".equals(output)) {
+            StatusLine output = LogSender.getInstance().testHTTPUrl(url);
+            if (200 == output.getStatusCode()) {
                 return FormValidation.ok("Success");
             } else {
-                return FormValidation.error("URL not valid with message " + output);
+                return FormValidation.error("URL not valid with message " + output.getReasonPhrase());
             }
         } catch (Exception e) {
-            return FormValidation.error("Client error : " + e.getMessage());
+            return FormValidation.error("Failure : " + e.getMessage());
         }
     }
 
