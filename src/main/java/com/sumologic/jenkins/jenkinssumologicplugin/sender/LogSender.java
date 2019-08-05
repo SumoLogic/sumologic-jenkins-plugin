@@ -2,6 +2,7 @@ package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.apache.commons.httpclient.StatusLine;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.lang.StringUtils;
@@ -28,9 +29,10 @@ public class LogSender {
     private LogSender() {
         MultiThreadedHttpConnectionManager connectionManager = new MultiThreadedHttpConnectionManager();
         httpClient = new HttpClient(connectionManager);
+        httpClient.getParams().setParameter("http.protocol.max-redirects", 10);
     }
 
-    protected String getHost() {
+    private String getHost() {
         try {
             return InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
@@ -41,14 +43,14 @@ public class LogSender {
     }
 
     private static class LogSenderHolder {
-        public static LogSender logSender = new LogSender();
+        static LogSender logSender = new LogSender();
     }
 
     public static LogSender getInstance() {
         return LogSenderHolder.logSender;
     }
 
-    public void sendLogs(String url, byte[] msg, String sumoName, String sumoCategory, String contentType) {
+    void sendLogs(String url, byte[] msg, String sumoName, String sumoCategory, String contentType) {
         PostMethod post = null;
 
         if (StringUtils.isBlank(url)) {
@@ -69,7 +71,7 @@ public class LogSender {
             if (statusCode != 200) {
                 LOG.warning(String.format("Received HTTP error from Sumo Service: %d", statusCode));
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOG.warning(String.format("Could not send log to Sumo Logic: %s", e.toString()));
         } finally {
             if (post != null) {
@@ -109,6 +111,8 @@ public class LogSender {
         if (isValidContentType(contentType)) {
             post.addRequestHeader("Content-Type", contentType);
         }
+
+        post.addRequestHeader("X-Sumo-Client", "sumologic-publisher");
     }
 
     private boolean isValidContentType(final String contentType) {
@@ -118,4 +122,26 @@ public class LogSender {
         return false;
     }
 
+    public StatusLine testHTTPUrl(String url) throws Exception {
+        PostMethod post = null;
+
+        if (StringUtils.isBlank(url)) {
+            throw new Exception("URL can not be empty.");
+        }
+
+        try {
+            post = new PostMethod(url);
+            byte[] compressedData = compress("testMessage".getBytes());
+
+            post.setRequestEntity(new ByteArrayRequestEntity(compressedData));
+            httpClient.executeMethod(post);
+        } catch (Exception e) {
+            throw new Exception();
+        } finally {
+            if (post != null) {
+                post.releaseConnection();
+            }
+        }
+        return post.getStatusLine();
+    }
 }

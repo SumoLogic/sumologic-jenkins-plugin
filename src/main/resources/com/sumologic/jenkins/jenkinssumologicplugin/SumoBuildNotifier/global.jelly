@@ -29,7 +29,8 @@
 		</f:entry>
 
 		<f:entry title="Http Source URL" field="url" description="Http Source URL as created in SumoLogic Collector">
-			<f:textbox name="sumoplugin.url"/>
+			<f:password/>
+			<f:validateButton title="${%Test}" progress="${%Testing...}" method="testURL" with="url" />
 		</f:entry>
 
 		<f:entry title="Source Category" field="sourceCategory" description="As provided in SumoLogic source">
