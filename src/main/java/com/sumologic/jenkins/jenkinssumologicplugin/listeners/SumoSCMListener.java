@@ -8,13 +8,8 @@ import hudson.Extension;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.SCMListener;
-import hudson.plugins.git.Branch;
-import hudson.plugins.git.GitSCM;
-import hudson.plugins.git.Revision;
-import hudson.plugins.git.util.BuildData;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
-import hudson.scm.SubversionSCM;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,7 +19,6 @@ import java.util.logging.Logger;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.DATETIME_FORMATTER;
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.SCM_ERROR;
-import static hudson.Util.fixEmpty;
 
 @Extension
 public class SumoSCMListener extends SCMListener {
@@ -53,11 +47,10 @@ public class SumoSCMListener extends SCMListener {
             }
             scmModel.setChangeLog(changes);
 
-            populateGitScmDetails(scm, scmModel, build);
-            populateSubversionDetails(scm, scmModel, build);
+            //populateGitScmDetails(scm, scmModel, build);
 
             PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
-            if(pluginDescriptor.isScmLogEnabled()){
+            if (pluginDescriptor.isScmLogEnabled()) {
                 logSenderHelper.sendJobStatusLogs(scmModel.toString());
             }
         } catch (Exception exception) {
@@ -67,13 +60,13 @@ public class SumoSCMListener extends SCMListener {
         }
     }
 
-    private void populateGitScmDetails(SCM scm, ScmModel scmModel, Run<?, ?> build) {
+    /*private void populateGitScmDetails(SCM scm, ScmModel scmModel, Run<?, ?> build) {
         if (scm instanceof GitSCM) {
             GitSCM gitSCM = (GitSCM) scm;
             scmModel.setScmType(gitSCM.getType());
             scmModel.setScmURLs(gitSCM.getKey());
             BuildData buildData = gitSCM.getBuildData(build);
-            if(buildData != null){
+            if (buildData != null) {
                 Revision rev = buildData.getLastBuiltRevision();
                 if (rev != null) {
                     String sha1 = fixEmpty(rev.getSha1String());
@@ -81,30 +74,22 @@ public class SumoSCMListener extends SCMListener {
                         scmModel.setRevision(sha1);
                     }
                     StringBuilder stringBuilder = new StringBuilder();
-                    rev.getBranches().forEach(branch -> {
+                    for (Branch branch : rev.getBranches()) {
                         String branchName = getBranchName(branch);
                         stringBuilder.append(branchName).append(" ");
-                    });
+                    }
                     scmModel.setBranches(stringBuilder.toString());
                 }
             }
         }
-    }
+    }*/
 
-    private void populateSubversionDetails(SCM scm, ScmModel scmModel, Run<?, ?> build) {
-        if (scm instanceof SubversionSCM) {
-            SubversionSCM subversionSCM = (SubversionSCM) scm;
-            scmModel.setScmType(subversionSCM.getType());
-            scmModel.setScmURLs(subversionSCM.getKey());
-        }
-    }
-
-    private String getBranchName(Branch branch) {
+    /*private String getBranchName(Branch branch) {
         String name = branch.getName();
         if (name.startsWith("refs/remotes/")) {
             //Restore expected previous behaviour
             name = name.substring("refs/remotes/".length());
         }
         return name;
-    }
+    }*/
 }

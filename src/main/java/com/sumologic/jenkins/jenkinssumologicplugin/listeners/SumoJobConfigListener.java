@@ -11,10 +11,10 @@ import hudson.model.listeners.SaveableListener;
 import jenkins.model.Jenkins;
 import org.apache.commons.codec.digest.DigestUtils;
 
+import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.Base64;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,7 +37,7 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
 
     private static final Pattern IGNORED = Pattern.compile(IGNORE_PATTERN, Pattern.CASE_INSENSITIVE);
     private static final long serialVersionUID = 5460486907730404156L;
-    private WeakHashMap<String, Integer> cached = new WeakHashMap<>(512);
+    private WeakHashMap<String, Integer> cached = new WeakHashMap<String, Integer>(512);
 
     @Override
     public void onChange(Saveable saveable, XmlFile file) {
@@ -56,7 +56,7 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
             }
             cached.put(checkSum, 0);
 
-            String encodeFileToString = Base64.getEncoder().encodeToString(file.asString().getBytes());
+            String encodeFileToString = DatatypeConverter.printBase64Binary(file.asString().getBytes());
 
             PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
             String oldFileAsString = null;
@@ -64,7 +64,7 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
             if (pluginDescriptor.isKeepOldConfigData()) {
                 File oldFile = getOldFile(file);
                 byte[] bytes = fileToString(oldFile);
-                oldFileAsString = Base64.getEncoder().encodeToString(bytes);
+                oldFileAsString = DatatypeConverter.printBase64Binary(bytes);
 
                 try {
                     Files.copy(file.getFile().toPath(), oldFile.toPath(), StandardCopyOption.REPLACE_EXISTING);

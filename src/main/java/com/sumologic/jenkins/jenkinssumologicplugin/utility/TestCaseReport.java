@@ -27,14 +27,15 @@ public class TestCaseReport {
         }
         List<AbstractTestResultAction> testResultActionList = buildInfo.getActions(AbstractTestResultAction.class);
 
-        testResultActionList.forEach(abstractTestResultAction -> {
-            if (abstractTestResultAction instanceof AggregatedTestResultAction) {
-                testResults.addAll(addTestResults((AggregatedTestResultAction) abstractTestResultAction));
-            } else if (abstractTestResultAction instanceof TestResultAction) {
-                testResults.addAll(addTestResult(buildInfo, abstractTestResultAction, abstractTestResultAction.getResult()));
+        if(testResultActionList != null && testResultActionList.size() > 0){
+            for(AbstractTestResultAction abstractTestResultAction:testResultActionList){
+                if (abstractTestResultAction instanceof AggregatedTestResultAction) {
+                    testResults.addAll(addTestResults((AggregatedTestResultAction) abstractTestResultAction));
+                } else if (abstractTestResultAction instanceof TestResultAction) {
+                    testResults.addAll(addTestResult(buildInfo, abstractTestResultAction, abstractTestResultAction.getResult()));
+                }
             }
-        });
-
+        }
         return testResults;
     }
 

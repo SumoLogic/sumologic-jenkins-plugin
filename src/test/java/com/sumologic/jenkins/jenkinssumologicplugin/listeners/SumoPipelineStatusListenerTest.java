@@ -1,26 +1,26 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.listeners;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.BaseTest;
+import com.sumologic.jenkins.jenkinssumologicplugin.SumoBuildNotifier;
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
 import hudson.model.Result;
-import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
-import org.jenkinsci.plugins.workflow.job.WorkflowJob;
-import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.junit.ClassRule;
+import hudson.tasks.Shell;
 import org.junit.Test;
-import org.jvnet.hudson.test.BuildWatcher;
 
 public class SumoPipelineStatusListenerTest extends BaseTest {
 
-    @ClassRule
-    public static BuildWatcher bw = new BuildWatcher();
-
     @Test
     public void onCompleted() throws Exception {
-        WorkflowJob project = j.createProject(WorkflowJob.class);
-        project.setDefinition(new CpsFlowDefinition("SumoPipelineLogCollection{ stage(\"build\") { echo 'hello' }}", true));
+        FreeStyleProject project = j.createFreeStyleProject();
+        for (int i = 0; i < 30; i++) {
+            project.getBuildersList().add(new Shell("Echo Hello world for sumo  build notifier"));
+        }
 
-        WorkflowRun workflowRun = project.scheduleBuild2(0).get();
+        project.getPublishersList().add(new SumoBuildNotifier());
 
-        j.assertBuildStatus(Result.FAILURE, workflowRun);
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+
+        j.assertBuildStatus(Result.SUCCESS, build);
     }
 }

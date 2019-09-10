@@ -21,7 +21,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -253,7 +252,13 @@ public class CommonModelFactory {
 
             testCaseModel.getTestResults().addAll(getTestCaseReport(buildInfo));
 
-            testCaseModel.setTotalDuration(testCaseModel.getTestResults().stream().mapToDouble(TestCaseResultModel::getDuration).sum());
+            float totalDuration = 0;
+            if(testCaseModel.getTestResults() != null && testCaseModel.getTestResults().size() > 0){
+                for(TestCaseResultModel testCaseResultModel : testCaseModel.getTestResults()){
+                    totalDuration = testCaseResultModel.getDuration();
+                }
+            }
+            testCaseModel.setTotalDuration(totalDuration);
             return testCaseModel;
         }
         return null;
@@ -321,7 +326,7 @@ public class CommonModelFactory {
                                          final String message, Map<String, Object> fileDetails) {
         String userFullName = null;
         try {
-            User user = User.getById(userId, false);
+            User user = User.get(userId);
             if (user != null) {
                 userFullName = user.getFullName();
             }
@@ -381,7 +386,9 @@ public class CommonModelFactory {
                 slaveModel.setEventSource(EventSourceEnum.PERIODIC_UPDATE.getValue());
                 getComputerStatus(computer, slaveModel);
 
-                computer.getMonitorData().forEach((key, value) -> {
+                for (Map.Entry<String, Object> valueOfMonitorData : computer.getMonitorData().entrySet()) {
+                    String key = valueOfMonitorData.getKey();
+                    Object value = valueOfMonitorData.getValue();
                     String monitorName = key.split("\\.")[2];
                     String monitorData = null;
                     if (value != null) {
@@ -402,7 +409,7 @@ public class CommonModelFactory {
                         }
                     }
                     slaveModel.getMonitorData().put(monitorName, monitorData);
-                });
+                }
                 slaveModels.add(slaveModel);
             }
         }
@@ -420,11 +427,11 @@ public class CommonModelFactory {
         slaveModel.setIdle(computer.isIdle());
         AtomicInteger countFreeExecutors = new AtomicInteger();
         if (computer.getExecutors() != null) {
-            computer.getExecutors().forEach(executor -> {
+            for (Executor executor : computer.getExecutors()) {
                 if (executor.isIdle()) {
                     countFreeExecutors.incrementAndGet();
                 }
-            });
+            }
         }
         slaveModel.setNumberOfFreeExecutors(countFreeExecutors.get());
         slaveModel.setOnline(computer.isOnline());
@@ -474,31 +481,18 @@ public class CommonModelFactory {
             AtomicReference<StringBuilder> stringBuilder = new AtomicReference<>(new StringBuilder());
             AtomicInteger count = new AtomicInteger();
             count.addAndGet(1);
-            AtomicBoolean sendLogs = new AtomicBoolean(true);
-            bufferedReader.lines().forEach(s -> {
+            String s;
+            while ((s = bufferedReader.readLine()) != null) {
                 String s1 = ConsoleNote.removeNotes(s);
-
-                // if pipeline jobs all console logs are send via other node. Only logs which are after and before pipeline
-                // will be sent here
-                if (s1.startsWith(START_OF_PIPELINE)) {
-                    sendLogs.set(false);
+                stringBuilder.get().append("[").append(DATETIME_FORMATTER.format(new Date()))
+                        .append("] ").append(" ")
+                        .append(s1).append("\n");
+                if (count.get() % DIVIDER_FOR_MESSAGES == 0) {
+                    logSenderHelper.sendConsoleLogs(stringBuilder.toString(), run.getParent().getFullName(), run.getNumber(), null);
+                    stringBuilder.set(new StringBuilder());
                 }
-
-                if (!s1.startsWith(PIPELINE) && sendLogs.get()) {
-                    stringBuilder.get().append("[").append(DATETIME_FORMATTER.format(new Date()))
-                            .append("] ").append(" ")
-                            .append(s1).append("\n");
-                    if (count.get() % DIVIDER_FOR_MESSAGES == 0) {
-                        logSenderHelper.sendConsoleLogs(stringBuilder.toString(), run.getParent().getFullName(), run.getNumber(), null);
-                        stringBuilder.set(new StringBuilder());
-                    }
-                    count.incrementAndGet();
-                }
-
-                if (s1.startsWith(END_OF_PIPELINE)) {
-                    sendLogs.set(true);
-                }
-            });
+                count.incrementAndGet();
+            }
             logSenderHelper.sendConsoleLogs(stringBuilder.toString(), run.getParent().getFullName(), run.getNumber(), null);
         } catch (RuntimeException e) {
             throw e;

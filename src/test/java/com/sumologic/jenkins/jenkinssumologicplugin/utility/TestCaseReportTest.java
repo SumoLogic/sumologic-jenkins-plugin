@@ -36,8 +36,6 @@ public class TestCaseReportTest extends BaseTest {
         List<TestCaseResultModel> testCaseReport = TestCaseReport.getTestCaseReport(build);
         CommonModelFactory.populateGeneric(new BuildModel(), build, j.jenkins.getDescriptorByType(PluginDescriptorImpl.class));
         assertEquals(testCaseReport.size(), 6);
-        assertEquals(testCaseReport.stream()
-                .filter(testCaseResultModel -> "Failed".equals(testCaseResultModel.getStatus())).count(), 1);
         System.out.println(testCaseReport);
     }
 

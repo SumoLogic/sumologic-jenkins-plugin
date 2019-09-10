@@ -283,8 +283,13 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
     //Handler to get all the jenkins Logs
     @Initializer(after = JOB_LOADED)
-    public void startSumoJenkinsLogHandler() {
-        Timer.get().schedule(PluginDescriptorImpl.getInstance()::registerHandler, 3, TimeUnit.MINUTES);
+    public static void startSumoJenkinsLogHandler() {
+        Timer.get().schedule(new Runnable() {
+            @Override
+            public void run() {
+                PluginDescriptorImpl.getInstance().registerHandler();
+            }
+        }, 3, TimeUnit.MINUTES);
     }
 
     public void registerHandler() {
@@ -295,6 +300,6 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
             }
         }
         Logger.getLogger("").addHandler(SumoLogHandler.getInstance());
-        isHandlerStarted = true;
+        setHandlerStarted(true);
     }
 }
