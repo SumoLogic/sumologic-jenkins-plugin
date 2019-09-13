@@ -52,7 +52,7 @@ public class SumoSCMListener extends SCMListener {
             }
             scmModel.setChangeLog(changes);
 
-            //populateGitScmDetails(scm, scmModel, build);
+            populateGitScmDetails(scm, scmModel, build);
 
             PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
             if (pluginDescriptor.isScmLogEnabled()) {
