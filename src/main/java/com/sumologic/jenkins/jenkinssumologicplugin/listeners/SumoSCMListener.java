@@ -8,6 +8,10 @@ import hudson.Extension;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.SCMListener;
+import hudson.plugins.git.Branch;
+import hudson.plugins.git.GitSCM;
+import hudson.plugins.git.Revision;
+import hudson.plugins.git.util.BuildData;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
 
@@ -19,6 +23,7 @@ import java.util.logging.Logger;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.DATETIME_FORMATTER;
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.SCM_ERROR;
+import static hudson.Util.fixEmpty;
 
 @Extension
 public class SumoSCMListener extends SCMListener {
@@ -60,7 +65,7 @@ public class SumoSCMListener extends SCMListener {
         }
     }
 
-    /*private void populateGitScmDetails(SCM scm, ScmModel scmModel, Run<?, ?> build) {
+    private void populateGitScmDetails(SCM scm, ScmModel scmModel, Run<?, ?> build) {
         if (scm instanceof GitSCM) {
             GitSCM gitSCM = (GitSCM) scm;
             scmModel.setScmType(gitSCM.getType());
@@ -82,14 +87,14 @@ public class SumoSCMListener extends SCMListener {
                 }
             }
         }
-    }*/
+    }
 
-    /*private String getBranchName(Branch branch) {
+    private String getBranchName(Branch branch) {
         String name = branch.getName();
         if (name.startsWith("refs/remotes/")) {
             //Restore expected previous behaviour
             name = name.substring("refs/remotes/".length());
         }
         return name;
-    }*/
+    }
 }
