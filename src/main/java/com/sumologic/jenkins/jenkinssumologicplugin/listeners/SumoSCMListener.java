@@ -42,7 +42,7 @@ public class SumoSCMListener extends SCMListener {
             scmModel.setJobName(build.getParent().getFullName());
             scmModel.setBuildNumber(build.getNumber());
 
-            List<String> changes = new ArrayList<>();
+            List<String> changes = new ArrayList<String>();
             for (ChangeLogSet.Entry entry : changelog) {
                 String sbr = entry.getTimestamp() +
                         " " + "commit:" + entry.getCommitId() +

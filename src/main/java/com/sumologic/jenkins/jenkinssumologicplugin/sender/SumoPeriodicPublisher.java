@@ -35,7 +35,7 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
     private static final long recurrencePeriod = TimeUnit.MINUTES.toMillis(3);
     private static final Logger LOGGER = Logger.getLogger(SumoPeriodicPublisher.class.getName());
     private LogSenderHelper logSenderHelper;
-    private static Set<String> slaveNames = new HashSet<>();
+    private static Set<String> slaveNames = new HashSet<String>();
 
     private static void setSlaves(Set<String> slaveNames) {
         SumoPeriodicPublisher.slaveNames = slaveNames;
@@ -68,7 +68,7 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
 
     private void sendTasksInQueue() {
         final Queue.Item[] items = Jenkins.getInstance().getQueue().getItems();
-        List<String> queueModels = new ArrayList<>();
+        List<String> queueModels = new ArrayList<String>();
         if(items != null && items.length > 0){
             for (Queue.Item item : items) {
                 QueueModel queueModel = new QueueModel();
@@ -94,19 +94,19 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
     private void sendNodeDetailsForJenkins() {
         List<SlaveModel> slaveModels = getNodeMonitorsDetails();
         if (CollectionUtils.isNotEmpty(slaveModels)) {
-            List<String> messages = new ArrayList<>();
+            List<String> messages = new ArrayList<String>();
             for (SlaveModel slaveModel : slaveModels) {
                 messages.add(slaveModel.toString());
             }
             logSenderHelper.sendMultiplePeriodicLogs(messages);
         }
 
-        Set<String> slavesUp = new HashSet<>();
+        Set<String> slavesUp = new HashSet<String>();
         for (SlaveModel slaveModel : slaveModels) {
             slavesUp.add(slaveModel.getNodeName());
         }
 
-        List<String> removedSlaves = new ArrayList<>();
+        List<String> removedSlaves = new ArrayList<String>();
         for (String slave : slaveNames) {
             if (!slavesUp.contains(slave)) {
                 SlaveModel slaveModel = new SlaveModel();
@@ -125,9 +125,9 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
     }
 
     public void sendRunningJobDetails() {
-        List<String> currentBuildDetails = new ArrayList<>();
+        List<String> currentBuildDetails = new ArrayList<String>();
         for (Computer computer : Jenkins.getInstance().getComputers()) {
-            List<Run> runList = new ArrayList<>();
+            List<Run> runList = new ArrayList<Run>();
             for (Executor executor : computer.getExecutors()) {
                 Run run = getRunningJob(executor);
                 if (run != null) {

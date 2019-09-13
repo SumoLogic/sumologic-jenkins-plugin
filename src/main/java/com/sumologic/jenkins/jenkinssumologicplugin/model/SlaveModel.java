@@ -105,7 +105,7 @@ public class SlaveModel extends BaseModel {
 
     public Map<String, Object> getMonitorData() {
         if (this.monitorData == null) {
-            this.monitorData = new HashMap<>();
+            this.monitorData = new HashMap<String, Object>();
         }
         return monitorData;
     }

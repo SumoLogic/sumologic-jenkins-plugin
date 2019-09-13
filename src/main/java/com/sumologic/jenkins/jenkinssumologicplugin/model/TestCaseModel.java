@@ -16,11 +16,11 @@ public class TestCaseModel {
     private int skips;
     private int total;
     private double totalDuration;
-    private List<TestCaseResultModel> testResults = new ArrayList<>();
+    private List<TestCaseResultModel> testResults = new ArrayList<TestCaseResultModel>();
 
     public List<TestCaseResultModel> getTestResults() {
         if(this.testResults == null){
-            testResults = new ArrayList<>();
+            testResults = new ArrayList<TestCaseResultModel>();
         }
         return testResults;
     }

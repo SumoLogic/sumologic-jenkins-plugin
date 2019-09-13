@@ -21,6 +21,6 @@ public class SumoPipelineStatusListenerTest extends BaseTest {
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();
 
-        j.assertBuildStatus(Result.FAILURE, build);
+        j.assertBuildStatus(Result.SUCCESS, build);
     }
 }

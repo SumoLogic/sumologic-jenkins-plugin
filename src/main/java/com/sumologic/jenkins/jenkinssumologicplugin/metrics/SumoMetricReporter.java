@@ -56,7 +56,7 @@ public class SumoMetricReporter extends ScheduledReporter {
                        SortedMap<String, Timer> timers) {
         final long timeInSec = this.clock.getTime() / 1000;
 
-        List<String> messages = new ArrayList<>();
+        List<String> messages = new ArrayList<String>();
 
         try {
             for (Map.Entry<String, Gauge> gauge : gauges.entrySet()) {

@@ -73,7 +73,7 @@ public class SumoLogHandler extends Handler {
         }
 
         private String formatRecord(LogRecord record) {
-            Map<String, Object> logMessage = new HashMap<>();
+            Map<String, Object> logMessage = new HashMap<String, Object>();
             logMessage.put("threadId", record.getThreadID());
             logMessage.put("logType", LogTypeEnum.JENKINS_LOG.getValue());
             logMessage.put("eventTime", DATETIME_FORMATTER.format(new Date()));

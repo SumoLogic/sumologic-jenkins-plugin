@@ -21,7 +21,7 @@ import java.util.List;
 public class TestCaseReport {
 
     public static List<TestCaseResultModel> getTestCaseReport(Run buildInfo) {
-        List<TestCaseResultModel> testResults = new ArrayList<>();
+        List<TestCaseResultModel> testResults = new ArrayList<TestCaseResultModel>();
         if (buildInfo == null) {
             return testResults;
         }
@@ -40,7 +40,7 @@ public class TestCaseReport {
     }
 
     private static List<TestCaseResultModel> addTestResults(AggregatedTestResultAction testAction) {
-        List<TestCaseResultModel> testResults = new ArrayList<>();
+        List<TestCaseResultModel> testResults = new ArrayList<TestCaseResultModel>();
         List<AggregatedTestResultAction.ChildReport> childReports = testAction.getChildReports();
         for (AggregatedTestResultAction.ChildReport childReport : childReports) {
             testResults.addAll(addTestResult(childReport.run, testAction, childReport.result));
@@ -49,7 +49,7 @@ public class TestCaseReport {
     }
 
     private static List<TestCaseResultModel> addTestResult(Run run, AbstractTestResultAction testAction, Object result) {
-        List<TestCaseResultModel> caseResults = new ArrayList<>();
+        List<TestCaseResultModel> caseResults = new ArrayList<TestCaseResultModel>();
         if (run == null || result == null) {
             return caseResults;
         }

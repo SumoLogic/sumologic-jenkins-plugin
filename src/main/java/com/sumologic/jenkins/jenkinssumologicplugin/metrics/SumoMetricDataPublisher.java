@@ -50,7 +50,7 @@ public class SumoMetricDataPublisher {
     }
 
     private Set<String> createMetricFilter() {
-        final Set<String> whitelist = new HashSet<>();
+        final Set<String> whitelist = new HashSet<String>();
 
         whitelist.add("jenkins.executor.count.value");
         whitelist.add("jenkins.executor.free.value");

@@ -90,7 +90,7 @@ public class LogSenderHelper {
     }
 
     private static List<String> divideDataIntoEquals(final List<String> messages) {
-        List<String> convertedMessages = new ArrayList<>();
+        List<String> convertedMessages = new ArrayList<String>();
 
         StringBuilder stringBuilder = new StringBuilder();
         int count = 1;
@@ -111,7 +111,7 @@ public class LogSenderHelper {
         PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
         Gson gson = new Gson();
 
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = new HashMap<String, Object>();
 
         data.put("logType", LogTypeEnum.TEST_RESULT.getValue());
         data.put("name", buildModel.getName());
@@ -121,7 +121,7 @@ public class LogSenderHelper {
             if (CollectionUtils.isNotEmpty(testCaseModel.getTestResults())) {
                 List<TestCaseResultModel> testResults = testCaseModel.getTestResults();
                 // send test cases based on the size
-                List<TestCaseResultModel> toBeSent = new LinkedList<>();
+                List<TestCaseResultModel> toBeSent = new LinkedList<TestCaseResultModel>();
                 data.put("testResult", toBeSent);
                 int size = gson.toJson(data).getBytes().length;
                 for (TestCaseResultModel testCaseResultModel : testResults) {
@@ -157,7 +157,7 @@ public class LogSenderHelper {
     public static void sendPipelineStages(List<PipelineStageModel> stages, BuildModel buildModel) {
         PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
         Gson gson = new Gson();
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = new HashMap<String, Object>();
 
         data.put("logType", LogTypeEnum.PIPELINE_STAGES.getValue());
         data.put("name", buildModel.getName());
@@ -165,7 +165,7 @@ public class LogSenderHelper {
 
         if (CollectionUtils.isNotEmpty(stages)) {
             // send Stages based on the size
-            List<PipelineStageModel> toBeSent = new LinkedList<>();
+            List<PipelineStageModel> toBeSent = new LinkedList<PipelineStageModel>();
             data.put("stages", toBeSent);
             int size = gson.toJson(data).getBytes().length;
             for (PipelineStageModel pipelineStageModel : stages) {

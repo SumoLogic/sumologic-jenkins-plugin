@@ -167,7 +167,7 @@ public class CommonModelFactory {
      * @return All the causes that triggered the Job separated by comma(,)
      */
     private static String getJobTriggerCauses(Run buildInfo) {
-        Set<String> causes = new LinkedHashSet<>();
+        Set<String> causes = new LinkedHashSet<String>();
         for (CauseAction action : buildInfo.getActions(CauseAction.class)) {
             if (action != null && action.getCauses() != null) {
                 for (Cause cause : action.getCauses()) {
@@ -269,7 +269,7 @@ public class CommonModelFactory {
      * @return build variables with password masked
      */
     private static Map<String, Object> getBuildVariables(Run run) {
-        Map<String, Object> values = new HashMap<>();
+        Map<String, Object> values = new HashMap<String, Object>();
         List<ParametersAction> parameterActions = run.getActions(ParametersAction.class);
         for (ParametersAction parameters : parameterActions) {
             for (ParameterValue p : parameters) {
@@ -315,7 +315,7 @@ public class CommonModelFactory {
         String message = String.format(AuditEventTypeEnum.CHANGES_IN_CONFIG.getMessage(),
                 userName, fileName);
 
-        Map<String, Object> fileDetails = new HashMap<>();
+        Map<String, Object> fileDetails = new HashMap<String, Object>();
 
         fileDetails.put("Current_File_Data", fileData);
         fileDetails.put("Old_File_Data", oldFileData);
@@ -372,7 +372,7 @@ public class CommonModelFactory {
     }
 
     public static List<SlaveModel> getNodeMonitorsDetails() {
-        List<SlaveModel> slaveModels = new ArrayList<>();
+        List<SlaveModel> slaveModels = new ArrayList<SlaveModel>();
         Computer[] computers = Jenkins.getInstance().getComputers();
 
         if (computers == null || computers.length == 0) {
@@ -478,7 +478,7 @@ public class CommonModelFactory {
         BufferedReader bufferedReader = null;
         try {
             bufferedReader = new BufferedReader(run.getLogReader());
-            AtomicReference<StringBuilder> stringBuilder = new AtomicReference<>(new StringBuilder());
+            AtomicReference<StringBuilder> stringBuilder = new AtomicReference<StringBuilder>(new StringBuilder());
             AtomicInteger count = new AtomicInteger();
             count.addAndGet(1);
             String s;

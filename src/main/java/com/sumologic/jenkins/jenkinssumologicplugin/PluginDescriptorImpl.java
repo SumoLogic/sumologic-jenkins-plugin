@@ -131,7 +131,7 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
         Logger.getLogger("").removeHandler(SumoLogHandler.getInstance());
 
-        Map<String, Object> shutDown = new HashMap<>();
+        Map<String, Object> shutDown = new HashMap<String, Object>();
         shutDown.put("logType", LogTypeEnum.SLAVE_EVENT.getValue());
         shutDown.put("eventTime", DATETIME_FORMATTER.format(new Date()));
         shutDown.put("eventSource", EventSourceEnum.SHUTDOWN.getValue());
