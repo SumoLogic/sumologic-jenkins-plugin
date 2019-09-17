@@ -24,8 +24,8 @@
 			<f:textbox name="sumoplugin.queryPortal" Default="service.sumologic.com"/>
 		</f:entry>
 
-		<f:entry title="Metric Data Prefix" field="metricDataPrefix" description="Provide a Metric data Prefix to Identify Metric for Jenkins Master.">
-			<f:textbox name="sumoplugin.metricDataPrefix" default="jenkinsMetricDataPrefix"/>
+		<f:entry title="Jenkins Master Name" field="jenkinsMasterName" description="Provide a Identity for Jenkins Master.">
+			<f:textbox name="sumoplugin.jenkinsMasterName" default="jenkinsMasterName"/>
 		</f:entry>
 
 		<f:entry title="Http Source URL" field="url" description="Http Source URL as created in SumoLogic Collector">
@@ -64,5 +64,14 @@
                 description="Check to automatically send console logs for all Jobs. By default for specific jobs.">
 			<f:checkbox default="false"/>
 		</f:entry>
+
+        <f:optionalBlock name="createDashboards" checked="${instance.createDashboards}" title="Custom Dashboards in SumoLogic" inline="true">
+        	<f:entry title="Access ID" field="accessID" description="Access ID of the SumoLogic Account">
+            	<f:password/>
+            </f:entry>
+            <f:entry title="Access Key" field="accessKey" description="Access Key of the SumoLogic Account">
+            	<f:password/>
+            </f:entry>
+        </f:optionalBlock>
 	</f:section>
 </j:jelly>

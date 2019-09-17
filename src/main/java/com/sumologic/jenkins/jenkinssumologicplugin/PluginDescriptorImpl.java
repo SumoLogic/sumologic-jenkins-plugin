@@ -53,7 +53,7 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
     private static LogSenderHelper logSenderHelper = null;
     private String queryPortal;
     private String sourceCategory;
-    private String metricDataPrefix;
+    private String jenkinsMasterName;
     private boolean auditLogEnabled;
     private boolean keepOldConfigData;
     private boolean metricDataEnabled;
@@ -61,14 +61,17 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
     private boolean jobStatusLogEnabled;
     private boolean jobConsoleLogEnabled;
     private boolean scmLogEnabled;
+    private String accessKey = null;
+    private String accessID = null;
+    private boolean createDashboards;
 
     public PluginDescriptorImpl() {
         super(SumoBuildNotifier.class);
         load();
         sumoMetricDataPublisher = new SumoMetricDataPublisher();
-        if (metricDataEnabled && metricDataPrefix != null) {
+        if (metricDataEnabled && jenkinsMasterName != null) {
             getSumoMetricDataPublisher().stopReporter();
-            getSumoMetricDataPublisher().publishMetricData(metricDataPrefix);
+            getSumoMetricDataPublisher().publishMetricData(jenkinsMasterName);
         }
         if (!metricDataEnabled) {
             getSumoMetricDataPublisher().stopReporter();
@@ -102,7 +105,7 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
         sourceCategory = StringUtils.isNotEmpty(formData.getString("sourceCategory")) ? formData.getString("sourceCategory") : "jenkinsSourceCategory";
 
-        metricDataPrefix = StringUtils.isNotEmpty(formData.getString("metricDataPrefix")) ? formData.getString("metricDataPrefix") : "jenkinsMetricDataPrefix";
+        jenkinsMasterName = StringUtils.isNotEmpty(formData.getString("jenkinsMasterName")) ? formData.getString("jenkinsMasterName") : "jenkinsMasterName";
 
         auditLogEnabled = formData.getBoolean("auditLogEnabled");
         metricDataEnabled = formData.getBoolean("metricDataEnabled");
@@ -111,11 +114,15 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         jobConsoleLogEnabled = formData.getBoolean("jobConsoleLogEnabled");
         scmLogEnabled = formData.getBoolean("scmLogEnabled");
         keepOldConfigData = formData.getBoolean("keepOldConfigData");
+        createDashboards = formData.getBoolean("createDashboards");
+
+        accessID = formData.containsKey("accessID") && StringUtils.isNotEmpty(formData.getString("accessID")) ? formData.getString("accessID") : null;
+        accessKey = formData.containsKey("accessKey") && StringUtils.isNotEmpty(formData.getString("accessKey")) ? formData.getString("accessKey") : null;
 
         save();
-        if (metricDataEnabled && metricDataPrefix != null) {
+        if (metricDataEnabled && jenkinsMasterName != null) {
             getSumoMetricDataPublisher().stopReporter();
-            getSumoMetricDataPublisher().publishMetricData(metricDataPrefix);
+            getSumoMetricDataPublisher().publishMetricData(jenkinsMasterName);
         }
         if (!metricDataEnabled) {
             getSumoMetricDataPublisher().stopReporter();
@@ -173,6 +180,20 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         } catch (Exception e) {
             return FormValidation.error("Failure : " + e.getMessage());
         }
+    }
+
+    public FormValidation doCheckAccessKey(@QueryParameter String value) {
+        if (value.isEmpty()) {
+            return FormValidation.error("You must provide an Access Key.");
+        }
+        return FormValidation.ok();
+    }
+
+    public FormValidation doCheckAccessID(@QueryParameter String value) {
+        if (value.isEmpty()) {
+            return FormValidation.error("You must provide an Access ID.");
+        }
+        return FormValidation.ok();
     }
 
     public SumoMetricDataPublisher getSumoMetricDataPublisher() {
@@ -239,12 +260,12 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         this.scmLogEnabled = scmLogEnabled;
     }
 
-    public String getMetricDataPrefix() {
-        return metricDataPrefix;
+    public String getJenkinsMasterName() {
+        return jenkinsMasterName;
     }
 
-    public void setMetricDataPrefix(String metricDataPrefix) {
-        this.metricDataPrefix = metricDataPrefix;
+    public void setJenkinsMasterName(String jenkinsMasterName) {
+        this.jenkinsMasterName = jenkinsMasterName;
     }
 
     public String getUrl() {
@@ -269,6 +290,30 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
     public void setKeepOldConfigData(boolean keepOldConfigData) {
         this.keepOldConfigData = keepOldConfigData;
+    }
+
+    public String getAccessKey() {
+        return accessKey;
+    }
+
+    public void setAccessKey(String accessKey) {
+        this.accessKey = accessKey;
+    }
+
+    public String getAccessID() {
+        return accessID;
+    }
+
+    public void setAccessID(String accessID) {
+        this.accessID = accessID;
+    }
+
+    public boolean isCreateDashboards() {
+        return createDashboards;
+    }
+
+    public void setCreateDashboards(boolean createDashboards) {
+        this.createDashboards = createDashboards;
     }
 
     private boolean isHandlerStarted;
