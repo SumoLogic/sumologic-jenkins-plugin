@@ -84,7 +84,7 @@ public class LogSender {
         sendLogs(url, msg, sumoName, sumoCategory, null);
     }
 
-    private byte[] compress(byte[] content) throws IOException {
+    public byte[] compress(byte[] content) throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
         gzipOutputStream.write(content);

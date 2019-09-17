@@ -54,4 +54,8 @@ public class SumoConstants {
     public static final String END_OF_PIPELINE = "[Pipeline] End of Pipeline";
 
     public static final int MAX_DATA_SIZE = 50000;
+
+    public static final String FOLDER_URL = "/api/v2/content/folders/";
+
+    public static final String MASTER_FOLDER_DESC = "<Disclaimer : PLEASE DO NOT RENAME OR DELETE THE FOLDER>. This is folder created by SumoLogic Jenkins Plugin for dashboards.";
 }
