@@ -67,7 +67,7 @@ public class SumoRestAPICallImpl {
             httpClient.executeMethod(httpMethod);
             int statusCode = httpMethod.getStatusCode();
             if (statusCode != 200) {
-                LOG.warning(String.format("Received HTTP error from Sumo Service: %d", statusCode));
+                LOG.warning(String.format("Received HTTP error from Sumo Service: %d ", statusCode));
                 return null;
             }
             return responseAsString(httpMethod);
@@ -81,7 +81,7 @@ public class SumoRestAPICallImpl {
         }
     }
 
-    private String responseAsString(HttpMethod httpMethod) throws IOException {
+    private String responseAsString(HttpMethod httpMethod) {
         try (InputStreamReader inputStreamReader = new InputStreamReader(httpMethod.getResponseBodyAsStream()); BufferedReader br = new BufferedReader(inputStreamReader)) {
             return br.lines().collect(Collectors.joining("\n"));
         } catch (Exception e) {
@@ -94,26 +94,23 @@ public class SumoRestAPICallImpl {
         httpMethod.addRequestHeader("Authorization", this.credential);
     }
 
-    String getIdOfExistingFolderOrCreateFolderIfDoesNotExists(String folderName, String folderId, Map<String, Object> request) {
+    String getIdOfExistingFolderOrCreateFolderIfDoesNotExists(String folderName, String folderId, Map<String, Object> request, String key) {
         String response = makeRestAPICall(new GetMethod(getDeploymentURL() + FOLDER_URL + folderId));
         if (StringUtils.isNotEmpty(response)) {
             try {
                 Map objectValue = gson.fromJson(response, Map.class);
-                if (response.contains(folderName)) {
-                    if (objectValue.containsKey("children")) {
-                        for (Object children : ((List) objectValue.get("children"))) {
-                            if (children instanceof Map) {
-                                Map<String, Object> valueOfChildren = (Map<String, Object>) children;
-                                if (folderName.equals(valueOfChildren.get("name"))) {
-                                    return (String) valueOfChildren.get("id");
-                                }
+                if (objectValue.containsKey("children")) {
+                    for (Object children : ((List) objectValue.get("children"))) {
+                        if (children instanceof Map) {
+                            Map valueOfChildren = (Map) children;
+                            if (folderName.equals(valueOfChildren.get("name"))) {
+                                return (String) valueOfChildren.get(key);
                             }
                         }
                     }
-                } else {
-                    request.put("parentId", objectValue.get("id"));
-                    return postRequestToSumoLogic(gson.toJson(request), getDeploymentURL() + FOLDER_URL);
                 }
+                request.put("parentId", objectValue.get("id"));
+                return postRequestToSumoLogic(gson.toJson(request), getDeploymentURL() + FOLDER_URL, key);
             } catch (RuntimeException e) {
                 throw e;
             } catch (Exception e) {
@@ -123,23 +120,22 @@ public class SumoRestAPICallImpl {
         return null;
     }
 
-    private String postRequestToSumoLogic(String request, String postURL) throws IOException {
+    private String postRequestToSumoLogic(String request, String postURL, String key) throws IOException {
         PostMethod postMethod = new PostMethod(postURL);
 
         postMethod.setRequestEntity(new StringRequestEntity(request, ContentType.APPLICATION_JSON.toString(), "UTF-8"));
 
         String response = makeRestAPICall(postMethod);
-
-        if (StringUtils.isNotEmpty(response) && response.contains("id")) {
-            Map<String, Object> value = gson.fromJson(response, Map.class);
-            return (String) value.get("id");
+        if (StringUtils.isNotEmpty(response) && response.contains(key)) {
+            Map value = gson.fromJson(response, Map.class);
+            return (String) value.get(key);
         }
         return null;
     }
 
     String createDashboardInSumoLogic(String request, String parentFolderId) {
         try {
-            return postRequestToSumoLogic(request, getDeploymentURL() + FOLDER_URL + parentFolderId + "/import");
+            return postRequestToSumoLogic(request, getDeploymentURL() + FOLDER_URL + parentFolderId + "/import", "id");
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {

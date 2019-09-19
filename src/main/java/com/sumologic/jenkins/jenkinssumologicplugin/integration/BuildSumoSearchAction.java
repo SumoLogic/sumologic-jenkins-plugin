@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -23,20 +24,21 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstan
  * This action is added to each build happening in Jenkins. It adds a dashboard for that Build in personal folder of
  * SumoLogic Directory
  */
-public class JobBuildSumoSearchAction implements Action {
+public class BuildSumoSearchAction implements Action {
 
-    private static final Logger LOG = Logger.getLogger(JobBuildSumoSearchAction.class.getName());
+    private static final Logger LOG = Logger.getLogger(BuildSumoSearchAction.class.getName());
 
-    private Run build;
+    private String buildFolderId;
+
+    private final static String URL_TEMPLATE = "https://%s/ui/#/library/folder/%s";
 
     /**
      * perform all rest api call and add the dashboard to Sumologic for build.
      *
      * @param build
      */
-    public JobBuildSumoSearchAction(Run build) {
-        this.build = build;
-        createBuildDashboardInSumoLogic(build);
+    public BuildSumoSearchAction(Run build) {
+        this.buildFolderId = createBuildDashboardInSumoLogic(build);
     }
 
     @CheckForNull
@@ -48,7 +50,7 @@ public class JobBuildSumoSearchAction implements Action {
     @CheckForNull
     @Override
     public String getDisplayName() {
-        return "View SumoLogic DashBoard";
+        return "Build Dashboard";
     }
 
     @CheckForNull
@@ -57,10 +59,10 @@ public class JobBuildSumoSearchAction implements Action {
      * create just the URL to reach the specific dashboard.
      */
     public String getUrlName() {
-        return null;
+        return String.format(URL_TEMPLATE, PluginDescriptorImpl.getInstance().getQueryPortal(), Integer.parseInt(buildFolderId, 16));
     }
 
-    private void createBuildDashboardInSumoLogic(final Run build) {
+    private String createBuildDashboardInSumoLogic(final Run build) {
         String jenkinsMasterName = PluginDescriptorImpl.getInstance().getJenkinsMasterName();
 
         String masterFolderId = createFolder(jenkinsMasterName, "personal", MASTER_FOLDER_DESC);
@@ -71,9 +73,11 @@ public class JobBuildSumoSearchAction implements Action {
                 String buildFolderID = createFolder(String.valueOf(build.getNumber()), jobFolderID,
                         "Status is " + build.getResult() + " with duration " + CommonModelFactory.getJobRunDuration(build) / 60 + " Minutes.");
 
-                String dashboardID = createBuildInformationDashboard(buildFolderID, build.getParent().getFullName(), String.valueOf(build.getNumber()));
+                createBuildInformationDashboard(buildFolderID, build.getParent().getFullName(), String.valueOf(build.getNumber()));
+                return buildFolderID;
             }
         }
+        return null;
     }
 
     private String createFolder(String folderName, String parentFolderId, String description) {
@@ -82,10 +86,10 @@ public class JobBuildSumoSearchAction implements Action {
         request.put("name", folderName);
         request.put("description", description);
 
-        return SumoRestAPICallImpl.getInstance().getIdOfExistingFolderOrCreateFolderIfDoesNotExists(folderName, parentFolderId, request);
+        return SumoRestAPICallImpl.getInstance().getIdOfExistingFolderOrCreateFolderIfDoesNotExists(folderName, parentFolderId, request, "id");
     }
 
-    private String createBuildInformationDashboard(String parentFolderID, String jobName, String buildNumber) {
+    private void createBuildInformationDashboard(String parentFolderID, String jobName, String buildNumber) {
         String request = null;
 
         try {
@@ -98,11 +102,11 @@ public class JobBuildSumoSearchAction implements Action {
         } catch (Exception e) {
             LOG.log(Level.WARNING, e.getMessage(), e);
         }
-        return SumoRestAPICallImpl.getInstance().createDashboardInSumoLogic(request, parentFolderID);
+        SumoRestAPICallImpl.getInstance().createDashboardInSumoLogic(request, parentFolderID);
     }
 
-    private String fileAsString(String path) {
-        try (InputStreamReader inputStreamReader = new InputStreamReader(getClass().getClassLoader().getResourceAsStream(path)); BufferedReader br = new BufferedReader(inputStreamReader)) {
+    private String fileAsString(final String path) {
+        try (InputStreamReader inputStreamReader = new InputStreamReader(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(path))); BufferedReader br = new BufferedReader(inputStreamReader)) {
             return br.lines().collect(Collectors.joining("\n"));
         } catch (Exception e) {
             LOG.log(Level.WARNING, e.getMessage(), e);

@@ -3,8 +3,7 @@ package com.sumologic.jenkins.jenkinssumologicplugin.listeners;
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.AuditEventTypeEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.EventSourceEnum;
-import com.sumologic.jenkins.jenkinssumologicplugin.integration.JobBuildSumoSearchAction;
-import com.sumologic.jenkins.jenkinssumologicplugin.integration.SearchAction;
+import com.sumologic.jenkins.jenkinssumologicplugin.integration.BuildSumoSearchAction;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import hudson.Extension;
@@ -72,11 +71,11 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
                     logSenderHelper.sendJobStatusLogs(buildModel.toJson());
                 }
                 if (pluginDescriptor.isJobConsoleLogEnabled() || isPipeLineJobWithSpecificFlagEnabled(run)) {
-                    run.addAction(new SearchAction(run));
+                    //run.addAction(new SearchAction(run));
                     sendConsoleLogs(run, listener);
                 }
                 if(pluginDescriptor.isCreateDashboards()){
-                    run.addAction(new JobBuildSumoSearchAction(run));
+                    run.addAction(new BuildSumoSearchAction(run));
                 }
             }
 
