@@ -152,8 +152,9 @@ public class SumoRestAPICallImpl {
 
                     //Import Job Overview dashboard and done.
                     replaceDetails.put("\\$\\$JOBDASHBOARDID", jobDashboardAccessKey);
-                    importDashboardInAFolder(jenkinsJobInformationFolderID, sessionId, "json/OverviewDashboard.json",
+                    String overviewDashboardId = importDashboardInAFolder(jenkinsJobInformationFolderID, sessionId, "json/OverviewDashboard.json",
                             replaceDetails, "accessKey");
+                    pluginDescriptor.setJobOverviewId(overviewDashboardId);
                 }
             }
         } catch (Exception e) {

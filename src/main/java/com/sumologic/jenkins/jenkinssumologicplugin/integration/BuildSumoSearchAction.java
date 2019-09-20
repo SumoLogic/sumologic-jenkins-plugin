@@ -22,13 +22,10 @@ public class BuildSumoSearchAction implements Action {
 
     private final static String URL_TEMPLATE = "https://%s/ui/dashboard.html?k=%s&filters=Name*eq*%s**Number*eq*%s**StageStatus*eq*%s***Master*eq*null";
 
-    private PluginDescriptorImpl pluginDescriptor;
-
     /**
      * perform all rest api call and add the dashboard to Sumologic for build.
      */
     public BuildSumoSearchAction(Run build) {
-        this.pluginDescriptor = PluginDescriptorImpl.getInstance();
         jobName = build.getParent().getFullName();
         buildNumber = String.valueOf(build.getNumber());
     }
@@ -51,6 +48,7 @@ public class BuildSumoSearchAction implements Action {
      * create just the URL to reach the specific dashboard.
      */
     public String getUrlName() {
-        return String.format(URL_TEMPLATE, pluginDescriptor.getQueryPortal(), pluginDescriptor.getBuildDashboardId(), jobName, buildNumber, "%5C");
+        return String.format(URL_TEMPLATE, PluginDescriptorImpl.getInstance().getQueryPortal(),
+                PluginDescriptorImpl.getInstance().getBuildDashboardId(), jobName, buildNumber, "%5C");
     }
 }

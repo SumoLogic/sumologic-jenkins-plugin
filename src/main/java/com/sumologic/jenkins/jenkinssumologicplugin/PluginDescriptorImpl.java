@@ -68,6 +68,7 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
     private boolean createDashboards;
     private String buildDashboardId;
     private String jobDashboardId;
+    private String jobOverviewId;
 
     public PluginDescriptorImpl() {
         super(SumoBuildNotifier.class);
@@ -123,7 +124,7 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         email = formData.containsKey("email") && StringUtils.isNotEmpty(formData.getString("email")) ? formData.getString("email") : null;
         password = formData.containsKey("password") && StringUtils.isNotEmpty(formData.getString("password")) ? formData.getString("password") : null;
 
-        save();
+        //save();
         if (metricDataEnabled && jenkinsMasterName != null) {
             getSumoMetricDataPublisher().stopReporter();
             getSumoMetricDataPublisher().publishMetricData(jenkinsMasterName);
@@ -133,6 +134,8 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         }
 
         SumoRestAPICallImpl.getInstance().installJenkinsApp();
+
+        save();
 
         return configOk;
     }
@@ -353,6 +356,14 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         this.jobDashboardId = jobDashboardId;
     }
 
+    public String getJobOverviewId() {
+        return jobOverviewId;
+    }
+
+    public void setJobOverviewId(String jobOverviewId) {
+        this.jobOverviewId = jobOverviewId;
+    }
+
     private boolean isHandlerStarted;
 
     public boolean isHandlerStarted() {
@@ -372,6 +383,7 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
     @Initializer(after = PLUGINS_STARTED)
     public void startJenkinsApp() {
         SumoRestAPICallImpl.getInstance().installJenkinsApp();
+        save();
     }
 
     public void registerHandler() {
