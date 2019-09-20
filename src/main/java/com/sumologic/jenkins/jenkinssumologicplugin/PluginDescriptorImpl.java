@@ -203,6 +203,20 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         return FormValidation.ok();
     }
 
+    public FormValidation doTestCredentials(@QueryParameter("email") String email,
+                                            @QueryParameter("password") String password) {
+        try {
+            String output = SumoRestAPICallImpl.getInstance().getSessionForUserAfterLoginWithCredentials(email, password);
+            if (StringUtils.isNotEmpty(output)) {
+                return FormValidation.ok("Success");
+            } else {
+                return FormValidation.error("Invalid Credentials");
+            }
+        } catch (Exception e) {
+            return FormValidation.error("Failure : " + e.getMessage());
+        }
+    }
+
     public SumoMetricDataPublisher getSumoMetricDataPublisher() {
         return sumoMetricDataPublisher;
     }

@@ -3,7 +3,6 @@ package com.sumologic.jenkins.jenkinssumologicplugin.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSender;
-import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
@@ -28,7 +27,7 @@ public class SumoRestAPICallImpl {
     public final static Logger LOG = Logger.getLogger(LogSender.class.getName());
 
     private final HttpClient httpClient;
-    ObjectMapper mapper;
+    private ObjectMapper mapper;
     private PluginDescriptorImpl pluginDescriptor;
 
     private SumoRestAPICallImpl() {
@@ -66,11 +65,6 @@ public class SumoRestAPICallImpl {
     private Map makeRestAPICall(final HttpMethod httpMethod, final String sessionId) {
         try {
             createHeaders(httpMethod, sessionId);
-            LOG.warning(httpMethod.getQueryString());
-            LOG.warning(httpMethod.getName());
-            for (Header header : httpMethod.getRequestHeaders()) {
-                LOG.warning(header.getName() + "-" + header.getValue());
-            }
             httpClient.executeMethod(httpMethod);
             int statusCode = httpMethod.getStatusCode();
             if (statusCode != 200) {
@@ -95,20 +89,20 @@ public class SumoRestAPICallImpl {
 
         Map response = makeRestAPICall(postMethod, sessionId);
         if (response != null && response.containsKey(key)) {
-            LOG.warning(response.toString());
             return response.get(key);
         }
         return null;
     }
 
-    private String getSessionForUserAfterLoginWithCredentials() {
+    public String getSessionForUserAfterLoginWithCredentials(String email, String password) {
         Map<String, Object> request = new HashMap<>();
-        request.put("email", pluginDescriptor.getEmail());
-        request.put("password", pluginDescriptor.getPassword());
+        request.put("email", email);
+        request.put("password", password);
         String sessionKey = "";
         try {
-            sessionKey = String.valueOf(postRequestToSumoLogic(mapper.writeValueAsString(request),
-                    getDeploymentURL() + CREDENTIALS_URL, "apiSessionId", null));
+            Object reponse = postRequestToSumoLogic(mapper.writeValueAsString(request),
+                    getDeploymentURL() + CREDENTIALS_URL, "apiSessionId", null);
+            sessionKey = Objects.nonNull(reponse) ? String.valueOf(reponse) : "";
         } catch (Exception e) {
             LOG.log(Level.WARNING, e.getMessage(), e);
         }
@@ -235,10 +229,9 @@ public class SumoRestAPICallImpl {
         return null;
     }
 
-    public Map<String, String> installJenkinsApp() {
-        String sessionId = getSessionForUserAfterLoginWithCredentials();
+    public void installJenkinsApp() {
+        String sessionId = getSessionForUserAfterLoginWithCredentials(pluginDescriptor.getEmail(), pluginDescriptor.getPassword());
         if (StringUtils.isNotEmpty(sessionId)) {
-            LOG.warning("Session ID" + sessionId);
             Map response = makeRestAPICall(new GetMethod(getDeploymentURL() + FOLDER_URL + "personal"), sessionId);
             String personalFolderId = getPersonalFolderIdFromSumoLogic(response);
 
@@ -247,10 +240,9 @@ public class SumoRestAPICallImpl {
                         Collections.singletonList(pluginDescriptor.getJenkinsMasterName()), "id", "folder");
                 if (StringUtils.isEmpty(appID)) {
                     importAppInSumoLogic(personalFolderId, sessionId);
-                    LOG.info("App installed in SumoLogic with Id");
+                    LOG.info("App installed in SumoLogic");
                 }
             }
         }
-        return new HashMap<>();
     }
 }
