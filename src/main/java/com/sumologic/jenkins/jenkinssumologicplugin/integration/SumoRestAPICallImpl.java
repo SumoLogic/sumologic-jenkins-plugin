@@ -3,6 +3,7 @@ package com.sumologic.jenkins.jenkinssumologicplugin.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSender;
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
@@ -65,11 +66,15 @@ public class SumoRestAPICallImpl {
     private Map makeRestAPICall(final HttpMethod httpMethod, final String sessionId) {
         try {
             createHeaders(httpMethod, sessionId);
-
+            LOG.warning(httpMethod.getQueryString());
+            LOG.warning(httpMethod.getName());
+            for (Header header : httpMethod.getRequestHeaders()) {
+                LOG.warning(header.getName() + "-" + header.getValue());
+            }
             httpClient.executeMethod(httpMethod);
             int statusCode = httpMethod.getStatusCode();
             if (statusCode != 200) {
-                LOG.warning(String.format("Received HTTP error from Sumo Service: %d ", statusCode));
+                LOG.warning("Received error for " + httpMethod.getPath());
                 return null;
             }
             return mapper.readValue(httpMethod.getResponseBodyAsStream(), Map.class);
@@ -90,6 +95,7 @@ public class SumoRestAPICallImpl {
 
         Map response = makeRestAPICall(postMethod, sessionId);
         if (response != null && response.containsKey(key)) {
+            LOG.warning(response.toString());
             return response.get(key);
         }
         return null;
@@ -145,11 +151,13 @@ public class SumoRestAPICallImpl {
                     pluginDescriptor.setBuildDashboardId(buildDashboardAccessKey);
 
                     //Import Job Dashboard and get access Key
+                    replaceDetails.put("\\$\\$BUILDDASHBOARDID", buildDashboardAccessKey);
                     String jobDashboardAccessKey = importDashboardInAFolder(jenkinsJobInformationFolderID, sessionId, "json/JobDashboard.json",
                             replaceDetails, "accessKey");
                     pluginDescriptor.setJobDashboardId(jobDashboardAccessKey);
 
                     //Import Job Overview dashboard and done.
+                    replaceDetails.put("\\$\\$JOBDASHBOARDID", jobDashboardAccessKey);
                     importDashboardInAFolder(jenkinsJobInformationFolderID, sessionId, "json/OverviewDashboard.json",
                             replaceDetails, "accessKey");
                 }
@@ -230,6 +238,7 @@ public class SumoRestAPICallImpl {
     public Map<String, String> installJenkinsApp() {
         String sessionId = getSessionForUserAfterLoginWithCredentials();
         if (StringUtils.isNotEmpty(sessionId)) {
+            LOG.warning("Session ID" + sessionId);
             Map response = makeRestAPICall(new GetMethod(getDeploymentURL() + FOLDER_URL + "personal"), sessionId);
             String personalFolderId = getPersonalFolderIdFromSumoLogic(response);
 
