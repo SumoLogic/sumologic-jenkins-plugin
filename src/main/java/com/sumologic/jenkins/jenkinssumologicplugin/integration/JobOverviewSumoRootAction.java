@@ -7,7 +7,7 @@ import hudson.model.RootAction;
 import javax.annotation.CheckForNull;
 
 @Extension
-public class JenkinsSumoRootAction implements RootAction {
+public class JobOverviewSumoRootAction implements RootAction {
 
     private final static String URL_TEMPLATE = "https://%s/ui/dashboard.html?k=%s";
 

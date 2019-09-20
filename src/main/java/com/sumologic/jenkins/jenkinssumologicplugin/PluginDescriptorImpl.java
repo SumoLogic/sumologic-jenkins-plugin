@@ -69,6 +69,7 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
     private String buildDashboardId;
     private String jobDashboardId;
     private String jobOverviewId;
+    private String appFolderId;
 
     public PluginDescriptorImpl() {
         super(SumoBuildNotifier.class);
@@ -362,6 +363,14 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
     public void setJobOverviewId(String jobOverviewId) {
         this.jobOverviewId = jobOverviewId;
+    }
+
+    public String getAppFolderId() {
+        return appFolderId;
+    }
+
+    public void setAppFolderId(String appFolderId) {
+        this.appFolderId = appFolderId;
     }
 
     private boolean isHandlerStarted;

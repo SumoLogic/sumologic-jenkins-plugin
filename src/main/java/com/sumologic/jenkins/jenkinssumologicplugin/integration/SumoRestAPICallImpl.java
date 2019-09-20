@@ -134,6 +134,7 @@ public class SumoRestAPICallImpl {
                     replaceDetails, "id");
 
             if (StringUtils.isNotEmpty(appFolderID)) {
+                pluginDescriptor.setAppFolderId(appFolderID);
                 String jenkinsJobInformationFolderID = getChildrenFolderId(sessionId,
                         appFolderID, Collections.singletonList("Job Monitoring"), "id", "folder");
                 if (StringUtils.isNotEmpty(jenkinsJobInformationFolderID)) {
