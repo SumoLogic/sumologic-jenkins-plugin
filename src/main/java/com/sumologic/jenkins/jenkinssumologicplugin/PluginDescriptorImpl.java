@@ -3,6 +3,7 @@ package com.sumologic.jenkins.jenkinssumologicplugin;
 import com.google.gson.Gson;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.EventSourceEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.LogTypeEnum;
+import com.sumologic.jenkins.jenkinssumologicplugin.integration.SumoRestAPICallImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.metrics.SumoMetricDataPublisher;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSender;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
@@ -37,6 +38,7 @@ import java.util.logging.Logger;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.DATETIME_FORMATTER;
 import static hudson.init.InitMilestone.JOB_LOADED;
+import static hudson.init.InitMilestone.PLUGINS_STARTED;
 
 /**
  * Sumo Logic plugin for Jenkins model.
@@ -61,9 +63,11 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
     private boolean jobStatusLogEnabled;
     private boolean jobConsoleLogEnabled;
     private boolean scmLogEnabled;
-    private String accessKey = null;
-    private String accessID = null;
+    private String password = null;
+    private String email = null;
     private boolean createDashboards;
+    private String buildDashboardId;
+    private String jobDashboardId;
 
     public PluginDescriptorImpl() {
         super(SumoBuildNotifier.class);
@@ -116,8 +120,8 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         keepOldConfigData = formData.getBoolean("keepOldConfigData");
         createDashboards = formData.getBoolean("createDashboards");
 
-        accessID = formData.containsKey("accessID") && StringUtils.isNotEmpty(formData.getString("accessID")) ? formData.getString("accessID") : null;
-        accessKey = formData.containsKey("accessKey") && StringUtils.isNotEmpty(formData.getString("accessKey")) ? formData.getString("accessKey") : null;
+        email = formData.containsKey("email") && StringUtils.isNotEmpty(formData.getString("email")) ? formData.getString("email") : null;
+        password = formData.containsKey("password") && StringUtils.isNotEmpty(formData.getString("password")) ? formData.getString("password") : null;
 
         save();
         if (metricDataEnabled && jenkinsMasterName != null) {
@@ -127,6 +131,9 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         if (!metricDataEnabled) {
             getSumoMetricDataPublisher().stopReporter();
         }
+
+        SumoRestAPICallImpl.getInstance().installJenkinsApp();
+
         return configOk;
     }
 
@@ -182,16 +189,16 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         }
     }
 
-    public FormValidation doCheckAccessKey(@QueryParameter String value) {
+    public FormValidation doCheckPassword(@QueryParameter String value) {
         if (value.isEmpty()) {
-            return FormValidation.error("You must provide an Access Key.");
+            return FormValidation.error("You must provide an Password.");
         }
         return FormValidation.ok();
     }
 
-    public FormValidation doCheckAccessID(@QueryParameter String value) {
+    public FormValidation doCheckEmail(@QueryParameter String value) {
         if (value.isEmpty()) {
-            return FormValidation.error("You must provide an Access ID.");
+            return FormValidation.error("You must provide an Email.");
         }
         return FormValidation.ok();
     }
@@ -292,20 +299,20 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         this.keepOldConfigData = keepOldConfigData;
     }
 
-    public String getAccessKey() {
-        return accessKey;
+    public String getPassword() {
+        return password;
     }
 
-    public void setAccessKey(String accessKey) {
-        this.accessKey = accessKey;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
-    public String getAccessID() {
-        return accessID;
+    public String getEmail() {
+        return email;
     }
 
-    public void setAccessID(String accessID) {
-        this.accessID = accessID;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public boolean isCreateDashboards() {
@@ -314,6 +321,22 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
     public void setCreateDashboards(boolean createDashboards) {
         this.createDashboards = createDashboards;
+    }
+
+    public String getBuildDashboardId() {
+        return buildDashboardId;
+    }
+
+    public void setBuildDashboardId(String buildDashboardId) {
+        this.buildDashboardId = buildDashboardId;
+    }
+
+    public String getJobDashboardId() {
+        return jobDashboardId;
+    }
+
+    public void setJobDashboardId(String jobDashboardId) {
+        this.jobDashboardId = jobDashboardId;
     }
 
     private boolean isHandlerStarted;
@@ -330,6 +353,11 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
     @Initializer(after = JOB_LOADED)
     public void startSumoJenkinsLogHandler() {
         Timer.get().schedule(PluginDescriptorImpl.getInstance()::registerHandler, 3, TimeUnit.MINUTES);
+    }
+
+    @Initializer(after = PLUGINS_STARTED)
+    public void startJenkinsApp() {
+        SumoRestAPICallImpl.getInstance().installJenkinsApp();
     }
 
     public void registerHandler() {

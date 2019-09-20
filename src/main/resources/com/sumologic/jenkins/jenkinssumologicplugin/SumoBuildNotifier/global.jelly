@@ -66,10 +66,10 @@
 		</f:entry>
 
         <f:optionalBlock name="createDashboards" checked="${instance.createDashboards}" title="Custom Dashboards in SumoLogic" inline="true">
-        	<f:entry title="Access ID" field="accessID" description="Access ID of the SumoLogic Account">
+        	<f:entry title="Email" field="email" description="Email of the SumoLogic Account">
             	<f:password/>
             </f:entry>
-            <f:entry title="Access Key" field="accessKey" description="Access Key of the SumoLogic Account">
+            <f:entry title="Password" field="password" description="Password of the SumoLogic Account">
             	<f:password/>
             </f:entry>
         </f:optionalBlock>

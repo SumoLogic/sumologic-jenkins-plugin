@@ -55,7 +55,15 @@ public class SumoConstants {
 
     public static final int MAX_DATA_SIZE = 50000;
 
-    public static final String FOLDER_URL = "/api/v2/content/folders/";
+    public static final String FOLDER_URL = "/json/v1/content/folder/";
 
-    public static final String MASTER_FOLDER_DESC = "<Disclaimer : PLEASE DO NOT RENAME OR DELETE THE FOLDER>. This is folder created by SumoLogic Jenkins Plugin for dashboards.";
+    public static final String CREDENTIALS_URL = "/json/v1/authentication/loginwithcredentials";
+
+    public static final String IMPORT_URL = "/json/v1/content/import?destinationFolderId=%s";
+
+    public static final String STATUS_URL = "/api/v2/content/folders/%s/import/%s/status";
+
+    public static final String BUILD_DASHBOARD = "Jenkins - Build Information";
+
+    public static final String JOB_DASHBOARD = "Jenkins - Job Information";
 }
