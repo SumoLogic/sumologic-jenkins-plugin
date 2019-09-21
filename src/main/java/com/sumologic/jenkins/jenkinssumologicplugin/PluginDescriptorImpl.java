@@ -134,8 +134,9 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
             getSumoMetricDataPublisher().stopReporter();
         }
 
-        SumoRestAPICallImpl.getInstance().installJenkinsApp();
-
+        if(createDashboards){
+            SumoRestAPICallImpl.getInstance().installJenkinsApp();
+        }
         save();
 
         return configOk;
@@ -391,7 +392,9 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
     @Initializer(after = PLUGINS_STARTED)
     public void startJenkinsApp() {
-        SumoRestAPICallImpl.getInstance().installJenkinsApp();
+        if(createDashboards){
+            SumoRestAPICallImpl.getInstance().installJenkinsApp();
+        }
         save();
     }
 

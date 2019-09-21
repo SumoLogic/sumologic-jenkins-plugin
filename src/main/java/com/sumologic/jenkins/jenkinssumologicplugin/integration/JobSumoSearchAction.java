@@ -1,8 +1,8 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.integration;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
-import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Job;
 
 import javax.annotation.CheckForNull;
 import java.util.logging.Logger;
@@ -15,8 +15,8 @@ public class JobSumoSearchAction implements Action {
 
     private final static String URL_TEMPLATE = "https://%s/ui/dashboard.html?k=%s&filters=Name*eq*%s**Master*eq*null";
 
-    JobSumoSearchAction(final AbstractProject<?, ?> project) {
-        jobName = project.getFullName();
+    JobSumoSearchAction(final Job job) {
+        jobName = job.getFullName();
     }
 
     @CheckForNull
