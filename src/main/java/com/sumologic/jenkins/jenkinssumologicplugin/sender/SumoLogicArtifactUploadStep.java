@@ -162,6 +162,7 @@ public class SumoLogicArtifactUploadStep extends Step {
     }
 
     private static class FileUploader extends MasterToSlaveFileCallable<Void> {
+        protected static final long serialVersionUID = 1L;
         private final TaskListener taskListener;
         private final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
 
@@ -186,6 +187,8 @@ public class SumoLogicArtifactUploadStep extends Step {
     }
 
     private static class FileListUploader extends MasterToSlaveFileCallable<Void> {
+        protected static final long serialVersionUID = 1L;
+
         private final TaskListener taskListener;
         private final List<File> fileList;
         private final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();

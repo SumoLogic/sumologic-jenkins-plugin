@@ -35,9 +35,6 @@ public class ModelFactory {
       maxwait = maxwait > waiting ? maxwait : waiting;
       averagewait += waiting;
     }
-    if (queueLength > 0 ) {
-      averagewait = averagewait / queueLength;
-    }
 
     QueueModel queueModel = new QueueModel();
 
