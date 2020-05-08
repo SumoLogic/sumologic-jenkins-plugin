@@ -10,6 +10,9 @@ import com.sumologic.jenkins.jenkinssumologicplugin.model.TestCaseResultModel;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,6 +51,26 @@ public class LogSenderHelper {
         List<String> strings = divideDataIntoEquals(messages);
         for (String data : strings) {
             sendLogsToPeriodicSourceCategory(data);
+        }
+    }
+
+    public void sendFilesData(final File localFile) {
+        PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+        List<String> lines = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(localFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
+            }
+            List<String> strings = divideDataIntoEquals(lines);
+            for (String data : strings) {
+                LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), data.getBytes()
+                        , localFile.toURI().toString(), pluginDescriptor.getSourceCategory());
+            }
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception ex) {
+            LOG.log(Level.WARNING, "Error Reading file for " + localFile.toURI().toString(), ex);
         }
     }
 

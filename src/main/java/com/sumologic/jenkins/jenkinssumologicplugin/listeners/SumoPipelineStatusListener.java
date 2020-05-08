@@ -8,6 +8,7 @@ import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import hudson.Extension;
 import hudson.Util;
+import hudson.console.ConsoleNote;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
 import jenkins.model.CauseOfInterruption;
@@ -19,6 +20,7 @@ import javax.annotation.Nonnull;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -118,15 +120,15 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
 
     public static boolean isPipeLineJobWithSpecificFlagEnabled(Run run) throws IOException {
         try (BufferedReader bufferedReader = new BufferedReader(run.getLogReader())) {
-            long length = Math.min(15, bufferedReader.lines().count());
-            for (int i = 0; i < length; i++) {
-                String value = bufferedReader.readLine();
-                if (value != null && value.contains(SUMO_PIPELINE)) {
-                    return true;
+            AtomicBoolean isFlagEnabled = new AtomicBoolean(false);
+            bufferedReader.lines().limit(15).forEach(value -> {
+                String s1 = ConsoleNote.removeNotes(value);
+                if (s1 != null && s1.contains(SUMO_PIPELINE)) {
+                    isFlagEnabled.set(true);
                 }
-            }
+            });
             bufferedReader.close();
-            return false;
+            return isFlagEnabled.get();
         }
     }
 

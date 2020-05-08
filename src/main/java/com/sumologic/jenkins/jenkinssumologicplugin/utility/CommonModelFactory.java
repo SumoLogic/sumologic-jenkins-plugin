@@ -324,6 +324,8 @@ public class CommonModelFactory {
             User user = User.getById(userId, false);
             if (user != null) {
                 userFullName = user.getFullName();
+            } else {
+                userFullName = userId;
             }
         } catch (Exception exception) {
             userFullName = userId;
