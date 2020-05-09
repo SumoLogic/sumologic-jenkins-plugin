@@ -47,7 +47,7 @@ public class CommonModelFactory {
 
     private static LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
 
-    public static void populateGeneric(BuildModel buildModel, Run buildInfo, PluginDescriptorImpl pluginDescriptor) {
+    public static void populateGeneric(BuildModel buildModel, Run buildInfo, PluginDescriptorImpl pluginDescriptor, boolean isSpecificJobFlagEnabled) {
 
         buildModel.setLogType(LogTypeEnum.JOB_STATUS.getValue());
         buildModel.setName(buildInfo.getParent().getFullName());
@@ -78,7 +78,7 @@ public class CommonModelFactory {
         getLabelAndNodeName(buildInfo, buildModel);
 
         TestCaseModel testCaseModel = getTestResultSummary(buildInfo);
-        if (testCaseModel != null && pluginDescriptor.isJobStatusLogEnabled()
+        if (testCaseModel != null && (pluginDescriptor.isJobStatusLogEnabled() || isSpecificJobFlagEnabled)
                 && StringUtils.isNotEmpty(buildModel.getJobType())) {
             sendTestResult(testCaseModel, buildModel);
             testCaseModel.setTestResults(null);

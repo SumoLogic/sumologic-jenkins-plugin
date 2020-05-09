@@ -55,7 +55,7 @@ public class ModelFactory {
     BuildModel buildModel = null;
     if (build instanceof MavenModuleSetBuild) {
       MavenModuleSetBuildModel mBuildModel = new MavenModuleSetBuildModel();
-      CommonModelFactory.populateGeneric(mBuildModel, build, pluginDescriptor);
+      CommonModelFactory.populateGeneric(mBuildModel, build, pluginDescriptor, false);
       MavenModuleSetBuild mbuild = (MavenModuleSetBuild) build;
       SurefireAggregatedReport surefireAggregatedReport = mbuild.getAction(SurefireAggregatedReport.class);
       if (surefireAggregatedReport != null) {
@@ -75,11 +75,11 @@ public class ModelFactory {
     } else if (build instanceof MavenBuild) {
       MavenBuild mbuild = (MavenBuild) build;
       MavenModuleBuildModel mBuildModel = new MavenModuleBuildModel();
-      CommonModelFactory.populateGeneric(mBuildModel, mbuild, pluginDescriptor);
+      CommonModelFactory.populateGeneric(mBuildModel, mbuild, pluginDescriptor, false);
       buildModel = mBuildModel;
     } else {
       buildModel = new BuildModel();
-      CommonModelFactory.populateGeneric(buildModel, build, pluginDescriptor);
+      CommonModelFactory.populateGeneric(buildModel, build, pluginDescriptor, false);
     }
     return buildModel;
   }

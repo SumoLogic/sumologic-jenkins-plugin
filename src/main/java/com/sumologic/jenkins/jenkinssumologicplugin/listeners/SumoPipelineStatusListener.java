@@ -64,15 +64,17 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
             Get the Last 10 Log Lines from the log file. Check if the lines have SumoPipelineLogCollection, then it is
             eligible for Job status sending.
             */
-            BuildModel buildModel = generateJobStatusInformation(run, pluginDescriptor);
+            boolean isSpecificJobFlagEnabled = isPipeLineJobWithSpecificFlagEnabled(run);
+
+            BuildModel buildModel = generateJobStatusInformation(run, pluginDescriptor, isSpecificJobFlagEnabled);
 
             //For all jobs status || or for specific pipeline jobs
             if (StringUtils.isNotEmpty(buildModel.getJobType())) {
-                if (pluginDescriptor.isJobStatusLogEnabled() || isPipeLineJobWithSpecificFlagEnabled(run)) {
+                if (pluginDescriptor.isJobStatusLogEnabled() || isSpecificJobFlagEnabled) {
                     //LOG.info("Job Status is "+buildModel.toJson());
                     logSenderHelper.sendJobStatusLogs(buildModel.toJson());
                 }
-                if (pluginDescriptor.isJobConsoleLogEnabled() || isPipeLineJobWithSpecificFlagEnabled(run)) {
+                if (pluginDescriptor.isJobConsoleLogEnabled() || isSpecificJobFlagEnabled) {
                     run.addAction(new SearchAction(run));
                     sendConsoleLogs(run, listener);
                 }
