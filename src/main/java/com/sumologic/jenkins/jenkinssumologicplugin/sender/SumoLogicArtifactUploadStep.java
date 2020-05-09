@@ -1,6 +1,7 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
 import com.google.common.base.Preconditions;
+import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.TaskListener;
@@ -12,10 +13,11 @@ import org.jenkinsci.plugins.workflow.steps.*;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 public class SumoLogicArtifactUploadStep extends Step {
 
@@ -132,7 +134,7 @@ public class SumoLogicArtifactUploadStep extends Step {
                     artifacts.addAll(Arrays.asList(directory.list(includePathPattern, null, true)));
 
                 }
-
+                PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
                 if (artifacts.isEmpty()) {
                     listener.getLogger().println("No Artifacts to upload.");
                     return null;
@@ -142,7 +144,7 @@ public class SumoLogicArtifactUploadStep extends Step {
                     if (!artifact.exists()) {
                         listener.getLogger().println("Upload failed due to missing source file " + artifact.toURI().toString());
                     }
-                    artifact.act(new FileUploader(listener));
+                    artifact.act(new FileUploader(pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory()));
                     listener.getLogger().println("Upload complete");
                     return "Uploaded to Sumo Logic";
                 } else {
@@ -151,7 +153,7 @@ public class SumoLogicArtifactUploadStep extends Step {
                     for (FilePath child : artifacts) {
                         fileList.add(child.act(FIND_FILE_ON_SLAVE));
                     }
-                    directory.act(new FileListUploader(listener, fileList));
+                    directory.act(new FileListUploader(fileList, pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory()));
                     listener.getLogger().println("Upload complete for files " + Arrays.toString(fileList.toArray()));
                     return "Uploaded to Sumo Logic";
                 }
@@ -163,47 +165,75 @@ public class SumoLogicArtifactUploadStep extends Step {
 
     private static class FileUploader extends MasterToSlaveFileCallable<Void> {
         protected static final long serialVersionUID = 1L;
-        private final TaskListener taskListener;
-        private final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
+        private static final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
+        private final String url;
+        private final String sourceCategory;
 
-        FileUploader(TaskListener taskListener) {
-            this.taskListener = taskListener;
+        FileUploader(String url, String sourceCategory) {
+            this.url = url;
+            this.sourceCategory = sourceCategory;
         }
 
         @Override
         public Void invoke(File localFile, VirtualChannel channel) throws IOException, InterruptedException {
             if (localFile.isFile()) {
-                logSenderHelper.sendFilesData(localFile);
+                sendFilesData(localFile);
             } else if (localFile.isDirectory()) {
                 File[] files = localFile.listFiles();
                 if (ArrayUtils.isNotEmpty(files)) {
                     for (File dataFile : files) {
-                        CompletableFuture.runAsync(() -> logSenderHelper.sendFilesData(dataFile));
+                        sendFilesData(dataFile);
                     }
                 }
             }
             return null;
+        }
+
+        public void sendFilesData(File localFile) throws IOException {
+            List<String> lines = new ArrayList<>();
+            try (BufferedReader reader = new BufferedReader(new FileReader(localFile))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    lines.add(line);
+                }
+                logSenderHelper.sendFilesData(lines, localFile.toURI().toString(), url, sourceCategory);
+            }
         }
     }
 
     private static class FileListUploader extends MasterToSlaveFileCallable<Void> {
         protected static final long serialVersionUID = 1L;
 
-        private final TaskListener taskListener;
         private final List<File> fileList;
-        private final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
+        private static final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
+        private final String url;
+        private final String sourceCategory;
 
-        FileListUploader(TaskListener taskListener, List<File> fileList) {
-            this.taskListener = taskListener;
+        FileListUploader(List<File> fileList, String url, String sourceCategory) {
             this.fileList = fileList;
+            this.url = url;
+            this.sourceCategory = sourceCategory;
         }
 
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
             if (CollectionUtils.isNotEmpty(this.fileList)) {
-                fileList.forEach(dataFile -> CompletableFuture.runAsync(() -> logSenderHelper.sendFilesData(dataFile)));
+                for (File dataFile : fileList) {
+                    sendFilesData(dataFile);
+                }
             }
             return null;
+        }
+
+        public void sendFilesData(File localFile) throws IOException {
+            List<String> lines = new ArrayList<>();
+            try (BufferedReader reader = new BufferedReader(new FileReader(localFile))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    lines.add(line);
+                }
+                logSenderHelper.sendFilesData(lines, localFile.toURI().toString(), url, sourceCategory);
+            }
         }
     }
 

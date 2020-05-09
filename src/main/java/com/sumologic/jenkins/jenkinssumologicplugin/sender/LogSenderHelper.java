@@ -54,23 +54,12 @@ public class LogSenderHelper {
         }
     }
 
-    public void sendFilesData(final File localFile) {
-        PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
-        List<String> lines = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(localFile))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                lines.add(line);
-            }
-            List<String> strings = divideDataIntoEquals(lines);
+    public void sendFilesData(final List<String> messages, String localFileString, String url, String sourceCategory) {
+        if (CollectionUtils.isNotEmpty(messages)) {
+            List<String> strings = divideDataIntoEquals(messages);
             for (String data : strings) {
-                LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), data.getBytes()
-                        , localFile.toURI().toString(), pluginDescriptor.getSourceCategory());
+                LogSender.getInstance().sendLogs(url, data.getBytes(), localFileString, sourceCategory);
             }
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception ex) {
-            LOG.log(Level.WARNING, "Error Reading file for " + localFile.toURI().toString(), ex);
         }
     }
 
