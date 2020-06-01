@@ -2,6 +2,11 @@
 
 # sumologic-publisher
 
+## Features
+Plugin can be installed and used with global configuration. Below are set of features that can be used individually.
+
+1. [SumoUpload](#SumoUpload Feature) - The function provides an ability to upload data from Files directly to Sumo Logic. Data is sent to the HTTP Source URL mentioned in the Global Configuration.
+
 ## Prerequisite
 
 * `Sumologic-publisher 2.0.0` need [Pipeline Rest API(2.8)](https://plugins.jenkins.io/pipeline-rest-api), [GIT (3.3.2)](https://plugins.jenkins.io/git), [metrics (3.0.0)](https://plugins.jenkins.io/metrics), [subversion (2.9)](https://plugins.jenkins.io/subversion) and [junit (1.8)](https://plugins.jenkins.io/junit). If not present, `Sumologic-publisher` will install these plugins as a part of internal dependency.
@@ -89,6 +94,35 @@ Download the [SumoLogicPublisherConfiguration.groovy](https://github.com/SumoLog
 	Upload the `sumologic-publisher.hpi` in advanced section of **_manage plugin_** in Jenkins.
 
 	![uploadPlugin.png](/src/main/webapp/uploadPlugin.png)
+
+#### SumoUpload Feature
+The Function can be used in Jenkins Pipelines to send files data to Sumo Logic. Function allow below properties:-
+1. file - Provide a file path or a directory path. If the value is a directory then data from all files within the directory will be send to Sumo Logic.
+2. includePathPattern - Provide a pattern to include file names or extension. For eg:- *.json will include all json files only.
+3. excludePathPattern - Provide a pattern to exclude file names or extension. For eg:- *.json will exclude all json files only.
+4. workingDir - Provides the path of the directory where files are present. The path will be searched in the node where the Pipeline Step is executed.
+
+Below are some example uses of the Step Function :-
+- Upload a file/folder from the workspace (or a String) to Sumo Logic.
+
+```groovy
+s3Upload(file:'file.txt')
+s3Upload(file:'someFolder')
+``` 
+
+- Upload with include/exclude patterns. The option accepts a comma-separated list of patterns.
+
+```groovy
+s3Upload(includePathPattern:'**/*', excludePathPattern:'**/*.log,**/*.json')
+```
+
+- Upload file from master directory when Pipeline Stage is running on a slave. Below will send File.txt file present in Archive Folder of the job pipeline on master system.
+```groovy
+node('master')
+{
+  SumoUpload(file: "File.txt", workingDir: "$JENKINS_HOME/jobs/$JOB_NAME/builds/$BUILD_NUMBER/archive")
+}
+```
 
 ## License
 

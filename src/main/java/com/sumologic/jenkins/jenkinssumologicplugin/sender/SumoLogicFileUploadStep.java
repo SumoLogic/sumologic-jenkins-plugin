@@ -20,7 +20,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
-public class SumoLogicArtifactUploadStep extends Step {
+public class SumoLogicFileUploadStep extends Step {
 
     private String file;
     private String includePathPattern;
@@ -28,7 +28,7 @@ public class SumoLogicArtifactUploadStep extends Step {
     private String workingDir;
 
     @DataBoundConstructor
-    public SumoLogicArtifactUploadStep() {
+    public SumoLogicFileUploadStep() {
     }
 
     public String getFile() {
@@ -69,7 +69,7 @@ public class SumoLogicArtifactUploadStep extends Step {
 
     @Override
     public StepExecution start(StepContext context) throws Exception {
-        return new SumoLogicArtifactUploadStep.Execution(this, context);
+        return new SumoLogicFileUploadStep.Execution(this, context);
     }
 
     @Extension
@@ -87,7 +87,7 @@ public class SumoLogicArtifactUploadStep extends Step {
 
         @Override
         public String getDisplayName() {
-            return "Upload Artifacts or files to Sumo Logic HTTP source as in Sumo Logic Publisher Configuration.";
+            return "Upload files to Sumo Logic HTTP source as in Sumo Logic Publisher Configuration.";
         }
     }
 
@@ -95,9 +95,9 @@ public class SumoLogicArtifactUploadStep extends Step {
 
         protected static final long serialVersionUID = 1L;
 
-        protected final transient SumoLogicArtifactUploadStep step;
+        protected final transient SumoLogicFileUploadStep step;
 
-        public Execution(SumoLogicArtifactUploadStep step, StepContext context) {
+        public Execution(SumoLogicFileUploadStep step, StepContext context) {
             super(context);
             this.step = step;
         }
@@ -114,7 +114,7 @@ public class SumoLogicArtifactUploadStep extends Step {
             Preconditions.checkArgument(file != null || includePathPattern != null, "File or IncludePathPattern must not be null");
             Preconditions.checkArgument(includePathPattern == null || file == null, "File and IncludePathPattern cannot be use together");
 
-            final List<FilePath> artifacts = new ArrayList<>();
+            final List<FilePath> files = new ArrayList<>();
             final FilePath directory;
 
             if (workingDir != null && !"".equals(workingDir.trim())) {
@@ -127,31 +127,32 @@ public class SumoLogicArtifactUploadStep extends Step {
 
             if (directory != null) {
                 if (file != null) {
-                    artifacts.add(directory.child(file));
+                    files.add(directory.child(file));
                     omitSourcePath = true;
                 } else if (excludePathPattern != null && !excludePathPattern.trim().isEmpty()) {
-                    artifacts.addAll(Arrays.asList(directory.list(includePathPattern, excludePathPattern, true)));
+                    files.addAll(Arrays.asList(directory.list(includePathPattern, excludePathPattern, true)));
                 } else {
-                    artifacts.addAll(Arrays.asList(directory.list(includePathPattern, null, true)));
+                    files.addAll(Arrays.asList(directory.list(includePathPattern, null, true)));
 
                 }
                 PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
-                if (artifacts.isEmpty()) {
-                    listener.getLogger().println("No Artifacts to upload.");
+                if (files.isEmpty()) {
+                    listener.getLogger().println("No Files to upload.");
                     return null;
                 } else if (omitSourcePath) {
-                    FilePath artifact = artifacts.get(0);
-                    listener.getLogger().println("Upload to Sumo Logic with File as " + artifact.toURI());
-                    if (!artifact.exists()) {
-                        listener.getLogger().println("Upload failed due to missing source file " + artifact.toURI().toString());
+                    FilePath file_name = files.get(0);
+                    listener.getLogger().println("Uploading to Sumo Logic with File as " + file_name.toURI());
+                    if (!file_name.exists()) {
+                        listener.getLogger().println("Upload failed due to missing source file " + file_name.toURI().toString());
+                    } else {
+                        file_name.act(new FileUploader(pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(), run.getParent().getFullName(), run.getNumber()));
+                        listener.getLogger().println("Upload complete");
                     }
-                    artifact.act(new FileUploader(pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(), run.getParent().getFullName(), run.getNumber()));
-                    listener.getLogger().println("Upload complete");
                     return "Uploaded to Sumo Logic";
                 } else {
                     List<File> fileList = new ArrayList<>();
-                    listener.getLogger().println("Upload to Sumo Logic with Include Path Pattern as " + includePathPattern);
-                    for (FilePath child : artifacts) {
+                    listener.getLogger().println("Uploading to Sumo Logic with Include Path Pattern as " + includePathPattern);
+                    for (FilePath child : files) {
                         fileList.add(child.act(new Find_File_On_Slave()));
                     }
                     directory.act(new FileListUploader(fileList, pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(), run.getParent().getFullName(), run.getNumber()));
