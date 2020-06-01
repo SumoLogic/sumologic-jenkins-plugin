@@ -107,7 +107,7 @@ Below are some example uses of the Step Function :-
 
 ```groovy
 s3Upload(file:'file.txt')
-s3Upload(file:'someFolder')
+s3Upload(file:'someFolderPath')
 ``` 
 
 - Upload with include/exclude patterns. The option accepts a comma-separated list of patterns.
