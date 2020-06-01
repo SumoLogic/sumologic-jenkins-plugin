@@ -5,7 +5,7 @@
 ## Features
 Plugin can be installed and used with global configuration. Below are set of features that can be used individually.
 
-1. [SumoUpload](#SumoUpload Feature) - The function provides an ability to upload data from Files directly to Sumo Logic. Data is sent to the HTTP Source URL mentioned in the Global Configuration.
+1. [SumoUpload](#SumoUpload) - The function provides an ability to upload data from Files directly to Sumo Logic. Data is sent to the HTTP Source URL mentioned in the Global Configuration.
 
 ## Prerequisite
 
@@ -95,7 +95,7 @@ Download the [SumoLogicPublisherConfiguration.groovy](https://github.com/SumoLog
 
 	![uploadPlugin.png](/src/main/webapp/uploadPlugin.png)
 
-#### SumoUpload Feature
+#### SumoUpload
 The Function can be used in Jenkins Pipelines to send files data to Sumo Logic. Function allow below properties:-
 1. file - Provide a file path or a directory path. If the value is a directory then data from all files within the directory will be send to Sumo Logic.
 2. includePathPattern - Provide a pattern to include file names or extension. For eg:- *.json will include all json files only.
