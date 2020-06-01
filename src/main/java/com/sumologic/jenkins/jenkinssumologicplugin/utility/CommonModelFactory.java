@@ -168,7 +168,7 @@ public class CommonModelFactory {
      * @return All the causes that triggered the Job separated by comma(,)
      */
     private static String getJobTriggerCauses(Run buildInfo) {
-        Set<String> causes = new LinkedHashSet<>();
+        List<String> causes = new ArrayList<>();
         for (CauseAction action : buildInfo.getActions(CauseAction.class)) {
             if (action != null && action.getCauses() != null) {
                 for (Cause cause : action.getCauses()) {

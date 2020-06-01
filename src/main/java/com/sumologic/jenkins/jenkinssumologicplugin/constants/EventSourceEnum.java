@@ -14,6 +14,8 @@ public enum EventSourceEnum {
     COMPUTER_OFFLINE("Computer_Offline"),
     COMPUTER_TEMP_ONLINE("Computer_Temp_Online"),
     COMPUTER_TEMP_OFFLINE("Computer_Temp_Offline"),
+    COMPUTER_PRE_ONLINE("Computer_Pre_Online"),
+    COMPUTER_PRE_LAUNCH("Computer_Pre_Launch"),
     LAUNCH_FAILURE("Launch_Failure"),
     SHUTDOWN("Shutdown");
 

@@ -2,8 +2,10 @@ package com.sumologic.jenkins.jenkinssumologicplugin.listeners;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.EventSourceEnum;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.model.Computer;
 import hudson.model.TaskListener;
+import hudson.remoting.Channel;
 import hudson.slaves.ComputerListener;
 import hudson.slaves.OfflineCause;
 
@@ -22,6 +24,18 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFa
  */
 @Extension
 public class SumoJenkinsComputerListener extends ComputerListener {
+
+    @Override
+    public void preLaunch(Computer computer, TaskListener listener) throws IOException, InterruptedException {
+        updateStatus(computer, EventSourceEnum.COMPUTER_PRE_LAUNCH.getValue());
+        listener.getLogger().flush();
+    }
+
+    @Override
+    public void preOnline(Computer computer, Channel channel, FilePath root, TaskListener listener) throws IOException, InterruptedException {
+        updateStatus(computer, EventSourceEnum.COMPUTER_PRE_ONLINE.getValue());
+        listener.getLogger().flush();
+    }
 
     @Override
     public void onOnline(Computer computer, TaskListener listener) throws IOException, InterruptedException {

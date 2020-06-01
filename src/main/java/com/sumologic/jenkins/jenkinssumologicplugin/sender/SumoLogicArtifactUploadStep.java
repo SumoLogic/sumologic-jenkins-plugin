@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import jenkins.MasterToSlaveFileCallable;
@@ -107,7 +108,7 @@ public class SumoLogicArtifactUploadStep extends Step {
             final String includePathPattern = this.step.getIncludePathPattern();
             final String excludePathPattern = this.step.getExcludePathPattern();
             final String workingDir = this.step.getWorkingDir();
-
+            Run run = this.getContext().get(Run.class);
             boolean omitSourcePath = false;
 
             Preconditions.checkArgument(file != null || includePathPattern != null, "File or IncludePathPattern must not be null");
@@ -144,16 +145,16 @@ public class SumoLogicArtifactUploadStep extends Step {
                     if (!artifact.exists()) {
                         listener.getLogger().println("Upload failed due to missing source file " + artifact.toURI().toString());
                     }
-                    artifact.act(new FileUploader(pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory()));
+                    artifact.act(new FileUploader(pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(), run.getParent().getFullName(), run.getNumber()));
                     listener.getLogger().println("Upload complete");
                     return "Uploaded to Sumo Logic";
                 } else {
                     List<File> fileList = new ArrayList<>();
                     listener.getLogger().println("Upload to Sumo Logic with Include Path Pattern as " + includePathPattern);
                     for (FilePath child : artifacts) {
-                        fileList.add(child.act(FIND_FILE_ON_SLAVE));
+                        fileList.add(child.act(new Find_File_On_Slave()));
                     }
-                    directory.act(new FileListUploader(fileList, pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory()));
+                    directory.act(new FileListUploader(fileList, pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(), run.getParent().getFullName(), run.getNumber()));
                     listener.getLogger().println("Upload complete for files " + Arrays.toString(fileList.toArray()));
                     return "Uploaded to Sumo Logic";
                 }
@@ -163,15 +164,19 @@ public class SumoLogicArtifactUploadStep extends Step {
         }
     }
 
-    private static class FileUploader extends MasterToSlaveFileCallable<Void> {
+    private static final class FileUploader extends MasterToSlaveFileCallable<Void> {
         protected static final long serialVersionUID = 1L;
         private static final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
         private final String url;
         private final String sourceCategory;
+        private final String jobName;
+        private final int buildNumber;
 
-        FileUploader(String url, String sourceCategory) {
+        FileUploader(String url, String sourceCategory, String jobName, int buildNumber) {
             this.url = url;
             this.sourceCategory = sourceCategory;
+            this.jobName = jobName;
+            this.buildNumber = buildNumber;
         }
 
         @Override
@@ -196,23 +201,27 @@ public class SumoLogicArtifactUploadStep extends Step {
                 while ((line = reader.readLine()) != null) {
                     lines.add(line);
                 }
-                logSenderHelper.sendFilesData(lines, localFile.toURI().toString(), url, sourceCategory);
+                logSenderHelper.sendFilesData(lines, this.jobName + "#" + this.buildNumber + "#" + localFile.toURI().toString(), url, sourceCategory);
             }
         }
     }
 
-    private static class FileListUploader extends MasterToSlaveFileCallable<Void> {
+    private static final class FileListUploader extends MasterToSlaveFileCallable<Void> {
         protected static final long serialVersionUID = 1L;
 
         private final List<File> fileList;
         private static final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
         private final String url;
         private final String sourceCategory;
+        private final String jobName;
+        private final int buildNumber;
 
-        FileListUploader(List<File> fileList, String url, String sourceCategory) {
+        FileListUploader(List<File> fileList, String url, String sourceCategory, String jobName, int buildNumber) {
             this.fileList = fileList;
             this.url = url;
             this.sourceCategory = sourceCategory;
+            this.jobName = jobName;
+            this.buildNumber = buildNumber;
         }
 
         @Override
@@ -232,15 +241,15 @@ public class SumoLogicArtifactUploadStep extends Step {
                 while ((line = reader.readLine()) != null) {
                     lines.add(line);
                 }
-                logSenderHelper.sendFilesData(lines, localFile.toURI().toString(), url, sourceCategory);
+                logSenderHelper.sendFilesData(lines, this.jobName + "#" + this.buildNumber + "#" + localFile.toURI().toString(), url, sourceCategory);
             }
         }
     }
 
-    private static MasterToSlaveFileCallable<File> FIND_FILE_ON_SLAVE = new MasterToSlaveFileCallable<File>() {
+    private static final class Find_File_On_Slave extends MasterToSlaveFileCallable<File> {
         @Override
         public File invoke(File localFile, VirtualChannel channel) throws IOException, InterruptedException {
             return localFile;
         }
-    };
+    }
 }
