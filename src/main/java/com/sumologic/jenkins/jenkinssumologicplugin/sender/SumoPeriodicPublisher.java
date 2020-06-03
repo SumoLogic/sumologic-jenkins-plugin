@@ -41,7 +41,7 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
     private LogSenderHelper logSenderHelper;
     private static Set<String> slaveNames = new HashSet<>();
 
-    private static void setSlaves(Set<String> slaveNames){
+    private static void setSlaves(Set<String> slaveNames) {
         SumoPeriodicPublisher.slaveNames = slaveNames;
     }
 
@@ -55,17 +55,6 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
     @Override
     protected void execute(TaskListener listener) throws IOException, InterruptedException {
         try {
-            String logs = ModelFactory.createJenkinsModel(Jenkins.getInstance()).toJson();
-
-            PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
-            String url = descriptor.getUrl();
-
-            //comment this if same app is used
-            /*if (descriptor.isPeriodicLogEnabled()) {
-                logSender.sendLogs(url, logs.getBytes(),
-                        null, descriptor.getSourceCategory());
-            }*/
-
             sendNodeDetailsForJenkins();
 
             sendTasksInQueue();

@@ -8,6 +8,7 @@ import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import hudson.Extension;
 import hudson.Util;
+import hudson.console.ConsoleNote;
 import hudson.model.*;
 import hudson.model.listeners.RunListener;
 import jenkins.model.CauseOfInterruption;
@@ -19,6 +20,7 @@ import javax.annotation.Nonnull;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -62,15 +64,17 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
             Get the Last 10 Log Lines from the log file. Check if the lines have SumoPipelineLogCollection, then it is
             eligible for Job status sending.
             */
-            BuildModel buildModel = generateJobStatusInformation(run, pluginDescriptor);
+            boolean isSpecificJobFlagEnabled = isPipeLineJobWithSpecificFlagEnabled(run);
+
+            BuildModel buildModel = generateJobStatusInformation(run, pluginDescriptor, isSpecificJobFlagEnabled);
 
             //For all jobs status || or for specific pipeline jobs
             if (StringUtils.isNotEmpty(buildModel.getJobType())) {
-                if (pluginDescriptor.isJobStatusLogEnabled() || isPipeLineJobWithSpecificFlagEnabled(run)) {
+                if (pluginDescriptor.isJobStatusLogEnabled() || isSpecificJobFlagEnabled) {
                     //LOG.info("Job Status is "+buildModel.toJson());
                     logSenderHelper.sendJobStatusLogs(buildModel.toJson());
                 }
-                if (pluginDescriptor.isJobConsoleLogEnabled() || isPipeLineJobWithSpecificFlagEnabled(run)) {
+                if (pluginDescriptor.isJobConsoleLogEnabled() || isSpecificJobFlagEnabled) {
                     run.addAction(new SearchAction(run));
                     sendConsoleLogs(run, listener);
                 }
@@ -118,15 +122,15 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
 
     public static boolean isPipeLineJobWithSpecificFlagEnabled(Run run) throws IOException {
         try (BufferedReader bufferedReader = new BufferedReader(run.getLogReader())) {
-            long length = Math.min(15, bufferedReader.lines().count());
-            for (int i = 0; i < length; i++) {
-                String value = bufferedReader.readLine();
-                if (value != null && value.contains(SUMO_PIPELINE)) {
-                    return true;
+            AtomicBoolean isFlagEnabled = new AtomicBoolean(false);
+            bufferedReader.lines().limit(15).forEach(value -> {
+                String s1 = ConsoleNote.removeNotes(value);
+                if (s1 != null && s1.contains(SUMO_PIPELINE)) {
+                    isFlagEnabled.set(true);
                 }
-            }
+            });
             bufferedReader.close();
-            return false;
+            return isFlagEnabled.get();
         }
     }
 

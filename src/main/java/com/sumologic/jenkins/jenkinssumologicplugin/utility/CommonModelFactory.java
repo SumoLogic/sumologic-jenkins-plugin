@@ -47,7 +47,7 @@ public class CommonModelFactory {
 
     private static LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
 
-    public static void populateGeneric(BuildModel buildModel, Run buildInfo, PluginDescriptorImpl pluginDescriptor) {
+    public static void populateGeneric(BuildModel buildModel, Run buildInfo, PluginDescriptorImpl pluginDescriptor, boolean isSpecificJobFlagEnabled) {
 
         buildModel.setLogType(LogTypeEnum.JOB_STATUS.getValue());
         buildModel.setName(buildInfo.getParent().getFullName());
@@ -78,7 +78,7 @@ public class CommonModelFactory {
         getLabelAndNodeName(buildInfo, buildModel);
 
         TestCaseModel testCaseModel = getTestResultSummary(buildInfo);
-        if (testCaseModel != null && pluginDescriptor.isJobStatusLogEnabled()
+        if (testCaseModel != null && (pluginDescriptor.isJobStatusLogEnabled() || isSpecificJobFlagEnabled)
                 && StringUtils.isNotEmpty(buildModel.getJobType())) {
             sendTestResult(testCaseModel, buildModel);
             testCaseModel.setTestResults(null);
@@ -168,7 +168,7 @@ public class CommonModelFactory {
      * @return All the causes that triggered the Job separated by comma(,)
      */
     private static String getJobTriggerCauses(Run buildInfo) {
-        Set<String> causes = new LinkedHashSet<>();
+        List<String> causes = new ArrayList<>();
         for (CauseAction action : buildInfo.getActions(CauseAction.class)) {
             if (action != null && action.getCauses() != null) {
                 for (Cause cause : action.getCauses()) {
@@ -324,6 +324,8 @@ public class CommonModelFactory {
             User user = User.getById(userId, false);
             if (user != null) {
                 userFullName = user.getFullName();
+            } else {
+                userFullName = userId;
             }
         } catch (Exception exception) {
             userFullName = userId;

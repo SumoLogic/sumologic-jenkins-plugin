@@ -10,6 +10,9 @@ import com.sumologic.jenkins.jenkinssumologicplugin.model.TestCaseResultModel;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,6 +51,15 @@ public class LogSenderHelper {
         List<String> strings = divideDataIntoEquals(messages);
         for (String data : strings) {
             sendLogsToPeriodicSourceCategory(data);
+        }
+    }
+
+    public void sendFilesData(final List<String> messages, String localFileString, String url, String sourceCategory) {
+        if (CollectionUtils.isNotEmpty(messages)) {
+            List<String> strings = divideDataIntoEquals(messages);
+            for (String data : strings) {
+                LogSender.getInstance().sendLogs(url, data.getBytes(), localFileString, sourceCategory);
+            }
         }
     }
 

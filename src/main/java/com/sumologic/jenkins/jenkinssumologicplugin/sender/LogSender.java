@@ -135,8 +135,6 @@ public class LogSender {
 
             post.setRequestEntity(new ByteArrayRequestEntity(compressedData));
             httpClient.executeMethod(post);
-        } catch (Exception e) {
-            throw new Exception();
         } finally {
             if (post != null) {
                 post.releaseConnection();
