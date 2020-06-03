@@ -106,14 +106,14 @@ Below are some example uses of the Step Function :-
 - Upload a file/folder from the workspace (or a String) to Sumo Logic.
 
 ```groovy
-s3Upload(file:'file.txt')
-s3Upload(file:'someFolder')
+SumoUpload(file:'file.txt')
+SumoUpload(file:'someFolder')
 ``` 
 
 - Upload with include/exclude patterns. The option accepts a comma-separated list of patterns.
 
 ```groovy
-s3Upload(includePathPattern:'**/*', excludePathPattern:'**/*.log,**/*.json')
+SumoUpload(includePathPattern:'**/*', excludePathPattern:'**/*.log,**/*.json')
 ```
 
 - Upload file from master directory when Pipeline Stage is running on a slave. Below will send File.txt file present in Archive Folder of the job pipeline on master system.
