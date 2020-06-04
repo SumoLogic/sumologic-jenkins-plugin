@@ -165,7 +165,7 @@ public class SumoLogicFileUploadStep extends Step {
         }
     }
 
-    private static final class FileUploader extends MasterToSlaveFileCallable<Void> {
+    private static class FileUploader extends MasterToSlaveFileCallable<Void> {
         protected static final long serialVersionUID = 1L;
         private static final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
         private final String url;
@@ -207,7 +207,7 @@ public class SumoLogicFileUploadStep extends Step {
         }
     }
 
-    private static final class FileListUploader extends MasterToSlaveFileCallable<Void> {
+    private static class FileListUploader extends MasterToSlaveFileCallable<Void> {
         protected static final long serialVersionUID = 1L;
 
         private final List<File> fileList;
@@ -247,7 +247,8 @@ public class SumoLogicFileUploadStep extends Step {
         }
     }
 
-    private static final class Find_File_On_Slave extends MasterToSlaveFileCallable<File> {
+    private static class Find_File_On_Slave extends MasterToSlaveFileCallable<File> {
+        protected static final long serialVersionUID = 1L;
         @Override
         public File invoke(File localFile, VirtualChannel channel) throws IOException, InterruptedException {
             return localFile;
