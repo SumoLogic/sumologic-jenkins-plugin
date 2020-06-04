@@ -16,7 +16,7 @@ Plugin can be installed and used with global configuration. Below are set of fea
 
 In `manage plugins`, search for `sumologic-publisher` version `2.0` and install the plugin.
 
-Tested with Jenkins version `2.100 - 2.178`. Later version will be supported. In case of any issue, please raise a [issue](https://github.com/SumoLogic/sumologic-jenkins-plugin/issues)
+Tested with Jenkins version `2.100 - 2.178`. Later version will be supported. In case of any issue, please raise a [issue](https://github.com/jenkinsci/sumologic-publisher-plugin/issues)
 
 ## Configuration
 
@@ -72,7 +72,7 @@ Groovy configuration script for Jenkins post-initialisation
 The purpose of this script is to automate the global configuration of plugin when Jenkins starts, so that no manual intervention is required via UI afterwards.
 This example of Groovy script file should have `.groovy` extension and be placed in the directory $JENKINS_HOME/init.groovy.d/.
 
-Download the [SumoLogicPublisherConfiguration.groovy](https://github.com/SumoLogic/sumologic-jenkins-plugin/tree/master/src/main/groovy/com/sumologic/jenkins/jenkinssumologicplugin/SumoLogicPublisherConfiguration.groovy) file.
+Download the [SumoLogicPublisherConfiguration.groovy](https://github.com/jenkinsci/sumologic-publisher-plugin/tree/master/src/main/groovy/com/sumologic/jenkins/jenkinssumologicplugin/SumoLogicPublisherConfiguration.groovy) file.
 - Make sure you are adjusting the values for fields according to your need.
 
 ## Developer Version
@@ -134,6 +134,6 @@ The sumologic-publisher is licensed under the apache v2.0 license.
 
 ## Contributing
 
-* Fork the project on [Github](https://github.com/SumoLogic/sumologic-jenkins-plugin).
+* Fork the project on [Github](https://github.com/jenkinsci/sumologic-publisher-plugin).
 * Make your feature addition or fix bug, write tests and commit.
 * Create a pull request with one of maintainer's as Reviewers.
