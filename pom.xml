@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
         <version>3.0</version>
-        <relativePath />
+        <relativePath/>
     </parent>
     <artifactId>sumologic-publisher</artifactId>
     <version>2.0.2-SNAPSHOT</version>
@@ -14,7 +14,7 @@
 
     <name>Sumologic Publisher</name>
     <description>Sumologic Plugin</description>
-    <url>https://wiki.jenkins-ci.org/display/JENKINS/Sumologic+Publisher+Plugin</url>
+    <url>https://github.com/jenkinsci/sumologic-publisher-plugin</url>
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -47,8 +47,8 @@
         <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
         <url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <repositories>
         <repository>
