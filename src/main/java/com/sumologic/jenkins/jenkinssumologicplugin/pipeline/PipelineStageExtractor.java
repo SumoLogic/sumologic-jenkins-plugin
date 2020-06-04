@@ -193,9 +193,7 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
                     ErrorAction error = node.getError();
                     if (error != null) {
                         Throwable throwable = error.getError();
-                        if (throwable != null) {
-                            messages.add(throwable.getMessage());
-                        }
+                        messages.add(throwable.getMessage());
                     }
 
                     String nodeName = getLogPrefix(node, nodeWithNames);

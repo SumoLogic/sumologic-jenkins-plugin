@@ -23,15 +23,16 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelpe
 public class SumoPipelineJobStatusGenerator {
     private static final Logger LOG = Logger.getLogger(SumoPipelineJobStatusGenerator.class.getName());
 
-    public static BuildModel generateJobStatusInformation(final Run buildInfo, PluginDescriptorImpl pluginDescriptor) {
+    public static BuildModel generateJobStatusInformation(final Run buildInfo, PluginDescriptorImpl pluginDescriptor,
+                                                          final boolean isSpecificJobFlagEnabled) {
         final BuildModel buildModel = new BuildModel();
 
-        CommonModelFactory.populateGeneric(buildModel, buildInfo, pluginDescriptor);
+        CommonModelFactory.populateGeneric(buildModel, buildInfo, pluginDescriptor, isSpecificJobFlagEnabled);
 
         for (SumoPipelineJobIdentifier extendListener : SumoPipelineJobIdentifier.canApply(buildInfo)) {
             try {
                 List<PipelineStageModel> stages = extendListener.extractPipelineStages(buildInfo, pluginDescriptor);
-                if (CollectionUtils.isNotEmpty(stages) && pluginDescriptor.isJobStatusLogEnabled()) {
+                if (CollectionUtils.isNotEmpty(stages) && (pluginDescriptor.isJobStatusLogEnabled() || isSpecificJobFlagEnabled)) {
                     sendPipelineStages(stages, buildModel);
                 }
             } catch (Exception e) {

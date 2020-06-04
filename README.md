@@ -2,6 +2,11 @@
 
 # sumologic-publisher
 
+## Features
+Plugin can be installed and used with global configuration. Below are set of features that can be used individually.
+
+1. [SumoUpload](#SumoUpload) - The function provides an ability to upload data from Files directly to Sumo Logic. Data is sent to the HTTP Source URL mentioned in the Global Configuration.
+
 ## Prerequisite
 
 * `Sumologic-publisher 2.0.0` need [Pipeline Rest API(2.8)](https://plugins.jenkins.io/pipeline-rest-api), [GIT (3.3.2)](https://plugins.jenkins.io/git), [metrics (3.0.0)](https://plugins.jenkins.io/metrics), [subversion (2.9)](https://plugins.jenkins.io/subversion) and [junit (1.8)](https://plugins.jenkins.io/junit). If not present, `Sumologic-publisher` will install these plugins as a part of internal dependency.
@@ -11,7 +16,7 @@
 
 In `manage plugins`, search for `sumologic-publisher` version `2.0` and install the plugin.
 
-Tested with Jenkins version `2.100 - 2.178`. Later version will be supported. In case of any issue, please raise a [issue](https://github.com/SumoLogic/sumologic-jenkins-plugin/issues)
+Tested with Jenkins version `2.100 - 2.178`. Later version will be supported. In case of any issue, please raise a [issue](https://github.com/jenkinsci/sumologic-publisher-plugin/issues)
 
 ## Configuration
 
@@ -67,7 +72,7 @@ Groovy configuration script for Jenkins post-initialisation
 The purpose of this script is to automate the global configuration of plugin when Jenkins starts, so that no manual intervention is required via UI afterwards.
 This example of Groovy script file should have `.groovy` extension and be placed in the directory $JENKINS_HOME/init.groovy.d/.
 
-Download the [SumoLogicPublisherConfiguration.groovy](https://github.com/SumoLogic/sumologic-jenkins-plugin/tree/master/src/main/groovy/com/sumologic/jenkins/jenkinssumologicplugin/SumoLogicPublisherConfiguration.groovy) file.
+Download the [SumoLogicPublisherConfiguration.groovy](https://github.com/jenkinsci/sumologic-publisher-plugin/tree/master/src/main/groovy/com/sumologic/jenkins/jenkinssumologicplugin/SumoLogicPublisherConfiguration.groovy) file.
 - Make sure you are adjusting the values for fields according to your need.
 
 ## Developer Version
@@ -90,12 +95,45 @@ Download the [SumoLogicPublisherConfiguration.groovy](https://github.com/SumoLog
 
 	![uploadPlugin.png](/src/main/webapp/uploadPlugin.png)
 
+#### SumoUpload
+The Function can be used in Jenkins Pipelines to send files data to Sumo Logic. Function allow below properties:-
+1. file - Provide a file path or a directory path. If the value is a directory then data from all files within the directory will be send to Sumo Logic.
+2. includePathPattern - Provide a pattern to include file names or extension. For eg:- *.json will include all json files only.
+3. excludePathPattern - Provide a pattern to exclude file names or extension. For eg:- *.json will exclude all json files only.
+4. workingDir - Provides the path of the directory where files are present. The path will be searched in the node where the Pipeline Step is executed.
+
+Below are some example uses of the Step Function :-
+- Upload a file/folder from the workspace (or a String) to Sumo Logic.
+
+```groovy
+SumoUpload(file:'file.txt')
+SumoUpload(file:'someFolder')
+``` 
+
+- Upload with include/exclude patterns. The option accepts a comma-separated list of patterns.
+
+```groovy
+SumoUpload(includePathPattern:'**/*', excludePathPattern:'**/*.log,**/*.json')
+```
+
+- Upload file from master directory when Pipeline Stage is running on a slave. Below will send File.txt file present in Archive Folder of the job pipeline on master system.
+```groovy
+node('master')
+{
+  SumoUpload(file: "File.txt", workingDir: "$JENKINS_HOME/jobs/$JOB_NAME/builds/$BUILD_NUMBER/archive")
+}
+```
+
+## Change Log
+
+For Full Change Log, [Visit](./CHANGELOG.md).
+
 ## License
 
 The sumologic-publisher is licensed under the apache v2.0 license.
 
 ## Contributing
 
-* Fork the project on [Github](https://github.com/SumoLogic/sumologic-jenkins-plugin).
+* Fork the project on [Github](https://github.com/jenkinsci/sumologic-publisher-plugin).
 * Make your feature addition or fix bug, write tests and commit.
 * Create a pull request with one of maintainer's as Reviewers.
