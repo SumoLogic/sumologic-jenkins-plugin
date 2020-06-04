@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v2.0.3
+- Re-release of version 2.0.2
+
 ## v2.0.2
 - Added SumoUpload Step Function to Send Files Data to Sumo Logic. [Issue 11](https://github.com/jenkinsci/sumologic-publisher-plugin/issues/11) Solved.
 - Added Pre Launch Event and Pre Online event to Computer events.
