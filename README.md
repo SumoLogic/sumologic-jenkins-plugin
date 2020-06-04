@@ -124,6 +124,10 @@ node('master')
 }
 ```
 
+## Change Log
+
+For Full Change Log, [Visit](./CHANGELOG.md).
+
 ## License
 
 The sumologic-publisher is licensed under the apache v2.0 license.
