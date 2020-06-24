@@ -48,7 +48,7 @@ import static hudson.init.InitMilestone.JOB_LOADED;
 @Extension
 public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
-    private String url;
+    private Secret url;
     private transient SumoMetricDataPublisher sumoMetricDataPublisher;
     private static LogSenderHelper logSenderHelper = null;
     private String queryPortal;
@@ -247,11 +247,11 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         this.metricDataPrefix = metricDataPrefix;
     }
 
-    public String getUrl() {
+    public Secret getUrl() {
         return url;
     }
 
-    public void setUrl(String url) {
+    public void setUrl(Secret url) {
         this.url = url;
     }
 
