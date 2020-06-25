@@ -247,8 +247,8 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         this.metricDataPrefix = metricDataPrefix;
     }
 
-    public Secret getUrl() {
-        return url;
+    public String getUrl() {
+        return url.getPlainText();
     }
 
     public void setUrl(Secret url) {
