@@ -144,8 +144,13 @@ public class SumoLogicFileUploadStep extends Step {
             Run run = this.getContext().get(Run.class);
             boolean omitSourcePath = false;
 
-            Preconditions.checkArgument(file != null || includePathPattern != null || text != null, "File or IncludePathPattern or Text must not be null");
-            Preconditions.checkArgument(includePathPattern == null || file == null || text == null, "File and IncludePathPattern and Text cannot be use together");
+            if (includePathPattern == null && file == null && text == null){
+                throw new Exception("File or IncludePathPattern or Text must not be null");
+            }
+
+            if ((includePathPattern != null && file != null) || (file != null && text != null) || (text != null && includePathPattern != null)){
+                throw new Exception("File and IncludePathPattern and Text cannot be use together");
+            }
 
             final List<FilePath> files = new ArrayList<>();
             final FilePath directory;
@@ -161,7 +166,10 @@ public class SumoLogicFileUploadStep extends Step {
             if (directory != null) {
                 PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
 
-                if (file != null) {
+                if (text != null) {
+                    listener.getLogger().println(String.format("Sending Text %s to Sumo Logic with Fields as %s", text, fields));
+                    sendTextData(text, pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(), run.getParent().getFullName(), run.getNumber(), fields, pluginDescriptor.getMetricDataPrefix());
+                } else if (file != null) {
                     files.add(directory.child(file));
                     omitSourcePath = true;
                 } else if (excludePathPattern != null && !excludePathPattern.trim().isEmpty()) {
@@ -170,16 +178,7 @@ public class SumoLogicFileUploadStep extends Step {
                     files.addAll(Arrays.asList(directory.list(includePathPattern, null, true)));
                 }
 
-                if (files.isEmpty()) {
-                    if (text != null) {
-                        listener.getLogger().println(String.format("Sending Text %s to Sumo Logic with Fields as %s", text, fields));
-                        sendTextData(text, pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(), run.getParent().getFullName(), run.getNumber(), fields, pluginDescriptor.getMetricDataPrefix());
-                        return "Uploaded Text to Sumo Logic.";
-                    } else {
-                        listener.getLogger().println("No Files to upload.");
-                        return null;
-                    }
-                } else if (omitSourcePath) {
+                if (omitSourcePath) {
                     FilePath file_name = files.get(0);
                     listener.getLogger().println("Uploading to Sumo Logic with File as " + file_name.toURI());
                     if (!file_name.exists()) {
@@ -188,7 +187,6 @@ public class SumoLogicFileUploadStep extends Step {
                         file_name.act(new FileUploader(pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(), run.getParent().getFullName(), run.getNumber(), fields, pluginDescriptor.getMetricDataPrefix()));
                         listener.getLogger().println("Upload complete");
                     }
-                    return "Uploaded to Sumo Logic";
                 } else {
                     List<File> fileList = new ArrayList<>();
                     listener.getLogger().println("Uploading to Sumo Logic with Include Path Pattern as " + includePathPattern);
@@ -197,8 +195,8 @@ public class SumoLogicFileUploadStep extends Step {
                     }
                     directory.act(new FileListUploader(fileList, pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(), run.getParent().getFullName(), run.getNumber(), fields, pluginDescriptor.getMetricDataPrefix()));
                     listener.getLogger().println("Upload complete for files " + Arrays.toString(fileList.toArray()));
-                    return "Uploaded to Sumo Logic";
                 }
+                return "Uploaded to Sumo Logic";
             } else {
                 return null;
             }
