@@ -1,6 +1,7 @@
 package com.sumologic.jenkins.jenkinssumologicplugin;
 
 import com.google.gson.Gson;
+import hudson.util.Secret;
 import org.apache.http.localserver.LocalServerTestBase;
 import org.apache.http.protocol.HttpRequestHandler;
 import org.junit.After;
@@ -17,7 +18,7 @@ public class BaseTest extends LocalServerTestBase {
 
     @Mock
     public HttpRequestHandler handler;
-    private String serverUrl;
+    private Secret serverUrl;
 
     public Gson gson;
 
@@ -30,8 +31,8 @@ public class BaseTest extends LocalServerTestBase {
         this.serverBootstrap.registerHandler("/jenkinstest/*", handler);
         start();
 
-        serverUrl = "http://" + server.getInetAddress().getCanonicalHostName() + ":"
-                + server.getLocalPort() + "/jenkinstest/123";
+        serverUrl = Secret.fromString("http://" + server.getInetAddress().getCanonicalHostName() + ":"
+                + server.getLocalPort() + "/jenkinstest/123");
 
         j.jenkins.getDescriptorByType(PluginDescriptorImpl.class).setUrl(serverUrl);
         j.jenkins.getDescriptorByType(PluginDescriptorImpl.class).setJobStatusLogEnabled(true);

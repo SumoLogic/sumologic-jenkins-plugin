@@ -10,6 +10,7 @@ import hudson.remoting.VirtualChannel;
 import jenkins.MasterToSlaveFileCallable;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.workflow.steps.*;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -26,6 +27,8 @@ public class SumoLogicFileUploadStep extends Step {
     private String includePathPattern;
     private String excludePathPattern;
     private String workingDir;
+    private String text;
+    private HashMap<String, String> fields = new HashMap<>();
 
     @DataBoundConstructor
     public SumoLogicFileUploadStep() {
@@ -67,6 +70,24 @@ public class SumoLogicFileUploadStep extends Step {
         this.workingDir = workingDir;
     }
 
+    public String getText() {
+        return text;
+    }
+
+    @DataBoundSetter
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public HashMap<String, String> getFields() {
+        return fields;
+    }
+
+    @DataBoundSetter
+    public void setFields(HashMap<String, String> fields) {
+        this.fields = fields;
+    }
+
     @Override
     public StepExecution start(StepContext context) throws Exception {
         return new SumoLogicFileUploadStep.Execution(this, context);
@@ -87,7 +108,7 @@ public class SumoLogicFileUploadStep extends Step {
 
         @Override
         public String getDisplayName() {
-            return "Upload files to Sumo Logic HTTP source as in Sumo Logic Publisher Configuration.";
+            return "Upload files or Text to Sumo Logic HTTP source as provided in Sumo Logic Publisher Configuration.";
         }
     }
 
@@ -96,10 +117,19 @@ public class SumoLogicFileUploadStep extends Step {
         protected static final long serialVersionUID = 1L;
 
         protected final transient SumoLogicFileUploadStep step;
+        private static final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
 
         public Execution(SumoLogicFileUploadStep step, StepContext context) {
             super(context);
             this.step = step;
+        }
+
+        public void sendTextData(String text, String url, String sourceCategory, String jobName, int number, HashMap<String, String> fields, String host) {
+            List<String> lines = new ArrayList<>();
+            if (StringUtils.isNotEmpty(text)) {
+                lines.add(text);
+                logSenderHelper.sendFilesData(lines, jobName + "#" + number, url, sourceCategory, fields, host);
+            }
         }
 
         @Override
@@ -108,11 +138,14 @@ public class SumoLogicFileUploadStep extends Step {
             final String includePathPattern = this.step.getIncludePathPattern();
             final String excludePathPattern = this.step.getExcludePathPattern();
             final String workingDir = this.step.getWorkingDir();
+            final String text = this.step.getText();
+            final HashMap<String, String> fields = this.step.getFields();
+
             Run run = this.getContext().get(Run.class);
             boolean omitSourcePath = false;
 
-            Preconditions.checkArgument(file != null || includePathPattern != null, "File or IncludePathPattern must not be null");
-            Preconditions.checkArgument(includePathPattern == null || file == null, "File and IncludePathPattern cannot be use together");
+            Preconditions.checkArgument(file != null || includePathPattern != null || text != null, "File or IncludePathPattern or Text must not be null");
+            Preconditions.checkArgument(includePathPattern == null || file == null || text == null, "File and IncludePathPattern and Text cannot be use together");
 
             final List<FilePath> files = new ArrayList<>();
             final FilePath directory;
@@ -126,6 +159,8 @@ public class SumoLogicFileUploadStep extends Step {
             TaskListener listener = Execution.this.getContext().get(TaskListener.class);
 
             if (directory != null) {
+                PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+
                 if (file != null) {
                     files.add(directory.child(file));
                     omitSourcePath = true;
@@ -133,19 +168,24 @@ public class SumoLogicFileUploadStep extends Step {
                     files.addAll(Arrays.asList(directory.list(includePathPattern, excludePathPattern, true)));
                 } else {
                     files.addAll(Arrays.asList(directory.list(includePathPattern, null, true)));
-
                 }
-                PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+
                 if (files.isEmpty()) {
-                    listener.getLogger().println("No Files to upload.");
-                    return null;
+                    if (text != null) {
+                        listener.getLogger().println(String.format("Sending Text %s to Sumo Logic with Fields as %s", text, fields));
+                        sendTextData(text, pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(), run.getParent().getFullName(), run.getNumber(), fields, pluginDescriptor.getMetricDataPrefix());
+                        return "Uploaded Text to Sumo Logic.";
+                    } else {
+                        listener.getLogger().println("No Files to upload.");
+                        return null;
+                    }
                 } else if (omitSourcePath) {
                     FilePath file_name = files.get(0);
                     listener.getLogger().println("Uploading to Sumo Logic with File as " + file_name.toURI());
                     if (!file_name.exists()) {
                         listener.getLogger().println("Upload failed due to missing source file " + file_name.toURI().toString());
                     } else {
-                        file_name.act(new FileUploader(pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(), run.getParent().getFullName(), run.getNumber()));
+                        file_name.act(new FileUploader(pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(), run.getParent().getFullName(), run.getNumber(), fields, pluginDescriptor.getMetricDataPrefix()));
                         listener.getLogger().println("Upload complete");
                     }
                     return "Uploaded to Sumo Logic";
@@ -155,7 +195,7 @@ public class SumoLogicFileUploadStep extends Step {
                     for (FilePath child : files) {
                         fileList.add(child.act(new Find_File_On_Slave()));
                     }
-                    directory.act(new FileListUploader(fileList, pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(), run.getParent().getFullName(), run.getNumber()));
+                    directory.act(new FileListUploader(fileList, pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(), run.getParent().getFullName(), run.getNumber(), fields, pluginDescriptor.getMetricDataPrefix()));
                     listener.getLogger().println("Upload complete for files " + Arrays.toString(fileList.toArray()));
                     return "Uploaded to Sumo Logic";
                 }
@@ -172,12 +212,16 @@ public class SumoLogicFileUploadStep extends Step {
         private final String sourceCategory;
         private final String jobName;
         private final int buildNumber;
+        private HashMap<String, String> fields;
+        private String hostName;
 
-        FileUploader(String url, String sourceCategory, String jobName, int buildNumber) {
+        FileUploader(String url, String sourceCategory, String jobName, int buildNumber, HashMap<String, String> fields, String hostName) {
             this.url = url;
             this.sourceCategory = sourceCategory;
             this.jobName = jobName;
             this.buildNumber = buildNumber;
+            this.fields = fields;
+            this.hostName = hostName;
         }
 
         @Override
@@ -202,7 +246,7 @@ public class SumoLogicFileUploadStep extends Step {
                 while ((line = reader.readLine()) != null) {
                     lines.add(line);
                 }
-                logSenderHelper.sendFilesData(lines, this.jobName + "#" + this.buildNumber + "#" + localFile.toURI().toString(), url, sourceCategory);
+                logSenderHelper.sendFilesData(lines, this.jobName + "#" + this.buildNumber + "#" + localFile.toURI().toString(), url, sourceCategory, fields, hostName);
             }
         }
     }
@@ -216,13 +260,17 @@ public class SumoLogicFileUploadStep extends Step {
         private final String sourceCategory;
         private final String jobName;
         private final int buildNumber;
+        private HashMap<String, String> fields;
+        private String hostName;
 
-        FileListUploader(List<File> fileList, String url, String sourceCategory, String jobName, int buildNumber) {
+        FileListUploader(List<File> fileList, String url, String sourceCategory, String jobName, int buildNumber, HashMap<String, String> fields, String hostName) {
             this.fileList = fileList;
             this.url = url;
             this.sourceCategory = sourceCategory;
             this.jobName = jobName;
             this.buildNumber = buildNumber;
+            this.fields = fields;
+            this.hostName = hostName;
         }
 
         @Override
@@ -242,13 +290,14 @@ public class SumoLogicFileUploadStep extends Step {
                 while ((line = reader.readLine()) != null) {
                     lines.add(line);
                 }
-                logSenderHelper.sendFilesData(lines, this.jobName + "#" + this.buildNumber + "#" + localFile.toURI().toString(), url, sourceCategory);
+                logSenderHelper.sendFilesData(lines, this.jobName + "#" + this.buildNumber + "#" + localFile.toURI().toString(), url, sourceCategory, fields, hostName);
             }
         }
     }
 
     private static class Find_File_On_Slave extends MasterToSlaveFileCallable<File> {
         protected static final long serialVersionUID = 1L;
+
         @Override
         public File invoke(File localFile, VirtualChannel channel) throws IOException, InterruptedException {
             return localFile;
