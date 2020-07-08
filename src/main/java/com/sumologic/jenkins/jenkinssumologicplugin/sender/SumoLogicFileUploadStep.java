@@ -1,6 +1,6 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
-import com.google.common.base.Preconditions;
+import com.google.gson.Gson;
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import hudson.Extension;
 import hudson.FilePath;
@@ -15,6 +15,7 @@ import org.jenkinsci.plugins.workflow.steps.*;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
+import javax.annotation.Nonnull;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -28,6 +29,7 @@ public class SumoLogicFileUploadStep extends Step {
     private String excludePathPattern;
     private String workingDir;
     private String text;
+    private HashMap<String, Object> keyValueMap = new HashMap<>();
     private HashMap<String, String> fields = new HashMap<>();
 
     @DataBoundConstructor
@@ -79,6 +81,15 @@ public class SumoLogicFileUploadStep extends Step {
         this.text = text;
     }
 
+    public HashMap<String, Object> getKeyValueMap() {
+        return keyValueMap;
+    }
+
+    @DataBoundSetter
+    public void setKeyValueMap(HashMap<String, Object> keyValueMap) {
+        this.keyValueMap = keyValueMap;
+    }
+
     public HashMap<String, String> getFields() {
         return fields;
     }
@@ -106,6 +117,7 @@ public class SumoLogicFileUploadStep extends Step {
             return "SumoUpload";
         }
 
+        @Nonnull
         @Override
         public String getDisplayName() {
             return "Upload files or Text to Sumo Logic HTTP source as provided in Sumo Logic Publisher Configuration.";
@@ -118,17 +130,19 @@ public class SumoLogicFileUploadStep extends Step {
 
         protected final transient SumoLogicFileUploadStep step;
         private static final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
+        private static final PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
 
         public Execution(SumoLogicFileUploadStep step, StepContext context) {
             super(context);
             this.step = step;
         }
 
-        public void sendTextData(String text, String url, String sourceCategory, String jobName, int number, HashMap<String, String> fields, String host) {
+        public void sendTextData(String text, String sourceName, HashMap<String, String> fields) {
             List<String> lines = new ArrayList<>();
             if (StringUtils.isNotEmpty(text)) {
                 lines.add(text);
-                logSenderHelper.sendFilesData(lines, jobName + "#" + number, url, sourceCategory, fields, host);
+                logSenderHelper.sendFilesData(lines, sourceName, pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(),
+                        fields, pluginDescriptor.getMetricDataPrefix());
             }
         }
 
@@ -139,36 +153,47 @@ public class SumoLogicFileUploadStep extends Step {
             final String excludePathPattern = this.step.getExcludePathPattern();
             final String workingDir = this.step.getWorkingDir();
             final String text = this.step.getText();
+            final HashMap<String, Object> keyValueMap = this.step.getKeyValueMap();
             final HashMap<String, String> fields = this.step.getFields();
 
-            Run run = this.getContext().get(Run.class);
-            boolean omitSourcePath = false;
-
-            if (includePathPattern == null && file == null && text == null){
+            if (includePathPattern == null && file == null && text == null && keyValueMap.isEmpty()) {
                 throw new Exception("File or IncludePathPattern or Text must not be null");
             }
 
-            if ((includePathPattern != null && file != null) || (file != null && text != null) || (text != null && includePathPattern != null)){
-                throw new Exception("File and IncludePathPattern and Text cannot be use together");
+            if ((includePathPattern != null && file != null) || (includePathPattern != null && text != null)
+                    || (includePathPattern != null && !keyValueMap.isEmpty()) || (file != null && text != null)
+                    || (file != null && !keyValueMap.isEmpty()) || (text != null && !keyValueMap.isEmpty())) {
+                throw new Exception("File, IncludePathPattern, Text and KeyValueMap cannot be use together");
             }
 
-            final List<FilePath> files = new ArrayList<>();
+            // Generate Directory Path
             final FilePath directory;
-
             if (workingDir != null && !"".equals(workingDir.trim())) {
                 directory = Objects.requireNonNull(this.getContext().get(FilePath.class)).child(workingDir);
             } else {
                 directory = this.getContext().get(FilePath.class);
             }
 
-            TaskListener listener = Execution.this.getContext().get(TaskListener.class);
-
             if (directory != null) {
-                PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+                // Get Listener for Logging
+                TaskListener listener = Execution.this.getContext().get(TaskListener.class);
+                // Get Run object for Job Information
+                Run run = this.getContext().get(Run.class);
+                // Get Build Number and Full Name
+                String sourceName = run.getParent().getFullName() + "#" + run.getNumber();
 
+                boolean omitSourcePath = false;
+                final List<FilePath> files = new ArrayList<>();
+
+                // Decide if text, KeyValueMap, File Path, Directory or File list
                 if (text != null) {
-                    listener.getLogger().println(String.format("Sending Text %s to Sumo Logic with Fields as %s", text, fields));
-                    sendTextData(text, pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(), run.getParent().getFullName(), run.getNumber(), fields, pluginDescriptor.getMetricDataPrefix());
+                    sendTextData(text, sourceName, fields);
+                    listener.getLogger().println(String.format("Uploaded Text %s to Sumo Logic.", text));
+                } else if (!keyValueMap.isEmpty()) {
+                    Gson gson = new Gson();
+                    String mapString = gson.toJson(keyValueMap);
+                    sendTextData(mapString, sourceName, fields);
+                    listener.getLogger().println(String.format("Uploaded KeyValueMap String %s to Sumo Logic.", mapString));
                 } else if (file != null) {
                     files.add(directory.child(file));
                     omitSourcePath = true;
@@ -178,28 +203,31 @@ public class SumoLogicFileUploadStep extends Step {
                     files.addAll(Arrays.asList(directory.list(includePathPattern, null, true)));
                 }
 
-                if (omitSourcePath) {
-                    FilePath file_name = files.get(0);
-                    listener.getLogger().println("Uploading to Sumo Logic with File as " + file_name.toURI());
-                    if (!file_name.exists()) {
-                        listener.getLogger().println("Upload failed due to missing source file " + file_name.toURI().toString());
+                if (!files.isEmpty()) {
+                    if (omitSourcePath) {
+                        FilePath file_name = files.get(0);
+                        listener.getLogger().println("Uploading to Sumo Logic with File as " + file_name.toURI());
+                        if (!file_name.exists()) {
+                            listener.getLogger().println("Upload failed due to missing source file " + file_name.toURI().toString());
+                        } else {
+                            file_name.act(new FileUploader(pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(),
+                                    pluginDescriptor.getMetricDataPrefix(), sourceName, fields));
+                            listener.getLogger().println("Upload complete");
+                        }
                     } else {
-                        file_name.act(new FileUploader(pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(), run.getParent().getFullName(), run.getNumber(), fields, pluginDescriptor.getMetricDataPrefix()));
-                        listener.getLogger().println("Upload complete");
+                        List<File> fileList = new ArrayList<>();
+                        listener.getLogger().println("Uploading to Sumo Logic with Include Path Pattern as " + includePathPattern);
+                        for (FilePath child : files) {
+                            fileList.add(child.act(new Find_File_On_Slave()));
+                        }
+                        directory.act(new FileListUploader(fileList, pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(),
+                                pluginDescriptor.getMetricDataPrefix(), sourceName, fields));
+                        listener.getLogger().println("Upload complete for files " + Arrays.toString(fileList.toArray()));
                     }
-                } else {
-                    List<File> fileList = new ArrayList<>();
-                    listener.getLogger().println("Uploading to Sumo Logic with Include Path Pattern as " + includePathPattern);
-                    for (FilePath child : files) {
-                        fileList.add(child.act(new Find_File_On_Slave()));
-                    }
-                    directory.act(new FileListUploader(fileList, pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(), run.getParent().getFullName(), run.getNumber(), fields, pluginDescriptor.getMetricDataPrefix()));
-                    listener.getLogger().println("Upload complete for files " + Arrays.toString(fileList.toArray()));
+                    return "Uploaded to Sumo Logic.";
                 }
-                return "Uploaded to Sumo Logic";
-            } else {
-                return null;
             }
+            return null;
         }
     }
 
@@ -208,18 +236,16 @@ public class SumoLogicFileUploadStep extends Step {
         private static final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
         private final String url;
         private final String sourceCategory;
-        private final String jobName;
-        private final int buildNumber;
-        private HashMap<String, String> fields;
-        private String hostName;
+        private final String hostName;
+        private final String sourceName;
+        private final HashMap<String, String> fields;
 
-        FileUploader(String url, String sourceCategory, String jobName, int buildNumber, HashMap<String, String> fields, String hostName) {
+        FileUploader(String url, String sourceCategory, String hostName, String sourceName, HashMap<String, String> fields) {
             this.url = url;
             this.sourceCategory = sourceCategory;
-            this.jobName = jobName;
-            this.buildNumber = buildNumber;
-            this.fields = fields;
             this.hostName = hostName;
+            this.sourceName = sourceName;
+            this.fields = fields;
         }
 
         @Override
@@ -244,7 +270,8 @@ public class SumoLogicFileUploadStep extends Step {
                 while ((line = reader.readLine()) != null) {
                     lines.add(line);
                 }
-                logSenderHelper.sendFilesData(lines, this.jobName + "#" + this.buildNumber + "#" + localFile.toURI().toString(), url, sourceCategory, fields, hostName);
+                logSenderHelper.sendFilesData(lines, this.sourceName + "#" + localFile.toURI().toString(),
+                        url, sourceCategory, fields, hostName);
             }
         }
     }
@@ -256,19 +283,17 @@ public class SumoLogicFileUploadStep extends Step {
         private static final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
         private final String url;
         private final String sourceCategory;
-        private final String jobName;
-        private final int buildNumber;
-        private HashMap<String, String> fields;
-        private String hostName;
+        private final String hostName;
+        private final String sourceName;
+        private final HashMap<String, String> fields;
 
-        FileListUploader(List<File> fileList, String url, String sourceCategory, String jobName, int buildNumber, HashMap<String, String> fields, String hostName) {
+        FileListUploader(List<File> fileList, String url, String sourceCategory, String hostName, String sourceName, HashMap<String, String> fields) {
             this.fileList = fileList;
             this.url = url;
             this.sourceCategory = sourceCategory;
-            this.jobName = jobName;
-            this.buildNumber = buildNumber;
-            this.fields = fields;
             this.hostName = hostName;
+            this.sourceName = sourceName;
+            this.fields = fields;
         }
 
         @Override
@@ -288,7 +313,8 @@ public class SumoLogicFileUploadStep extends Step {
                 while ((line = reader.readLine()) != null) {
                     lines.add(line);
                 }
-                logSenderHelper.sendFilesData(lines, this.jobName + "#" + this.buildNumber + "#" + localFile.toURI().toString(), url, sourceCategory, fields, hostName);
+                logSenderHelper.sendFilesData(lines, this.sourceName + "#" + localFile.toURI().toString(),
+                        url, sourceCategory, fields, hostName);
             }
         }
     }
