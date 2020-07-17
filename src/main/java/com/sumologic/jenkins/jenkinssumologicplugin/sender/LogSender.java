@@ -1,5 +1,6 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.StatusLine;
@@ -10,8 +11,10 @@ import org.apache.commons.lang.StringUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.CARBON_CONTENT_TYPE;
@@ -33,13 +36,17 @@ public class LogSender {
     }
 
     private String getHost() {
+        String hostName = "unknown";
         try {
-            return InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            LOG.warning("Couldn't resolve jenkins host name... Using unknown.");
+            if (PluginDescriptorImpl.getInstance() != null && PluginDescriptorImpl.getInstance().getMetricDataPrefix() != null) {
+                hostName = PluginDescriptorImpl.getInstance().getMetricDataPrefix();
+            } else {
+                hostName = InetAddress.getLocalHost().getHostName();
+            }
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "Couldn't resolve jenkins host name... Using unknown.");
         }
-
-        return "unkown";
+        return hostName;
     }
 
     private static class LogSenderHolder {
@@ -50,18 +57,18 @@ public class LogSender {
         return LogSenderHolder.logSender;
     }
 
-    void sendLogs(String url, byte[] msg, String sumoName, String sumoCategory, String contentType) {
+    void sendLogs(String url, byte[] msg, String sumoName, String sumoCategory, String contentType, HashMap<String, String> fields, String host) {
         PostMethod post = null;
 
         if (StringUtils.isBlank(url)) {
-            LOG.warning("Trying to send logs with blank url. Update config first!");
+            LOG.log(Level.WARNING, "Trying to send logs with blank url. Update config first!");
             return;
         }
 
         try {
             post = new PostMethod(url);
 
-            createHeaders(post, sumoName, sumoCategory, contentType);
+            createHeaders(post, sumoName, sumoCategory, contentType, fields, host);
 
             byte[] compressedData = compress(msg);
 
@@ -69,10 +76,10 @@ public class LogSender {
             httpClient.executeMethod(post);
             int statusCode = post.getStatusCode();
             if (statusCode != 200) {
-                LOG.warning(String.format("Received HTTP error from Sumo Service: %d", statusCode));
+                LOG.log(Level.WARNING, String.format("Received HTTP error from Sumo Service: %d", statusCode));
             }
         } catch (Exception e) {
-            LOG.warning(String.format("Could not send log to Sumo Logic: %s", e.toString()));
+            LOG.log(Level.WARNING, String.format("Could not send log to Sumo Logic: %s", e.toString()));
         } finally {
             if (post != null) {
                 post.releaseConnection();
@@ -81,7 +88,11 @@ public class LogSender {
     }
 
     public void sendLogs(String url, byte[] msg, String sumoName, String sumoCategory) {
-        sendLogs(url, msg, sumoName, sumoCategory, null);
+        sendLogs(url, msg, sumoName, sumoCategory, null, null, null);
+    }
+
+    public void sendLogs(String url, byte[] msg, String sumoName, String sumoCategory, String contentType) {
+        sendLogs(url, msg, sumoName, sumoCategory, contentType, null, null);
     }
 
     private byte[] compress(byte[] content) throws IOException {
@@ -94,9 +105,13 @@ public class LogSender {
     }
 
     private void createHeaders(final PostMethod post, final String sumoName,
-                               final String sumoCategory, final String contentType) {
-
-        post.addRequestHeader("X-Sumo-Host", getHost());
+                               final String sumoCategory, final String contentType,
+                               HashMap<String, String> fields, final String host) {
+        if (StringUtils.isNotEmpty(host)) {
+            post.addRequestHeader("X-Sumo-Host", host);
+        } else {
+            post.addRequestHeader("X-Sumo-Host", getHost());
+        }
 
         if (StringUtils.isNotBlank(sumoName)) {
             post.addRequestHeader("X-Sumo-Name", sumoName);
@@ -112,7 +127,12 @@ public class LogSender {
             post.addRequestHeader("Content-Type", contentType);
         }
 
-        post.addRequestHeader("X-Sumo-Client", "sumologic-publisher");
+        if (fields != null && !fields.isEmpty()) {
+            String field_string = fields.keySet().stream().map(key -> key + "=" + fields.get(key)).collect(Collectors.joining(","));
+            post.addRequestHeader("X-Sumo-Fields", field_string);
+        }
+
+        post.addRequestHeader("X-Sumo-Client", "sumologic-jenkins-plugin");
     }
 
     private boolean isValidContentType(final String contentType) {

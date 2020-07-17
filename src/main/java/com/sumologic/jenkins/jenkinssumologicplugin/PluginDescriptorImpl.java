@@ -16,6 +16,7 @@ import hudson.model.AbstractProject;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
+import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import jenkins.util.Timer;
 import net.sf.json.JSONObject;
@@ -48,7 +49,7 @@ import static hudson.init.InitMilestone.JOB_LOADED;
 @Extension
 public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
-    private String url;
+    private Secret url;
     private transient SumoMetricDataPublisher sumoMetricDataPublisher;
     private static LogSenderHelper logSenderHelper = null;
     private String queryPortal;
@@ -97,7 +98,7 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
     @Override
     public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
         boolean configOk = super.configure(req, formData);
-        url = formData.getString("url");
+        url = Secret.fromString(formData.getString("url"));
         queryPortal = StringUtils.isNotEmpty(formData.getString("queryPortal")) ? formData.getString("queryPortal") : "service.sumologic.com";
 
         sourceCategory = StringUtils.isNotEmpty(formData.getString("sourceCategory")) ? formData.getString("sourceCategory") : "jenkinsSourceCategory";
@@ -248,10 +249,10 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
     }
 
     public String getUrl() {
-        return url;
+        return url.getPlainText();
     }
 
-    public void setUrl(String url) {
+    public void setUrl(Secret url) {
         this.url = url;
     }
 
