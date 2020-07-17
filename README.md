@@ -97,10 +97,13 @@ Download the [SumoLogicPublisherConfiguration.groovy](https://github.com/jenkins
 
 #### SumoUpload
 The Function can be used in Jenkins Pipelines to send files data to Sumo Logic. Function allow below properties:-
-1. file - Provide a file path or a directory path. If the value is a directory then data from all files within the directory will be send to Sumo Logic.
+1. file - Provide a file path or a directory path. If the value is a directory then data from all files within the directory will be sent to Sumo Logic.
 2. includePathPattern - Provide a pattern to include file names or extension. For eg:- *.json will include all json files only.
 3. excludePathPattern - Provide a pattern to exclude file names or extension. For eg:- *.json will exclude all json files only.
-4. workingDir - Provides the path of the directory where files are present. The path will be searched in the node where the Pipeline Step is executed.
+4. text - Provide any string that will be sent to Sumo Logic.
+5. keyValueMap - Provide a key value map that will be converted to JSON and sent to Sumo Logic.
+6. workingDir - Provides the path of the directory where files are present. The path will be searched in the node where the Pipeline Step is executed.
+7. fields - Provide a key value map that will be sent as [X-Sumo-Fields](https://help.sumologic.com/Manage/Fields#X-Sumo-Fields_HTTP_header) to Sumo Logic.
 
 Below are some example uses of the Step Function :-
 - Upload a file/folder from the workspace (or a String) to Sumo Logic.
@@ -122,6 +125,28 @@ node('master')
 {
   SumoUpload(file: "File.txt", workingDir: "$JENKINS_HOME/jobs/$JOB_NAME/builds/$BUILD_NUMBER/archive")
 }
+```
+
+- Upload a text to Sumo Logic with Fields.
+```groovy
+    script{
+      fields = [
+        jenkins_master: "test_master",
+        result: currentBuild.currentResult
+        ]
+    }
+    SumoUpload(text: "This is test String", fields: fields)
+```
+
+- Upload a Key Value map as JSON to Sumo Logic.
+```groovy
+    script{
+      deploy_event = [
+        event_name: STAGE_NAME,
+        result: currentBuild.currentResult
+        ]
+    }
+    SumoUpload(keyValueMap: deploy_event)
 ```
 
 ## Change Log
