@@ -132,7 +132,7 @@ public class LogSender {
             post.addRequestHeader("X-Sumo-Fields", field_string);
         }
 
-        post.addRequestHeader("X-Sumo-Client", "sumologic-publisher");
+        post.addRequestHeader("X-Sumo-Client", "sumologic-jenkins-plugin");
     }
 
     private boolean isValidContentType(final String contentType) {
