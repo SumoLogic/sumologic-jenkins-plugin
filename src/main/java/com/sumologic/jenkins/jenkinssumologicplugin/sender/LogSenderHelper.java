@@ -54,11 +54,11 @@ public class LogSenderHelper {
         }
     }
 
-    public void sendFilesData(final List<String> messages, String localFileString, String url, String sourceCategory) {
+    public void sendFilesData(final List<String> messages, String localFileString, String url, String sourceCategory, HashMap<String, String> fields, String host) {
         if (CollectionUtils.isNotEmpty(messages)) {
             List<String> strings = divideDataIntoEquals(messages);
             for (String data : strings) {
-                LogSender.getInstance().sendLogs(url, data.getBytes(), localFileString, sourceCategory);
+                LogSender.getInstance().sendLogs(url, data.getBytes(), localFileString, sourceCategory, null, fields, host);
             }
         }
     }

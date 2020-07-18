@@ -4,7 +4,6 @@ import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.EventSourceEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.LogTypeEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
-import com.sumologic.jenkins.jenkinssumologicplugin.model.ModelFactory;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.QueueModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.SlaveModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory;
@@ -49,17 +48,19 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
         super("Sumo Logic Periodic Data Publisher");
         logSender = LogSender.getInstance();
         logSenderHelper = LogSenderHelper.getInstance();
-        LOGGER.log(Level.FINE, "Sumo Logic status publishing period is {0}ms", recurrencePeriod);
+        LOGGER.log(Level.FINE, "Sumo Logic status publishing period is {0} ms", recurrencePeriod);
     }
 
     @Override
     protected void execute(TaskListener listener) throws IOException, InterruptedException {
         try {
-            sendNodeDetailsForJenkins();
+            if (PluginDescriptorImpl.getInstance().isPeriodicLogEnabled()) {
+                sendNodeDetailsForJenkins();
 
-            sendTasksInQueue();
+                sendTasksInQueue();
 
-            sendRunningJobDetails();
+                sendRunningJobDetails();
+            }
         } catch (Exception exception) {
             LOGGER.log(Level.WARNING, "An error occurred while sending periodic data ", exception);
         }

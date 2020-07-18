@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v2.1.0 
+- Added Support to send text, KeyValueMap as JSON and Fields to X-Sumo-Fields using SumoUpload Step Function.
+- Converting URL to Secret instead of plain text string.
+- Adding MetricDataPrefix as Host Name in case provided in the configuration.
+
 ## v2.0.3
 - Re-release of version 2.0.2
 
