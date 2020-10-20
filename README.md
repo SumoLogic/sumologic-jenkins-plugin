@@ -1,7 +1,7 @@
 [![SumoLogic ICON](/src/main/webapp/SumoLogic_Logo.ico)](http://sumologic.com)
 
 # sumologic-publisher
-[![Build Status][jenkins-builds]][jenkins-status]
+[![Build Status][jenkins-status]][jenkins-builds]
 [![Jenkins Plugin][plugin-version-badge]][plugin]
 [![GitHub release][github-release-badge]][github-release]
 [![Jenkins Plugin Installs][plugin-install-badge]][plugin]
@@ -167,7 +167,7 @@ The sumologic-publisher is licensed under the apache v2.0 license.
 * Make your feature addition or fix bug, write tests and commit.
 * Create a pull request with one of maintainer's as Reviewers.
 
-[jenkins-builds]: https://ci.jenkins.io/job/Plugins/job/sumologic-publisher-plugin/job/master/
+[jenkins-builds]: https://ci.jenkins.io/job/Plugins/job/sumologic-publisher-plugin/job/master
 
 [jenkins-status]: https://ci.jenkins.io/buildStatus/icon?job=Plugins/sumologic-publisher-plugin/master
 
