@@ -168,40 +168,37 @@ public class LogSenderHelper {
 
     public static void sendPipelineStages(List<PipelineStageModel> stages, BuildModel buildModel) {
         PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+        List<String> allStages = new ArrayList<>();
         Gson gson = new Gson();
         Map<String, Object> data = new HashMap<>();
 
         data.put("logType", LogTypeEnum.PIPELINE_STAGES.getValue());
         data.put("name", buildModel.getName());
         data.put("number", buildModel.getNumber());
-
+        // Adding extra data like Build status, Build run time, Build URL, UpStream URL, Job Type.
+        data.put("result", buildModel.getResult());
+        data.put("jobStartTime", buildModel.getJobStartTime());
+        data.put("jobType", buildModel.getJobType());
+        data.put("jobRunDuration", buildModel.getJobRunDuration());
+        data.put("jobBuildURL", buildModel.getJobBuildURL());
+        data.put("upstreamJobURL", buildModel.getUpstreamJobURL());
         if (CollectionUtils.isNotEmpty(stages)) {
-            // send Stages based on the size
-            List<PipelineStageModel> toBeSent = new LinkedList<>();
-            data.put("stages", toBeSent);
-            int size = gson.toJson(data).getBytes().length;
             for (PipelineStageModel pipelineStageModel : stages) {
-                size = size + gson.toJson(pipelineStageModel).getBytes().length;
-                if (size > MAX_DATA_SIZE) {
-                    sendStagesInChunksOfPreDefinedSize(buildModel, gson, pluginDescriptor, toBeSent, data);
-                    toBeSent.clear();
-                }
-                toBeSent.add(pipelineStageModel);
-                size = gson.toJson(data).getBytes().length;
+                data.put("stages", new ArrayList<>(Collections.singletonList(pipelineStageModel)));
+                allStages.add(gson.toJson(data));
             }
-            if (CollectionUtils.isNotEmpty(toBeSent)) {
-                sendStagesInChunksOfPreDefinedSize(buildModel, gson, pluginDescriptor, toBeSent, data);
-                toBeSent.clear();
-            }
+        }
+        List<String> strings = divideDataIntoEquals(allStages);
+        for (String value : strings) {
+            sendStagesInChunksOfPreDefinedSize(buildModel, pluginDescriptor, allStages, value);
         }
     }
 
-    private static void sendStagesInChunksOfPreDefinedSize(BuildModel buildModel, Gson gson,
-                                                           PluginDescriptorImpl pluginDescriptor,
-                                                           List<PipelineStageModel> toBeSent, Map<String, Object> data) {
+    private static void sendStagesInChunksOfPreDefinedSize(BuildModel buildModel, PluginDescriptorImpl pluginDescriptor,
+                                                           List<String> toBeSent, String data) {
         LOG.log(Level.INFO, "Job Name - " + buildModel.getName() + ", Build Number - " + buildModel.getNumber() + ", Stage count is " + toBeSent.size() +
-                ", number of bytes is " + gson.toJson(data).getBytes().length);
-        LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), gson.toJson(data).getBytes()
+                ", number of bytes is " + data.length());
+        LogSender.getInstance().sendLogs(pluginDescriptor.getUrl(), data.getBytes()
                 , null, pluginDescriptor.getSourceCategory());
     }
 
