@@ -1,6 +1,10 @@
 [![SumoLogic ICON](/src/main/webapp/SumoLogic_Logo.ico)](http://sumologic.com)
 
 # sumologic-publisher
+[![Build Status][jenkins-status]][jenkins-builds]
+[![Jenkins Plugin][plugin-version-badge]][plugin]
+[![GitHub release][github-release-badge]][github-release]
+[![Jenkins Plugin Installs][plugin-install-badge]][plugin]
 
 ## Features
 Plugin can be installed and used with global configuration. Below are set of features that can be used individually.
