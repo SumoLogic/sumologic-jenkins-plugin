@@ -1,6 +1,10 @@
 [![SumoLogic ICON](/src/main/webapp/SumoLogic_Logo.ico)](http://sumologic.com)
 
 # sumologic-publisher
+[![Build Status][jenkins-status]][jenkins-builds]
+[![Jenkins Plugin][plugin-version-badge]][plugin]
+[![GitHub release][github-release-badge]][github-release]
+[![Jenkins Plugin Installs][plugin-install-badge]][plugin]
 
 ## Features
 Plugin can be installed and used with global configuration. Below are set of features that can be used individually.
@@ -162,3 +166,17 @@ The sumologic-publisher is licensed under the apache v2.0 license.
 * Fork the project on [Github](https://github.com/jenkinsci/sumologic-publisher-plugin).
 * Make your feature addition or fix bug, write tests and commit.
 * Create a pull request with one of maintainer's as Reviewers.
+
+[jenkins-builds]: https://ci.jenkins.io/job/Plugins/job/sumologic-publisher-plugin/job/master
+
+[jenkins-status]: https://ci.jenkins.io/buildStatus/icon?job=Plugins/sumologic-publisher-plugin/master
+
+[plugin-version-badge]: https://img.shields.io/jenkins/plugin/v/sumologic-publisher.svg
+
+[plugin]: https://plugins.jenkins.io/sumologic-publisher
+
+[github-release-badge]: https://img.shields.io/github/release/jenkinsci/sumologic-publisher-plugin.svg?label=release
+
+[github-release]: https://github.com/jenkinsci/sumologic-publisher-plugin/releases/latest
+
+[plugin-install-badge]: https://img.shields.io/jenkins/plugin/i/sumologic-publisher.svg?color=blue

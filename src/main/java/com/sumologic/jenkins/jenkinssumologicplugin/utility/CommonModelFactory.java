@@ -204,7 +204,7 @@ public class CommonModelFactory {
      * @param buildInfo Jenkins Job Build Information
      * @return the upstream job url
      */
-    private static String getUpStreamUrl(Run buildInfo) {
+    public static String getUpStreamUrl(Run buildInfo) {
         for (CauseAction action : buildInfo.getActions(CauseAction.class)) {
             Cause.UpstreamCause upstreamCause = action.findCause(Cause.UpstreamCause.class);
             if (upstreamCause != null) {
