@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 
 import java.util.List;
 
-public class ScmModel extends BaseModel{
+public class ScmModel extends BaseModel {
 
     private int buildNumber;
     private String jobName;

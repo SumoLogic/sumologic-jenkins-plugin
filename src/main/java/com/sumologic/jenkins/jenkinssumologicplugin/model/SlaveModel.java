@@ -7,7 +7,7 @@ import java.util.Map;
 
 /**
  * Created by deven on 8/6/15.
- *
+ * <p>
  * Updated by Sourabh Jain 05/2019
  */
 public class SlaveModel extends BaseModel {
