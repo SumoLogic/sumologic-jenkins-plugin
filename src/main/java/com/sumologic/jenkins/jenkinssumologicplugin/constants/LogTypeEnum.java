@@ -18,7 +18,7 @@ public enum LogTypeEnum {
     SLAVE_EVENT("Slave_Event"),
     SCM_STATUS("Scm_Status"),
     JENKINS_LOG("Jenkins_Log");
-    private String value;
+    private final String value;
 
     LogTypeEnum(final String value) {
         this.value = value;
