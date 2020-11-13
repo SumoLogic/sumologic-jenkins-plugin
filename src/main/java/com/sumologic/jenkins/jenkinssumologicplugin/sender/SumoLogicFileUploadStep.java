@@ -1,7 +1,6 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
 import com.google.gson.Gson;
-import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Run;
@@ -130,7 +129,6 @@ public class SumoLogicFileUploadStep extends Step {
 
         protected final transient SumoLogicFileUploadStep step;
         private static final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
-        private static final PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
 
         public Execution(SumoLogicFileUploadStep step, StepContext context) {
             super(context);
@@ -141,8 +139,7 @@ public class SumoLogicFileUploadStep extends Step {
             List<String> lines = new ArrayList<>();
             if (StringUtils.isNotEmpty(text)) {
                 lines.add(text);
-                logSenderHelper.sendFilesData(lines, sourceName, pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(),
-                        fields, pluginDescriptor.getMetricDataPrefix());
+                logSenderHelper.sendFilesData(lines, sourceName, fields);
             }
         }
 
@@ -210,8 +207,7 @@ public class SumoLogicFileUploadStep extends Step {
                         if (!file_name.exists()) {
                             listener.getLogger().println("Upload failed due to missing source file " + file_name.toURI().toString());
                         } else {
-                            file_name.act(new FileUploader(pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(),
-                                    pluginDescriptor.getMetricDataPrefix(), sourceName, fields));
+                            file_name.act(new FileUploader(sourceName, fields));
                             listener.getLogger().println("Upload complete");
                         }
                     } else {
@@ -220,8 +216,7 @@ public class SumoLogicFileUploadStep extends Step {
                         for (FilePath child : files) {
                             fileList.add(child.act(new Find_File_On_Slave()));
                         }
-                        directory.act(new FileListUploader(fileList, pluginDescriptor.getUrl(), pluginDescriptor.getSourceCategory(),
-                                pluginDescriptor.getMetricDataPrefix(), sourceName, fields));
+                        directory.act(new FileListUploader(fileList, sourceName, fields));
                         listener.getLogger().println("Upload complete for files " + Arrays.toString(fileList.toArray()));
                     }
                     return "Uploaded to Sumo Logic.";
@@ -234,16 +229,10 @@ public class SumoLogicFileUploadStep extends Step {
     private static class FileUploader extends MasterToSlaveFileCallable<Void> {
         protected static final long serialVersionUID = 1L;
         private static final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
-        private final String url;
-        private final String sourceCategory;
-        private final String hostName;
         private final String sourceName;
         private final HashMap<String, String> fields;
 
-        FileUploader(String url, String sourceCategory, String hostName, String sourceName, HashMap<String, String> fields) {
-            this.url = url;
-            this.sourceCategory = sourceCategory;
-            this.hostName = hostName;
+        FileUploader(String sourceName, HashMap<String, String> fields) {
             this.sourceName = sourceName;
             this.fields = fields;
         }
@@ -270,8 +259,7 @@ public class SumoLogicFileUploadStep extends Step {
                 while ((line = reader.readLine()) != null) {
                     lines.add(line);
                 }
-                logSenderHelper.sendFilesData(lines, this.sourceName + "#" + localFile.toURI().toString(),
-                        url, sourceCategory, fields, hostName);
+                logSenderHelper.sendFilesData(lines, this.sourceName + "#" + localFile.toURI().toString(), fields);
             }
         }
     }
@@ -281,17 +269,11 @@ public class SumoLogicFileUploadStep extends Step {
 
         private final List<File> fileList;
         private static final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
-        private final String url;
-        private final String sourceCategory;
-        private final String hostName;
         private final String sourceName;
         private final HashMap<String, String> fields;
 
-        FileListUploader(List<File> fileList, String url, String sourceCategory, String hostName, String sourceName, HashMap<String, String> fields) {
+        FileListUploader(List<File> fileList, String sourceName, HashMap<String, String> fields) {
             this.fileList = fileList;
-            this.url = url;
-            this.sourceCategory = sourceCategory;
-            this.hostName = hostName;
             this.sourceName = sourceName;
             this.fields = fields;
         }
@@ -313,8 +295,7 @@ public class SumoLogicFileUploadStep extends Step {
                 while ((line = reader.readLine()) != null) {
                     lines.add(line);
                 }
-                logSenderHelper.sendFilesData(lines, this.sourceName + "#" + localFile.toURI().toString(),
-                        url, sourceCategory, fields, hostName);
+                logSenderHelper.sendFilesData(lines, this.sourceName + "#" + localFile.toURI().toString(), fields);
             }
         }
     }

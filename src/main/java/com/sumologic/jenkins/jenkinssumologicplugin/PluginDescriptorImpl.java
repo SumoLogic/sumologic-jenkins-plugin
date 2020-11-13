@@ -20,8 +20,8 @@ import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import jenkins.util.Timer;
 import net.sf.json.JSONObject;
-import org.apache.commons.httpclient.StatusLine;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.StatusLine;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
@@ -165,11 +165,11 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
     public FormValidation doTestURL(@QueryParameter("url") String url) {
         try {
-            StatusLine output = LogSender.getInstance().testHTTPUrl(url);
-            if (200 == output.getStatusCode()) {
+            StatusLine statusLine = LogSender.getInstance().testHTTPUrl(url);
+            if (200 == statusLine.getStatusCode()) {
                 return FormValidation.ok("Success");
             } else {
-                return FormValidation.error("URL not valid with message " + output.getReasonPhrase());
+                return FormValidation.error("URL not valid with message " + statusLine.getReasonPhrase());
             }
         } catch (Exception e) {
             return FormValidation.error("Failure : " + e.getMessage());
