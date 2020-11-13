@@ -11,7 +11,6 @@ import hudson.slaves.OfflineCause;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import java.io.IOException;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory.updateStatus;
 
@@ -26,19 +25,19 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFa
 public class SumoJenkinsComputerListener extends ComputerListener {
 
     @Override
-    public void preLaunch(Computer computer, TaskListener listener) throws IOException, InterruptedException {
+    public void preLaunch(Computer computer, TaskListener listener) {
         updateStatus(computer, EventSourceEnum.COMPUTER_PRE_LAUNCH.getValue());
         listener.getLogger().flush();
     }
 
     @Override
-    public void preOnline(Computer computer, Channel channel, FilePath root, TaskListener listener) throws IOException, InterruptedException {
+    public void preOnline(Computer computer, Channel channel, FilePath root, TaskListener listener) {
         updateStatus(computer, EventSourceEnum.COMPUTER_PRE_ONLINE.getValue());
         listener.getLogger().flush();
     }
 
     @Override
-    public void onOnline(Computer computer, TaskListener listener) throws IOException, InterruptedException {
+    public void onOnline(Computer computer, TaskListener listener) {
         updateStatus(computer, EventSourceEnum.COMPUTER_ONLINE.getValue());
         listener.getLogger().flush();
     }
@@ -59,7 +58,7 @@ public class SumoJenkinsComputerListener extends ComputerListener {
     }
 
     @Override
-    public void onLaunchFailure(Computer computer, TaskListener taskListener) throws IOException, InterruptedException {
+    public void onLaunchFailure(Computer computer, TaskListener taskListener) {
         updateStatus(computer, EventSourceEnum.LAUNCH_FAILURE.getValue());
         taskListener.getLogger().flush();
     }

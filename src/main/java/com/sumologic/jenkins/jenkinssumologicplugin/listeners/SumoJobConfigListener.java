@@ -31,13 +31,12 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFa
  * Created by Sourabh Jain on 5/2019.
  */
 @Extension
-public class SumoJobConfigListener extends SaveableListener implements Serializable {
+public class SumoJobConfigListener extends SaveableListener {
 
     private static final Logger LOG = Logger.getLogger(SumoJobConfigListener.class.getName());
 
     private static final Pattern IGNORED = Pattern.compile(IGNORE_PATTERN, Pattern.CASE_INSENSITIVE);
-    private static final long serialVersionUID = 5460486907730404156L;
-    private WeakHashMap<String, Integer> cached = new WeakHashMap<>(512);
+    private final WeakHashMap<String, Integer> cached = new WeakHashMap<>(512);
 
     @Override
     public void onChange(Saveable saveable, XmlFile file) {
@@ -134,27 +133,4 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
         }
         return new byte[0];
     }
-
-    /*private static List<Map<String, Object>> compare(File oldFile, File newFile) throws Exception {
-        List<Map<String, Object>> diff = new ArrayList<>();
-
-        Diff build = DiffBuilder.compare(newFile).withTest(oldFile)
-                .ignoreComments().ignoreWhitespace().ignoreElementContentWhitespace().build();
-
-        Iterator<Difference> iter = build.getDifferences().iterator();
-        while(iter.hasNext()){
-            Difference next = iter.next();
-            if(ComparisonResult.DIFFERENT.equals(next.getResult())){
-                Map<String, Object> differences = new HashMap<>();
-                Object currentValue = next.getComparison().getControlDetails().getValue();
-                Object oldValue = next.getComparison().getTestDetails().getValue();
-                String nodeName = next.getComparison().getControlDetails().getTarget().getParentNode().getNodeName();
-                differences.put("nodeName", nodeName);
-                differences.put("currentValue", currentValue);
-                differences.put("oldValue", oldValue);
-                diff.add(differences);
-            }
-        }
-        return diff;
-    }*/
 }

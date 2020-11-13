@@ -40,7 +40,7 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFa
 public class SumoPipelineStatusListener extends RunListener<Run> {
 
     private static final Logger LOG = Logger.getLogger(SumoPipelineStatusListener.class.getName());
-    private static LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
+    private static final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
 
     @Override
     public void onStarted(Run run, TaskListener listener) {
@@ -112,7 +112,7 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
         BuildModel buildModel = new BuildModel();
         getLabelAndNodeName(buildInfo, buildModel);
         if (buildModel.getNodeName() != null) {
-            Node node = Jenkins.getInstance().getNode(buildModel.getNodeName());
+            Node node = Jenkins.get().getNode(buildModel.getNodeName());
             if (node != null && node.toComputer() != null) {
                 Computer computer = node.toComputer();
                 updateStatus(computer, EventSourceEnum.PERIODIC_UPDATE.getValue());

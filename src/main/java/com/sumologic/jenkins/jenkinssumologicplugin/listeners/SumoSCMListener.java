@@ -29,7 +29,7 @@ import static hudson.Util.fixEmpty;
 @Extension
 public class SumoSCMListener extends SCMListener {
 
-    private static LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
+    private static final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
 
     private static final Logger LOG = Logger.getLogger(SumoSCMListener.class.getName());
 
@@ -54,7 +54,7 @@ public class SumoSCMListener extends SCMListener {
             scmModel.setChangeLog(changes);
 
             populateGitScmDetails(scm, scmModel, build);
-            populateSubversionDetails(scm, scmModel, build);
+            populateSubversionDetails(scm, scmModel);
 
             PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
             if(pluginDescriptor.isScmLogEnabled()){
@@ -91,7 +91,7 @@ public class SumoSCMListener extends SCMListener {
         }
     }
 
-    private void populateSubversionDetails(SCM scm, ScmModel scmModel, Run<?, ?> build) {
+    private void populateSubversionDetails(SCM scm, ScmModel scmModel) {
         if (scm instanceof SubversionSCM) {
             SubversionSCM subversionSCM = (SubversionSCM) scm;
             scmModel.setScmType(subversionSCM.getType());
