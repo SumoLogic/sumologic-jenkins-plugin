@@ -100,7 +100,7 @@ public class SumoLogicFileUploadStep extends Step {
     }
 
     @Override
-    public StepExecution start(StepContext context) throws Exception {
+    public StepExecution start(StepContext context) {
         return new SumoLogicFileUploadStep.Execution(this, context);
     }
 
@@ -109,7 +109,7 @@ public class SumoLogicFileUploadStep extends Step {
 
         @Override
         public Set<? extends Class<?>> getRequiredContext() {
-            return new HashSet<Class<?>>();
+            return new HashSet<>();
         }
 
         @Override
@@ -249,7 +249,7 @@ public class SumoLogicFileUploadStep extends Step {
         }
 
         @Override
-        public Void invoke(File localFile, VirtualChannel channel) throws IOException, InterruptedException {
+        public Void invoke(File localFile, VirtualChannel channel) throws IOException {
             if (localFile.isFile()) {
                 sendFilesData(localFile);
             } else if (localFile.isDirectory()) {
@@ -297,7 +297,7 @@ public class SumoLogicFileUploadStep extends Step {
         }
 
         @Override
-        public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+        public Void invoke(File f, VirtualChannel channel) throws IOException {
             if (CollectionUtils.isNotEmpty(this.fileList)) {
                 for (File dataFile : fileList) {
                     sendFilesData(dataFile);
@@ -323,7 +323,7 @@ public class SumoLogicFileUploadStep extends Step {
         protected static final long serialVersionUID = 1L;
 
         @Override
-        public File invoke(File localFile, VirtualChannel channel) throws IOException, InterruptedException {
+        public File invoke(File localFile, VirtualChannel channel) {
             return localFile;
         }
     }

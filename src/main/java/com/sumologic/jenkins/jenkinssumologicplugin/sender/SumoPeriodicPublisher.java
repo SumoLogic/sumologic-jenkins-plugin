@@ -14,7 +14,6 @@ import hudson.model.queue.WorkUnit;
 import jenkins.model.Jenkins;
 import org.apache.commons.collections.CollectionUtils;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -36,8 +35,7 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
 
     private static final long recurrencePeriod = TimeUnit.MINUTES.toMillis(3);
     private static final Logger LOGGER = Logger.getLogger(SumoPeriodicPublisher.class.getName());
-    private LogSender logSender;
-    private LogSenderHelper logSenderHelper;
+    private final LogSenderHelper logSenderHelper;
     private static Set<String> slaveNames = new HashSet<>();
 
     private static void setSlaves(Set<String> slaveNames) {
@@ -46,13 +44,12 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
 
     public SumoPeriodicPublisher() {
         super("Sumo Logic Periodic Data Publisher");
-        logSender = LogSender.getInstance();
         logSenderHelper = LogSenderHelper.getInstance();
         LOGGER.log(Level.FINE, "Sumo Logic status publishing period is {0} ms", recurrencePeriod);
     }
 
     @Override
-    protected void execute(TaskListener listener) throws IOException, InterruptedException {
+    protected void execute(TaskListener listener) {
         try {
             if (PluginDescriptorImpl.getInstance().isPeriodicLogEnabled()) {
                 sendNodeDetailsForJenkins();
@@ -73,7 +70,7 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
     }
 
     public void sendTasksInQueue() {
-        final Queue.Item[] items = Jenkins.getInstance().getQueue().getItems();
+        final Queue.Item[] items = Jenkins.get().getQueue().getItems();
         List<String> queueModels = new ArrayList<>();
         for (Queue.Item item : items) {
             QueueModel queueModel = new QueueModel();
@@ -124,7 +121,7 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
 
     public void sendRunningJobDetails() {
         List<String> currentBuildDetails = new ArrayList<>();
-        for (Computer computer : Jenkins.getInstance().getComputers()) {
+        for (Computer computer : Jenkins.get().getComputers()) {
             List<Run> runList = new ArrayList<>();
             for (Executor executor : computer.getExecutors()) {
                 Run run = getRunningJob(executor);
@@ -163,7 +160,7 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
         if (executable == null && workUnit != null) {
             executable = workUnit.getExecutable();
         }
-        if (executable != null && executable instanceof Run) {
+        if (executable instanceof Run) {
             run = (Run) executable;
         }
         return run;

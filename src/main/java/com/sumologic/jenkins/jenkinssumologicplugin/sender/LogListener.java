@@ -10,7 +10,6 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.util.logging.Logger;
 
 /**
  * This class intercepts console output stream for every jenkins build and decorates it with additional functionality.
@@ -25,16 +24,13 @@ import java.util.logging.Logger;
 @Extension(ordinal = -1)
 public class LogListener extends ConsoleLogFilter implements Serializable {
 
-    private final static Logger LOG = Logger.getLogger(LogListener.class.getName());
     private static final long serialVersionUID = -131194971357180671L;
 
     private transient Run run;
-    private SumologicOutputStream.State streamState;
 
 
     public LogListener() {
         super();
-        this.streamState = new SumologicOutputStream.State();
     }
 
     public LogListener(Run build) {
@@ -51,7 +47,7 @@ public class LogListener extends ConsoleLogFilter implements Serializable {
     }
 
     @Override
-    public OutputStream decorateLogger(Run build, OutputStream outputStream) throws IOException, InterruptedException {
+    public OutputStream decorateLogger(Run build, OutputStream outputStream) {
         /*try {
             PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
             if (!pluginDescriptor.isJobConsoleLogEnabled()) {
@@ -71,7 +67,7 @@ public class LogListener extends ConsoleLogFilter implements Serializable {
     }
 
     @Override
-    public OutputStream decorateLogger(@Nonnull Computer computer, OutputStream logger) throws IOException, InterruptedException {
+    public OutputStream decorateLogger(@Nonnull Computer computer, OutputStream logger) {
         return logger;
     }
 }
