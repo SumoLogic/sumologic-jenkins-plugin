@@ -12,13 +12,13 @@ import hudson.model.*;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
+import hudson.util.VersionNumber;
 import jenkins.model.CauseOfInterruption;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,7 +45,7 @@ public class CommonModelFactory {
 
     private static final Logger LOG = Logger.getLogger(CommonModelFactory.class.getName());
 
-    private static LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
+    private static final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
 
     public static void populateGeneric(BuildModel buildModel, Run buildInfo, PluginDescriptorImpl pluginDescriptor, boolean isSpecificJobFlagEnabled) {
 
@@ -53,15 +53,22 @@ public class CommonModelFactory {
         buildModel.setName(buildInfo.getParent().getFullName());
         buildModel.setNumber(buildInfo.getNumber());
         buildModel.setDescription(buildInfo.getParent().getDescription());
-        if (Hudson.getVersion() != null) {
-            buildModel.setHudsonVersion(Hudson.getVersion().toString());
+        if (Objects.nonNull(Hudson.getVersion())) {
+            VersionNumber version = Hudson.getVersion();
+            if (version != null) {
+                buildModel.setHudsonVersion(version.toString());
+            }
         }
         if (buildInfo.getParent() instanceof Describable) {
             String jobType = ((Describable) buildInfo.getParent()).getDescriptor().getDisplayName();
             buildModel.setJobType(jobType);
         }
-        String result = buildInfo.getResult() != null ? buildInfo.getResult().toString() : "Unknown";
-        buildModel.setResult(result);
+        if (Objects.nonNull(buildInfo.getResult())) {
+            Result result = buildInfo.getResult();
+            buildModel.setResult(result != null ? result.toString() : "Unknown");
+        } else {
+            buildModel.setResult("Unknown");
+        }
         buildModel.setUser(getUserId(buildInfo));
 
         //Backward compatibility duration
@@ -192,7 +199,7 @@ public class CommonModelFactory {
      * @return URL for the JOB
      */
     public static String getAbsoluteUrl(Run buildInfo) {
-        String rootUrl = Jenkins.getInstance().getRootUrl();
+        String rootUrl = Jenkins.get().getRootUrl();
         if (rootUrl == null) {
             return buildInfo.getUrl();
         } else {
@@ -222,8 +229,12 @@ public class CommonModelFactory {
         Executor executor = buildInfo.getExecutor();
 
         if (executor != null) {
-            if (executor.getOwner().getNode() != null) {
-                BuildModel.setLabel(executor.getOwner().getNode().getLabelString());
+            Computer owner = executor.getOwner();
+            if (Objects.nonNull(owner.getNode())) {
+                Node node = owner.getNode();
+                if (node != null) {
+                    BuildModel.setLabel(node.getLabelString());
+                }
             }
         }
         if (buildInfo instanceof AbstractBuild) {
@@ -291,7 +302,7 @@ public class CommonModelFactory {
     public static void captureItemAuditEvent(AuditEventTypeEnum auditEventTypeEnum, String itemName, String itemOldValue) {
         try {
             String userName = getUserId();
-            String message = "";
+            String message;
             if (AuditEventTypeEnum.COPIED.equals(auditEventTypeEnum) || AuditEventTypeEnum.LOCATION_CHANGED.equals(auditEventTypeEnum)) {
                 message = String.format(auditEventTypeEnum.getMessage(), userName, itemName, itemOldValue);
             } else {
@@ -319,7 +330,7 @@ public class CommonModelFactory {
 
     public static void captureAuditEvent(final String userId, final AuditEventTypeEnum auditEventTypeEnum,
                                          final String message, Map<String, Object> fileDetails) {
-        String userFullName = null;
+        String userFullName;
         try {
             User user = User.getById(userId, false);
             if (user != null) {
@@ -347,7 +358,7 @@ public class CommonModelFactory {
     }
 
     public static String getRelativeJenkinsHomePath(String configPath) {
-        String jenkinsHome = Jenkins.getInstance().getRootDir().getPath();
+        String jenkinsHome = Jenkins.get().getRootDir().getPath();
         String relativePath = configPath;
         if (configPath.startsWith(jenkinsHome)) {
             relativePath = configPath.substring(jenkinsHome.length() + 1);
@@ -370,7 +381,7 @@ public class CommonModelFactory {
 
     public static List<SlaveModel> getNodeMonitorsDetails() {
         List<SlaveModel> slaveModels = new ArrayList<>();
-        Computer[] computers = Jenkins.getInstance().getComputers();
+        Computer[] computers = Jenkins.get().getComputers();
 
         if (computers == null || computers.length == 0) {
             return slaveModels;
@@ -440,7 +451,7 @@ public class CommonModelFactory {
     }
 
     private static String getAbsoluteUrl(Computer computer) {
-        String rootUrl = Jenkins.getInstance().getRootUrl();
+        String rootUrl = Jenkins.get().getRootUrl();
         if (rootUrl == null) {
             return computer.getUrl();
         } else {
@@ -461,7 +472,7 @@ public class CommonModelFactory {
      * @return URL for the JOB
      */
     public static String getAbsoluteUrl(String relativeURL) {
-        String rootUrl = Jenkins.getInstance().getRootUrl();
+        String rootUrl = Jenkins.get().getRootUrl();
         if (rootUrl == null) {
             return relativeURL;
         } else {
@@ -469,10 +480,8 @@ public class CommonModelFactory {
         }
     }
 
-    public static void sendConsoleLogs(Run run, TaskListener listener) throws IOException {
-        BufferedReader bufferedReader = null;
-        try {
-            bufferedReader = new BufferedReader(run.getLogReader());
+    public static void sendConsoleLogs(Run run, TaskListener listener) {
+        try (BufferedReader bufferedReader = new BufferedReader(run.getLogReader())) {
             AtomicReference<StringBuilder> stringBuilder = new AtomicReference<>(new StringBuilder());
             AtomicInteger count = new AtomicInteger();
             count.addAndGet(1);
@@ -508,10 +517,6 @@ public class CommonModelFactory {
             String errorMessage = CONSOLE_ERROR + e.getMessage();
             LOG.log(Level.WARNING, errorMessage, e);
             listener.error(errorMessage);
-        } finally {
-            if (bufferedReader != null) {
-                bufferedReader.close();
-            }
         }
     }
 }

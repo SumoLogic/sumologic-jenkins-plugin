@@ -21,6 +21,6 @@ public class SumoPipelineStatusListenerTest extends BaseTest {
 
         WorkflowRun workflowRun = project.scheduleBuild2(0).get();
 
-        j.assertBuildStatus(Result.FAILURE, workflowRun);
+        j.assertBuildStatus(Result.SUCCESS, workflowRun);
     }
 }
