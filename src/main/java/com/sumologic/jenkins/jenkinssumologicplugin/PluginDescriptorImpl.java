@@ -82,7 +82,7 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
     }
 
     public static PluginDescriptorImpl getInstance() {
-        return (PluginDescriptorImpl) Jenkins.getInstance().getDescriptor(SumoBuildNotifier.class);
+        return (PluginDescriptorImpl) Jenkins.get().getDescriptor(SumoBuildNotifier.class);
     }
 
     @Override

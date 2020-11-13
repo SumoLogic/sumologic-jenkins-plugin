@@ -16,7 +16,6 @@ import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,7 +33,7 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFa
 public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
 
     private final static Logger LOG = Logger.getLogger(SumoBuildNotifier.class.getName());
-    private static LogSender logSender = LogSender.getInstance();
+    private static final LogSender logSender = LogSender.getInstance();
 
     @DataBoundConstructor
     public SumoBuildNotifier() {
@@ -54,7 +53,7 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
     }
 
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
         try {
             send(build, null);
         } catch (Exception e) {
@@ -66,7 +65,7 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
     }
 
     @Override
-    public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath filePath, @Nonnull Launcher launcher, @Nonnull TaskListener taskListener) throws InterruptedException, IOException {
+    public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath filePath, @Nonnull Launcher launcher, @Nonnull TaskListener taskListener) {
         try {
             send(run, taskListener);
         } catch (Exception e) {
@@ -111,7 +110,6 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
 
     @Override
     public PluginDescriptorImpl getDescriptor() {
-        PluginDescriptorImpl result = (PluginDescriptorImpl) super.getDescriptor();
-        return result;
+        return (PluginDescriptorImpl) super.getDescriptor();
     }
 }
