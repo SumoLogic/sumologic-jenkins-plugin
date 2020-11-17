@@ -1,6 +1,7 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.PluginConfiguration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -31,7 +32,7 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstan
  */
 public class LogSender {
     public final static Logger LOG = Logger.getLogger(LogSender.class.getName());
-    CloseableHttpClient httpclient = null;
+    CloseableHttpClient httpclient;
 
     private LogSender() {
         LOG.log(Level.INFO, "Initializing Log Sender to Send Logs to Sumo Logic.");
@@ -48,11 +49,11 @@ public class LogSender {
         httpclient = clientBuilder.setRetryHandler(new DefaultHttpRequestRetryHandler()).build();
     }
 
-    private String getHost() {
+    private String getHost(PluginConfiguration pluginConfiguration) {
         String hostName = "unknown";
         try {
-            if (PluginDescriptorImpl.getInstance() != null && PluginDescriptorImpl.getInstance().getMetricDataPrefix() != null) {
-                hostName = PluginDescriptorImpl.getInstance().getMetricDataPrefix();
+            if (pluginConfiguration.getMetricDataPrefix() != null) {
+                hostName = pluginConfiguration.getMetricDataPrefix();
             } else {
                 hostName = InetAddress.getLocalHost().getHostName();
             }
@@ -73,11 +74,11 @@ public class LogSender {
     void sendLogs(byte[] msg, String sumoName, String contentType, HashMap<String, String> fields) {
         HttpPost post = null;
         CloseableHttpResponse response = null;
-
+        PluginConfiguration pluginConfiguration = PluginDescriptorImpl.getPluginConfiguration();
         try {
-            post = new HttpPost(PluginDescriptorImpl.getInstance().getUrl());
+            post = new HttpPost(pluginConfiguration.getSumoLogicEndpoint());
 
-            createHeaders(post, sumoName, contentType, fields);
+            createHeaders(post, sumoName, contentType, fields, pluginConfiguration);
 
             byte[] compressedData = compress(msg);
             post.setEntity(new ByteArrayEntity(compressedData));
@@ -130,14 +131,14 @@ public class LogSender {
     }
 
     private void createHeaders(final HttpPost post, final String sumoName, final String contentType,
-                               HashMap<String, String> fields) {
-        post.addHeader("X-Sumo-Host", getHost());
+                               HashMap<String, String> fields, PluginConfiguration pluginConfiguration) {
+        post.addHeader("X-Sumo-Host", getHost(pluginConfiguration));
 
         if (StringUtils.isNotBlank(sumoName)) {
             post.addHeader("X-Sumo-Name", sumoName);
         }
 
-        post.addHeader("X-Sumo-Category", PluginDescriptorImpl.getInstance().getSourceCategory());
+        post.addHeader("X-Sumo-Category", pluginConfiguration.getSourceCategory());
 
         post.addHeader("Content-Encoding", "gzip");
 

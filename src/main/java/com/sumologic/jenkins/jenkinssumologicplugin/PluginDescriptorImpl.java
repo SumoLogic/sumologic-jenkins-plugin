@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.EventSourceEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.LogTypeEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.metrics.SumoMetricDataPublisher;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.PluginConfiguration;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSender;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import com.sumologic.jenkins.jenkinssumologicplugin.utility.SumoLogHandler;
@@ -13,11 +14,13 @@ import hudson.init.Initializer;
 import hudson.init.TermMilestone;
 import hudson.init.Terminator;
 import hudson.model.AbstractProject;
+import hudson.remoting.Channel;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
+import jenkins.security.SlaveToMasterCallable;
 import jenkins.util.Timer;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
@@ -27,6 +30,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
@@ -83,6 +87,20 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
     public static PluginDescriptorImpl getInstance() {
         return (PluginDescriptorImpl) Jenkins.get().getDescriptor(SumoBuildNotifier.class);
+    }
+
+    public static PluginConfiguration getPluginConfiguration() {
+        Channel channel = Channel.current();
+        if (channel != null) {
+            try {
+                return channel.call(new PluginConfigurationFromMaster());
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        PluginDescriptorImpl pluginDescriptor = (PluginDescriptorImpl) Jenkins.get().getDescriptor(SumoBuildNotifier.class);
+        assert pluginDescriptor != null;
+        return new PluginConfiguration(pluginDescriptor);
     }
 
     @Override
@@ -297,5 +315,16 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         }
         Logger.getLogger("").addHandler(SumoLogHandler.getInstance());
         isHandlerStarted = true;
+    }
+
+    private static class PluginConfigurationFromMaster extends SlaveToMasterCallable<PluginConfiguration, IllegalStateException> {
+        protected static final long serialVersionUID = 1L;
+
+        @Override
+        public PluginConfiguration call() throws IllegalStateException {
+            PluginDescriptorImpl pluginDescriptor = (PluginDescriptorImpl) Jenkins.get().getDescriptor(SumoBuildNotifier.class);
+            assert pluginDescriptor != null;
+            return new PluginConfiguration(pluginDescriptor);
+        }
     }
 }
