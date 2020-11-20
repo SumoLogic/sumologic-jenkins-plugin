@@ -27,7 +27,6 @@ public class PipelineStageExtractor extends SumoPipelineJobIdentifier<WorkflowRu
             FlowExecution flowExecution = workflowRun.getExecution();
             if (flowExecution != null) {
                 if (pluginDescriptor.isJobStatusLogEnabled() || isSpecificJobFlagEnabled) {
-                    // BlueOceanPipelineExtractor.extractPipelineStages(workflowRun, buildModel);
                     PipelineStageViewExtractor.extractPipelineStages(workflowRun, buildModel);
                 }
                 if (pluginDescriptor.isJobConsoleLogEnabled() || isSpecificJobFlagEnabled) {

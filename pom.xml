@@ -121,12 +121,6 @@
             <artifactId>subversion</artifactId>
             <version>2.12.0</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/io.jenkins.blueocean/blueocean-pipeline-api-impl -->
-        <dependency>
-            <groupId>io.jenkins.blueocean</groupId>
-            <artifactId>blueocean-pipeline-api-impl</artifactId>
-            <version>1.24.1</version>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/org.jenkins-ci.plugins.pipeline-stage-view/pipeline-rest-api -->
         <dependency>
             <groupId>org.jenkins-ci.plugins.pipeline-stage-view</groupId>
