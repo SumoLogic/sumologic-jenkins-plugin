@@ -46,7 +46,7 @@ public class TestCaseReportTest extends BaseTest {
 
         URL resource = Thread.currentThread().getContextClassLoader().getResource("xml/testReport.xml");
         File junitFile = new File(resource.getFile());
-        testResult.parse(junitFile);
+        testResult.parse(junitFile, null);
         testResult.tally();
         return testResult;
     }

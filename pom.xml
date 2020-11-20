@@ -165,6 +165,12 @@
             <artifactId>token-macro</artifactId>
             <version>2.12</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.jenkins-ci.plugins.workflow/workflow-api -->
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-api</artifactId>
+            <version>2.40</version>
+        </dependency>
 
         <!--Test Dependency-->
         <!-- https://mvnrepository.com/artifact/org.mockito/mockito-core -->

@@ -2,12 +2,10 @@ package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
 import hudson.Extension;
 import hudson.console.ConsoleLogFilter;
-import hudson.model.AbstractBuild;
 import hudson.model.Computer;
 import hudson.model.Run;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
 
@@ -37,13 +35,6 @@ public class LogListener extends ConsoleLogFilter implements Serializable {
         this();
         this.run = build;
         //build.addAction(new SearchAction(build));
-    }
-
-
-    @Override
-    public OutputStream decorateLogger(AbstractBuild abstractBuild, OutputStream outputStream)
-            throws IOException, InterruptedException {
-        return decorateLogger((Run) abstractBuild, outputStream);
     }
 
     @Override
