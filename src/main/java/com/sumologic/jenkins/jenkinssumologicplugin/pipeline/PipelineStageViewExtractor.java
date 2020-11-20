@@ -108,7 +108,7 @@ public class PipelineStageViewExtractor {
                     .append("StepErrorMessage - ").append(error.getMessage());
         }
 
-        stringBuilder.append("StepPauseDuration - ").append(stepExt.getPauseDurationMillis() / 1000f).append(",")
+        stringBuilder.append(",StepPauseDuration - ").append(stepExt.getPauseDurationMillis() / 1000f).append(",")
                 .append("StepId - ").append(stepExt.getId());
 
         String step = stringBuilder.toString();
