@@ -85,7 +85,7 @@ public class PipelineStageViewExtractor {
         ErrorExt error = stageExt.getError();
         if (error != null) {
             String errorMessage;
-            errorMessage = "StageErrsorType - " + error.getType() + "," + "StageErrorMessage - " + error.getMessage() + "";
+            errorMessage = "StageErrorType - " + error.getType() + "," + "StageErrorMessage - " + error.getMessage() + "";
             errorMessage = errorMessage.replace("{", "(");
             errorMessage = errorMessage.replace("}", ")");
             pipelineStageDTO.setError(errorMessage);

@@ -13,7 +13,7 @@ This example of Groovy script file should have `.groovy` extension and be placed
 
  **/
 
-def sumoLogic = Jenkins.getInstance().getDescriptor(SumoBuildNotifier.class)
+def sumoLogic = Jenkins.get().getDescriptor(SumoBuildNotifier.class)
 
 sumoLogic.setQueryPortal('service.eu.sumologic.com')
 sumoLogic.setMetricDataPrefix('jenkinsMetricDataPrefix')
