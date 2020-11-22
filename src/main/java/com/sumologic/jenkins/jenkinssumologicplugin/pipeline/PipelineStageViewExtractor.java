@@ -8,6 +8,7 @@ import hudson.console.AnnotatedLargeText;
 import hudson.model.Result;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.plugins.workflow.actions.BodyInvocationAction;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.LogAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
@@ -31,6 +32,12 @@ public class PipelineStageViewExtractor {
     private static final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
     private static final Logger LOG = Logger.getLogger(PipelineStageViewExtractor.class.getName());
 
+    /**
+     * This method identifies all the stages as mentioned in the pipeline-stage-view plugin.
+     *
+     * @param workflowRun - pipeline run
+     * @param buildModel - the jenkins plugin build model
+     */
     public static void extractPipelineStages(WorkflowRun workflowRun, BuildModel buildModel) {
         List<PipelineStageModel> pipelineStageModels = new ArrayList<>();
         RunExt runExt = RunExt.create(workflowRun);
@@ -131,9 +138,20 @@ public class PipelineStageViewExtractor {
         }
     }
 
+    /**
+     * This method sends the console logs with source name as the stage/step name to identify the console logs
+     * with respect to stage/step of the pipeline.
+     *
+     * @param workflowRun - pipeline run
+     */
     public static void extractConsoleLogs(WorkflowRun workflowRun) {
-        RunExt runExt = RunExt.create(workflowRun);
-        Map<String, String> nodeWithNames = runExt.getStages().stream()
+        FlowExecution execution = workflowRun.getExecution();
+        ExecutionNodeExtractor visitor = new ExecutionNodeExtractor(workflowRun);
+        if (execution != null) {
+            ForkScanner.visitSimpleChunks(execution.getCurrentHeads(), visitor, new LabelledChunkFinder());
+        }
+
+        Map<String, String> nodeWithNames = visitor.getStages().stream()
                 .filter(stageNodeExt -> !stageNodeExt.getStatus().equals(StatusExt.NOT_EXECUTED))
                 .collect(Collectors.toMap(StageNodeExt::getId, StageNodeExt::getName));
 
