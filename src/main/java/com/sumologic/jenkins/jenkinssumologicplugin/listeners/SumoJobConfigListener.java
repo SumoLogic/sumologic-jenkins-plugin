@@ -41,6 +41,10 @@ public class SumoJobConfigListener extends SaveableListener {
     @Override
     public void onChange(Saveable saveable, XmlFile file) {
         try {
+            PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+            if (!pluginDescriptor.isAuditLogEnabled()){
+                return;
+            }
             String configPath = file.getFile().getAbsolutePath();
             if (saveable == null || IGNORED.matcher(configPath).find()
                     || "SYSTEM".equals(Jenkins.getAuthentication().getName())
@@ -54,10 +58,9 @@ public class SumoJobConfigListener extends SaveableListener {
                 return;
             }
             cached.put(checkSum, 0);
-
+            System.out.println("asaskfv");
             String encodeFileToString = Base64.getEncoder().encodeToString(file.asString().getBytes());
 
-            PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
             String oldFileAsString = null;
 
             if (pluginDescriptor.isKeepOldConfigData()) {

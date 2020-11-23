@@ -1,5 +1,6 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.listeners;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.AuditEventTypeEnum;
 import hudson.Extension;
 import jenkins.security.SecurityListener;
@@ -21,12 +22,18 @@ public class SumoJenkinsUserLoginListener extends SecurityListener {
 
     @Override
     protected void authenticated(@Nonnull UserDetails details) {
-        captureUserLoginEvent(details.getUsername(), AuditEventTypeEnum.LOGIN);
+        PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+        if (pluginDescriptor.isAuditLogEnabled()) {
+            captureUserLoginEvent(details.getUsername(), AuditEventTypeEnum.LOGIN);
+        }
     }
 
     @Override
     protected void failedToAuthenticate(@Nonnull String username) {
-        captureUserLoginEvent(username, AuditEventTypeEnum.LOGIN_FAILURE);
+        PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+        if (pluginDescriptor.isAuditLogEnabled()) {
+            captureUserLoginEvent(username, AuditEventTypeEnum.LOGIN_FAILURE);
+        }
     }
 
     @Override
@@ -41,6 +48,9 @@ public class SumoJenkinsUserLoginListener extends SecurityListener {
 
     @Override
     protected void loggedOut(@Nonnull String username) {
-        captureUserLoginEvent(username, AuditEventTypeEnum.LOGOUT);
+        PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+        if (pluginDescriptor.isAuditLogEnabled()) {
+            captureUserLoginEvent(username, AuditEventTypeEnum.LOGOUT);
+        }
     }
 }

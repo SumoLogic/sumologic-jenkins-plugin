@@ -36,6 +36,10 @@ public class SumoSCMListener extends SCMListener {
     @Override
     public void onChangeLogParsed(Run<?, ?> build, SCM scm, TaskListener listener, ChangeLogSet<?> changelog) {
         try {
+            PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+            if (!pluginDescriptor.isScmLogEnabled()){
+                return;
+            }
             ScmModel scmModel = new ScmModel();
 
             scmModel.setLogType(LogTypeEnum.SCM_STATUS.getValue());
@@ -56,7 +60,6 @@ public class SumoSCMListener extends SCMListener {
             populateGitScmDetails(scm, scmModel, build);
             populateSubversionDetails(scm, scmModel);
 
-            PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
             if(pluginDescriptor.isScmLogEnabled()){
                 logSenderHelper.sendJobStatusLogs(scmModel.toString());
             }
