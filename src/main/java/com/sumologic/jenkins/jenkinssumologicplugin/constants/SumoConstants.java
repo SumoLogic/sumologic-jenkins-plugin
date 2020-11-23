@@ -1,5 +1,6 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.constants;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSender;
 import org.apache.commons.lang.time.FastDateFormat;
 
 import java.util.Arrays;
@@ -36,14 +37,13 @@ public class SumoConstants {
 
     public static final String CARBON_CONTENT_TYPE = "application/vnd.sumologic.carbon2";
 
-    public static final String IGNORE_PATTERN = "(queue|nodeMonitors|UpdateCenter|global-build-stats\" +\n" +
-            "            \"|fingerprint|build)(.*?xml)";
+    public static final String IGNORE_PATTERN = "(?:queue|nodeMonitors|UpdateCenter|global-build-stats).xml|/(?:fingerprint|builds|config-history)/.*?xml";
 
     public static final int DIVIDER_FOR_MESSAGES = 100;
 
     public static final String MONITOR_PATTERN_MATCHER = "error.*?>(.*?)</span>";
 
-    public static final List<String> skipLoggerNames = Collections.unmodifiableList(Arrays.asList("hudson.Extension", "hudson.node_monitors",
+    public static final List<String> skipLoggerNames = Collections.unmodifiableList(Arrays.asList(LogSender.class.getName(), "hudson.Extension", "hudson.node_monitors",
             "jenkins.InitReactorRunner", "hudson.util.BootFailure", "shaded.splk.org.apache.http"));
 
     public static final String PIPELINE = "[Pipeline]";
