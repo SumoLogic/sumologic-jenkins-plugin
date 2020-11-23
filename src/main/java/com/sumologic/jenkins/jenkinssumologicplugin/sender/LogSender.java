@@ -3,21 +3,29 @@ package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.PluginConfiguration;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.config.SocketConfig;
+import org.apache.http.conn.ConnectionKeepAliveStrategy;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.*;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.protocol.HttpContext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -37,16 +45,33 @@ public class LogSender {
     private LogSender() {
         LOG.log(Level.INFO, "Initializing Log Sender to Send Logs to Sumo Logic.");
         // Creating the Client Connection Pool Manager by instantiating the PoolingHttpClientConnectionManager class.
-        PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(-1L, TimeUnit.MINUTES);
+        // Increase max total connection to 200
+        connectionManager.setMaxTotal(200);
+        // Increase default max connection per route to 20
+        connectionManager.setDefaultMaxPerRoute(20);
+        //socket timeout for 2 minutes
+        SocketConfig defaultSocketConfig = SocketConfig.custom().setSoTimeout((int) TimeUnit.MINUTES.toMillis(3)).build();
+        connectionManager.setDefaultSocketConfig(defaultSocketConfig);
 
-        //Set the maximum number of connections in the pool
-        connManager.setMaxTotal(100);
+        ConnectionKeepAliveStrategy myStrategy = new DefaultConnectionKeepAliveStrategy() {
+            @Override
+            public long getKeepAliveDuration(HttpResponse httpResponse, HttpContext httpContext) {
+                long keepAliveTime = super.getKeepAliveDuration(httpResponse, httpContext);
+                if (keepAliveTime == -1L) {
+                    keepAliveTime = TimeUnit.MINUTES.toMillis(2);
+                }
+                return keepAliveTime;
+            }
+        };
 
         //Create a ClientBuilder Object by setting the connection manager
-        HttpClientBuilder clientBuilder = HttpClients.custom().setConnectionManager(connManager);
-
-        //Build the CloseableHttpClient object using the build() method.
-        httpclient = clientBuilder.setRetryHandler(new DefaultHttpRequestRetryHandler()).build();
+        httpclient = HttpClients.custom()
+                .setConnectionManager(connectionManager)
+                .setKeepAliveStrategy(myStrategy)
+                .setDefaultRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build())
+                .useSystemProperties()
+                .build();
     }
 
     private String getHost(PluginConfiguration pluginConfiguration) {
