@@ -101,14 +101,14 @@ public class CommonModelFactory {
         // Add Timing Info using TimeInQueueAction class.
         TimeInQueueAction timeInQueueAction = buildInfo.getAction(TimeInQueueAction.class);
         if (timeInQueueAction != null) {
-            Map<String, Float> timing = new HashMap<>();
+            Map<String, Float> timing = new LinkedHashMap<>();
             timing.put("WaitingTime", timeInQueueAction.getWaitingTimeMillis() / 1000f);
             timing.put("BlockedTime", timeInQueueAction.getBlockedTimeMillis() / 1000f);
             timing.put("BuildableTime", timeInQueueAction.getBuildableTimeMillis() / 1000f);
             timing.put("QueueTime", timeInQueueAction.getQueuingTimeMillis() / 1000f);
             timing.put("ExecutingTime", timeInQueueAction.getExecutingTimeMillis() / 1000f);
-            timing.put("BuildingDuration", timeInQueueAction.getBuildingDurationMillis() / 1000f);
-            timing.put("TotalDuration", timeInQueueAction.getTotalDurationMillis() / 1000f);
+            timing.put("BuildingTime", timeInQueueAction.getBuildingDurationMillis() / 1000f);
+            timing.put("TotalTime", timeInQueueAction.getTotalDurationMillis() / 1000f);
             buildModel.setTimingInformation(timing);
         }
     }
