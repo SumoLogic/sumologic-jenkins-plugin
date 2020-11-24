@@ -13,6 +13,7 @@ import hudson.tasks.test.AbstractTestResultAction;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
 import hudson.util.VersionNumber;
+import jenkins.metrics.impl.TimeInQueueAction;
 import jenkins.model.CauseOfInterruption;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
@@ -95,6 +96,20 @@ public class CommonModelFactory {
         Map<String, Object> parameters = getBuildVariables(buildInfo);
         if (!parameters.isEmpty()) {
             buildModel.setJobMetaData(parameters);
+        }
+
+        // Add Timing Info using TimeInQueueAction class.
+        TimeInQueueAction timeInQueueAction = buildInfo.getAction(TimeInQueueAction.class);
+        if (timeInQueueAction != null) {
+            Map<String, Float> timing = new HashMap<>();
+            timing.put("WaitingTime", timeInQueueAction.getWaitingTimeMillis() / 1000f);
+            timing.put("BlockedTime", timeInQueueAction.getBlockedTimeMillis() / 1000f);
+            timing.put("BuildableTime", timeInQueueAction.getBuildableTimeMillis() / 1000f);
+            timing.put("QueueTime", timeInQueueAction.getQueuingTimeMillis() / 1000f);
+            timing.put("ExecutingTime", timeInQueueAction.getExecutingTimeMillis() / 1000f);
+            timing.put("BuildingDuration", timeInQueueAction.getBuildingDurationMillis() / 1000f);
+            timing.put("TotalDuration", timeInQueueAction.getTotalDurationMillis() / 1000f);
+            buildModel.setTimingInformation(timing);
         }
     }
 
