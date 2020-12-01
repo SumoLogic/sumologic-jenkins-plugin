@@ -1,6 +1,7 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
 import com.google.gson.Gson;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Run;
@@ -21,6 +22,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
+@SuppressFBWarnings("DM_DEFAULT_ENCODING")
 public class SumoLogicFileUploadStep extends Step {
 
     private String file;

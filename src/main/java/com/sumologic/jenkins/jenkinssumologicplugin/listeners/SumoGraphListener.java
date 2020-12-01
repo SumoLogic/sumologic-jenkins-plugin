@@ -3,6 +3,7 @@ package com.sumologic.jenkins.jenkinssumologicplugin.listeners;
 import com.google.gson.Gson;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Queue;
 import hudson.model.Result;
@@ -25,6 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Extension
+@SuppressFBWarnings("DM_DEFAULT_ENCODING")
 public class SumoGraphListener implements GraphListener {
 
     public final static Logger LOG = Logger.getLogger(SumoGraphListener.class.getName());

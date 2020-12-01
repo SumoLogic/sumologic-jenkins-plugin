@@ -2,6 +2,7 @@ package com.sumologic.jenkins.jenkinssumologicplugin.listeners;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.AuditEventTypeEnum;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.XmlFile;
 import hudson.model.Item;
@@ -31,6 +32,7 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFa
  * Created by Sourabh Jain on 5/2019.
  */
 @Extension
+@SuppressFBWarnings("DM_DEFAULT_ENCODING")
 public class SumoJobConfigListener extends SaveableListener {
 
     private static final Logger LOG = Logger.getLogger(SumoJobConfigListener.class.getName());

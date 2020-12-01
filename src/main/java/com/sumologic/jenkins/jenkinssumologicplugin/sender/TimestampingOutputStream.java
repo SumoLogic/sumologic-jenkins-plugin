@@ -1,5 +1,6 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.console.LineTransformationOutputStream;
 
 import java.io.IOException;
@@ -15,6 +16,7 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstan
  * <p>
  * Created by lukasz on 3/21/17.
  */
+@SuppressFBWarnings("DM_DEFAULT_ENCODING")
 public class TimestampingOutputStream extends LineTransformationOutputStream {
 
     private final OutputStream wrappedStream;

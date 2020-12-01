@@ -4,11 +4,11 @@ import com.cloudbees.workflow.rest.external.*;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.PipelineStageModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.console.AnnotatedLargeText;
 import hudson.model.Result;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jenkinsci.plugins.workflow.actions.BodyInvocationAction;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.LogAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.DATETIME_FORMATTER;
 import static com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper.sendPipelineStages;
 
+@SuppressFBWarnings({"DM_DEFAULT_ENCODING", "RV_RETURN_VALUE_IGNORED"})
 public class PipelineStageViewExtractor {
     private static final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
     private static final Logger LOG = Logger.getLogger(PipelineStageViewExtractor.class.getName());
@@ -36,7 +37,7 @@ public class PipelineStageViewExtractor {
      * This method identifies all the stages as mentioned in the pipeline-stage-view plugin.
      *
      * @param workflowRun - pipeline run
-     * @param buildModel - the jenkins plugin build model
+     * @param buildModel  - the jenkins plugin build model
      */
     public static void extractPipelineStages(WorkflowRun workflowRun, BuildModel buildModel) {
         List<PipelineStageModel> pipelineStageModels = new ArrayList<>();

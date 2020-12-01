@@ -5,6 +5,7 @@ import com.sumologic.jenkins.jenkinssumologicplugin.integration.SearchAction;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.ModelFactory;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.*;
@@ -30,6 +31,7 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFa
  * <p>
  * Modified by Sourabh Jain 5/2019
  */
+@SuppressFBWarnings("DM_DEFAULT_ENCODING")
 public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
 
     private final static Logger LOG = Logger.getLogger(SumoBuildNotifier.class.getName());

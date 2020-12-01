@@ -7,6 +7,7 @@ import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.PipelineStageModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.TestCaseModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.TestCaseResultModel;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -23,6 +24,7 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstan
  * <p>
  * Created by Sourabh Jain on 5/2019.
  */
+@SuppressFBWarnings("DM_DEFAULT_ENCODING")
 public class LogSenderHelper {
 
     public final static Logger LOG = Logger.getLogger(LogSenderHelper.class.getName());
