@@ -6,8 +6,6 @@ def configurations = [
     [ platform: "windows", jdk: "8", jenkins: minimumLTS, javaLevel: "8" ],
     // Linux 11
     [ platform: "linux", jdk: "11", jenkins: minimumLTS, javaLevel: "8" ],
-    // windows 11
-    [ platform: "windows", jdk: "11", jenkins: minimumLTS, javaLevel: "8" ],
 ]
 
 buildPlugin(configurations: configurations)
