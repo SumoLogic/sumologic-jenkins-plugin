@@ -58,7 +58,6 @@ public class SumoJobConfigListener extends SaveableListener {
                 return;
             }
             cached.put(checkSum, 0);
-            System.out.println("asaskfv");
             String encodeFileToString = Base64.getEncoder().encodeToString(file.asString().getBytes());
 
             String oldFileAsString = null;
