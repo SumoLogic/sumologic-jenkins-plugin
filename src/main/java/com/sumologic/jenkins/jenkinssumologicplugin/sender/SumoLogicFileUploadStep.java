@@ -216,7 +216,7 @@ public class SumoLogicFileUploadStep extends Step {
                         List<File> fileList = new ArrayList<>();
                         listener.getLogger().println("Uploading to Sumo Logic with Include Path Pattern as " + includePathPattern);
                         for (FilePath child : files) {
-                            fileList.add(child.act(new Find_File_On_Slave()));
+                            fileList.add(child.act(new Find_File_On_Agent()));
                         }
                         directory.act(new FileListUploader(fileList, sourceName, fields));
                         listener.getLogger().println("Upload complete for files " + Arrays.toString(fileList.toArray()));
@@ -302,7 +302,7 @@ public class SumoLogicFileUploadStep extends Step {
         }
     }
 
-    private static class Find_File_On_Slave extends MasterToSlaveFileCallable<File> {
+    private static class Find_File_On_Agent extends MasterToSlaveFileCallable<File> {
         protected static final long serialVersionUID = 1L;
 
         @Override

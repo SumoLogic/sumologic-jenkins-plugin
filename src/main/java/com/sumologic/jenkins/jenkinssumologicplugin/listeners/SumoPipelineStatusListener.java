@@ -48,7 +48,7 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
             String userId = getUserId(run);
             String message = String.format(AuditEventTypeEnum.JOB_STARTED.getMessage(), userId, run.getParent().getFullName(), run.getNumber());
             captureAuditEvent(userId, AuditEventTypeEnum.JOB_STARTED, message, null);
-            updateSlaveInfoAfterJobRun(run);
+            updateAgentInfoAfterJobRun(run);
         } catch (Exception e) {
             String errorMessage = GENERATION_ERROR + e.getMessage();
             LOG.log(Level.WARNING, errorMessage, e);
@@ -80,7 +80,7 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
                 }
             }
 
-            updateSlaveInfoAfterJobRun(run);
+            updateAgentInfoAfterJobRun(run);
 
             //Send audit event for job finish
             if (!"ABORTED".equals(buildModel.getResult())) {
@@ -107,8 +107,8 @@ public class SumoPipelineStatusListener extends RunListener<Run> {
         }
     }
 
-    private static void updateSlaveInfoAfterJobRun(Run buildInfo) {
-        //Update slave information as build has been done
+    private static void updateAgentInfoAfterJobRun(Run buildInfo) {
+        //Update agent information as build has been done
         BuildModel buildModel = new BuildModel();
         getLabelAndNodeName(buildInfo, buildModel);
         if (buildModel.getNodeName() != null) {

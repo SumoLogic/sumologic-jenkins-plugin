@@ -255,13 +255,13 @@ public class CommonModelFactory {
         if (buildInfo instanceof AbstractBuild) {
             String builtOnStr = ((AbstractBuild) buildInfo).getBuiltOnStr();
             if ("".equals(builtOnStr)) {
-                BuildModel.setNodeName(MASTER);
+                BuildModel.setNodeName(MAIN);
             } else {
                 BuildModel.setNodeName(builtOnStr);
             }
         } else {
             if (executor != null && StringUtils.isEmpty(executor.getOwner().getName())) {
-                BuildModel.setNodeName(MASTER);
+                BuildModel.setNodeName(MAIN);
             }
         }
     }
@@ -383,31 +383,31 @@ public class CommonModelFactory {
 
     public static void updateStatus(Computer computer, String eventSource) {
         try {
-            SlaveModel slaveModel = new SlaveModel();
-            slaveModel.setLogType(LogTypeEnum.SLAVE_EVENT.getValue());
-            slaveModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
-            slaveModel.setEventSource(eventSource);
-            getComputerStatus(computer, slaveModel);
-            logSenderHelper.sendLogsToPeriodicSourceCategory(slaveModel.toString());
+            AgentModel agentModel = new AgentModel();
+            agentModel.setLogType(LogTypeEnum.AGENT_EVENT.getValue());
+            agentModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
+            agentModel.setEventSource(eventSource);
+            getComputerStatus(computer, agentModel);
+            logSenderHelper.sendLogsToPeriodicSourceCategory(agentModel.toString());
         } catch (Exception exception) {
-            LOG.log(Level.WARNING, "An error occurred while Capturing Slave Event", exception);
+            LOG.log(Level.WARNING, "An error occurred while Capturing Agent Event", exception);
         }
     }
 
-    public static List<SlaveModel> getNodeMonitorsDetails() {
-        List<SlaveModel> slaveModels = new ArrayList<>();
+    public static List<AgentModel> getNodeMonitorsDetails() {
+        List<AgentModel> agentModels = new ArrayList<>();
         Computer[] computers = Jenkins.get().getComputers();
 
         if (computers == null || computers.length == 0) {
-            return slaveModels;
+            return agentModels;
         }
         for (Computer computer : computers) {
             if (computer != null) {
-                SlaveModel slaveModel = new SlaveModel();
-                slaveModel.setLogType(LogTypeEnum.SLAVE_EVENT.getValue());
-                slaveModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
-                slaveModel.setEventSource(EventSourceEnum.PERIODIC_UPDATE.getValue());
-                getComputerStatus(computer, slaveModel);
+                AgentModel agentModel = new AgentModel();
+                agentModel.setLogType(LogTypeEnum.AGENT_EVENT.getValue());
+                agentModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
+                agentModel.setEventSource(EventSourceEnum.PERIODIC_UPDATE.getValue());
+                getComputerStatus(computer, agentModel);
 
                 computer.getMonitorData().forEach((key, value) -> {
                     String monitorName = key.split("\\.")[2];
@@ -429,23 +429,23 @@ public class CommonModelFactory {
                             monitorData = matcher.group(1);
                         }
                     }
-                    slaveModel.getMonitorData().put(monitorName, monitorData);
+                    agentModel.getMonitorData().put(monitorName, monitorData);
                 });
-                slaveModels.add(slaveModel);
+                agentModels.add(agentModel);
             }
         }
-        return slaveModels;
+        return agentModels;
     }
 
-    public static void getComputerStatus(Computer computer, SlaveModel slaveModel) {
-        slaveModel.setNodeName(getNodeName(computer));
-        Node slaveNode = computer.getNode();
-        if (slaveNode != null) {
-            slaveModel.setNodeLabel(slaveNode.getLabelString());
+    public static void getComputerStatus(Computer computer, AgentModel agentModel) {
+        agentModel.setNodeName(getNodeName(computer));
+        Node agentNode = computer.getNode();
+        if (agentNode != null) {
+            agentModel.setNodeLabel(agentNode.getLabelString());
         }
-        slaveModel.setNodeStatus("updated");
-        slaveModel.setNumberOfExecutors(computer.getNumExecutors());
-        slaveModel.setIdle(computer.isIdle());
+        agentModel.setNodeStatus("updated");
+        agentModel.setNumberOfExecutors(computer.getNumExecutors());
+        agentModel.setIdle(computer.isIdle());
         AtomicInteger countFreeExecutors = new AtomicInteger();
         if (computer.getExecutors() != null) {
             computer.getExecutors().forEach(executor -> {
@@ -454,15 +454,15 @@ public class CommonModelFactory {
                 }
             });
         }
-        slaveModel.setNumberOfFreeExecutors(countFreeExecutors.get());
-        slaveModel.setOnline(computer.isOnline());
+        agentModel.setNumberOfFreeExecutors(countFreeExecutors.get());
+        agentModel.setOnline(computer.isOnline());
         if (computer.isOffline()) {
-            slaveModel.setNumberOfExecutors(0);
-            slaveModel.setRemoved(true);
-            slaveModel.setReasonOffline(computer.getOfflineCauseReason());
-            slaveModel.setConnecting(computer.isConnecting());
+            agentModel.setNumberOfExecutors(0);
+            agentModel.setRemoved(true);
+            agentModel.setReasonOffline(computer.getOfflineCauseReason());
+            agentModel.setConnecting(computer.isConnecting());
         }
-        slaveModel.setNodeURL(getAbsoluteUrl(computer));
+        agentModel.setNodeURL(getAbsoluteUrl(computer));
     }
 
     private static String getAbsoluteUrl(Computer computer) {
@@ -476,7 +476,7 @@ public class CommonModelFactory {
 
     private static String getNodeName(Computer computer) {
         if (computer instanceof Jenkins.MasterComputer) {
-            return MASTER;
+            return MAIN;
         } else {
             return computer.getName();
         }

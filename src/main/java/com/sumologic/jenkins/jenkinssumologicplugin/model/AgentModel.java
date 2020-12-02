@@ -10,7 +10,7 @@ import java.util.Map;
  * <p>
  * Updated by Sourabh Jain 05/2019
  */
-public class SlaveModel extends BaseModel {
+public class AgentModel extends BaseModel {
     protected int numberOfExecutors, numberOfFreeExecutors;
 
     private String nodeName;
@@ -25,23 +25,14 @@ public class SlaveModel extends BaseModel {
     private String eventSource;
     private Map<String, Object> monitorData;
 
-    public SlaveModel() {
+    public AgentModel() {
 
     }
 
-    public SlaveModel(int numberOfExecutors, int numberOfFreeExecutors) {
-        //this.numberOfSlaves = numberOfSlaves;
+    public AgentModel(int numberOfExecutors, int numberOfFreeExecutors) {
         this.numberOfExecutors = numberOfExecutors;
         this.numberOfFreeExecutors = numberOfFreeExecutors;
     }
-
-    /*public int getNumberOfSlaves() {
-        return numberOfSlaves;
-    }
-
-    public void setNumberOfSlaves(int numberOfSlaves) {
-        this.numberOfSlaves = numberOfSlaves;
-    }*/
 
     public int getNumberOfExecutors() {
         return numberOfExecutors;

@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.DATETIME_FORMATTER;
+import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.JENKINS_MAIN;
 import static com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper.sendPipelineStages;
 
 @SuppressFBWarnings({"DM_DEFAULT_ENCODING", "RV_RETURN_VALUE_IGNORED"})
@@ -88,7 +89,7 @@ public class PipelineStageViewExtractor {
         pipelineStageDTO.setDuration(stageExt.getDurationMillis() / 1000f);
         pipelineStageDTO.setPauseDuration(stageExt.getPauseDurationMillis() / 1000f);
         pipelineStageDTO.setArguments(stageExt.getParameterDescription());
-        pipelineStageDTO.setExecutionNode(executionNodes.getOrDefault(stageExt.getId(), "(master)"));
+        pipelineStageDTO.setExecutionNode(executionNodes.getOrDefault(stageExt.getId(), JENKINS_MAIN));
 
         ErrorExt error = stageExt.getError();
         if (error != null) {
@@ -108,7 +109,7 @@ public class PipelineStageViewExtractor {
                 .append("StepStatus - ").append(convertToResult(stepExt.getStatus())).append(",")
                 .append("StepDuration - ").append(stepExt.getDurationMillis() / 1000f).append(",")
                 .append("StepArguments - ").append(stepExt.getParameterDescription()).append(",")
-                .append("StepExecutedOn - ").append(executionNodes.getOrDefault(stepExt.getId(), "(master)"));
+                .append("StepExecutedOn - ").append(executionNodes.getOrDefault(stepExt.getId(), JENKINS_MAIN));
 
         ErrorExt error = stepExt.getError();
         if (error != null) {

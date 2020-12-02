@@ -5,7 +5,7 @@ import com.sumologic.jenkins.jenkinssumologicplugin.constants.EventSourceEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.LogTypeEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.QueueModel;
-import com.sumologic.jenkins.jenkinssumologicplugin.model.SlaveModel;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.AgentModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory;
 import hudson.Extension;
 import hudson.model.Queue;
@@ -36,10 +36,10 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
     private static final long recurrencePeriod = TimeUnit.MINUTES.toMillis(3);
     private static final Logger LOGGER = Logger.getLogger(SumoPeriodicPublisher.class.getName());
     private final LogSenderHelper logSenderHelper;
-    private static Set<String> slaveNames = new HashSet<>();
+    private static Set<String> agentNames = new HashSet<>();
 
-    private static void setSlaves(Set<String> slaveNames) {
-        SumoPeriodicPublisher.slaveNames = slaveNames;
+    private static void setAgents(Set<String> agentNames) {
+        SumoPeriodicPublisher.agentNames = agentNames;
     }
 
     public SumoPeriodicPublisher() {
@@ -93,30 +93,30 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
     }
 
     public void sendNodeDetailsForJenkins() {
-        List<SlaveModel> slaveModels = getNodeMonitorsDetails();
-        if (CollectionUtils.isNotEmpty(slaveModels)) {
+        List<AgentModel> agentModels = getNodeMonitorsDetails();
+        if (CollectionUtils.isNotEmpty(agentModels)) {
             List<String> messages = new ArrayList<>();
-            slaveModels.forEach(slaveModel -> messages.add(slaveModel.toString()));
+            agentModels.forEach(agentModel -> messages.add(agentModel.toString()));
             logSenderHelper.sendMultiplePeriodicLogs(messages);
         }
 
-        Set<String> slavesUp = slaveModels.stream().map(SlaveModel::getNodeName).collect(Collectors.toSet());
-        List<String> removedSlaves = new ArrayList<>();
-        slaveNames.forEach(slave -> {
-            if (!slavesUp.contains(slave)) {
-                SlaveModel slaveModel = new SlaveModel();
-                slaveModel.setLogType(LogTypeEnum.SLAVE_EVENT.getValue());
-                slaveModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
-                slaveModel.setEventSource(EventSourceEnum.PERIODIC_UPDATE.getValue());
-                slaveModel.setNodeStatus("removed");
-                slaveModel.setNodeName(slave);
-                removedSlaves.add(slaveModel.toString());
+        Set<String> agentsUp = agentModels.stream().map(AgentModel::getNodeName).collect(Collectors.toSet());
+        List<String> removedAgents = new ArrayList<>();
+        agentNames.forEach(agent -> {
+            if (!agentsUp.contains(agent)) {
+                AgentModel agentModel = new AgentModel();
+                agentModel.setLogType(LogTypeEnum.AGENT_EVENT.getValue());
+                agentModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
+                agentModel.setEventSource(EventSourceEnum.PERIODIC_UPDATE.getValue());
+                agentModel.setNodeStatus("removed");
+                agentModel.setNodeName(agent);
+                removedAgents.add(agentModel.toString());
             }
         });
-        if (CollectionUtils.isNotEmpty(removedSlaves)) {
-            logSenderHelper.sendMultiplePeriodicLogs(removedSlaves);
+        if (CollectionUtils.isNotEmpty(removedAgents)) {
+            logSenderHelper.sendMultiplePeriodicLogs(removedAgents);
         }
-        setSlaves(slavesUp);
+        setAgents(agentsUp);
     }
 
     public void sendRunningJobDetails() {

@@ -93,7 +93,7 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         Channel channel = Channel.current();
         if (channel != null) {
             try {
-                return channel.call(new PluginConfigurationFromMaster());
+                return channel.call(new PluginConfigurationFromMain());
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
@@ -151,7 +151,7 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         Logger.getLogger("").removeHandler(SumoLogHandler.getInstance());
 
         Map<String, Object> shutDown = new HashMap<>();
-        shutDown.put("logType", LogTypeEnum.SLAVE_EVENT.getValue());
+        shutDown.put("logType", LogTypeEnum.AGENT_EVENT.getValue());
         shutDown.put("eventTime", DATETIME_FORMATTER.format(new Date()));
         shutDown.put("eventSource", EventSourceEnum.SHUTDOWN.getValue());
         Gson gson = new Gson();
@@ -317,7 +317,7 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         isHandlerStarted = true;
     }
 
-    private static class PluginConfigurationFromMaster extends SlaveToMasterCallable<PluginConfiguration, IllegalStateException> {
+    private static class PluginConfigurationFromMain extends SlaveToMasterCallable<PluginConfiguration, IllegalStateException> {
         protected static final long serialVersionUID = 1L;
 
         @Override

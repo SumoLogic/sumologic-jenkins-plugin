@@ -22,7 +22,9 @@ public class SumoConstants {
 
     public static final String SUMO_PIPELINE = "[Pipeline] SumoPipelineLogCollection";
     public static final String COMMA_SEPARATOR = ", ";
-    public static final String MASTER = "master";
+    // Changing the value has impact on APP. Also, jenkins calls its computer as master.
+    public static final String MAIN = "master";
+    public static final String JENKINS_MAIN = "(master)";
 
     public static final FastDateFormat DATETIME_FORMATTER
             = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss,SSS ZZZZ");

@@ -42,9 +42,9 @@ public class ModelFactory {
             }
 
         }
-        SlaveModel slaveModel = new SlaveModel(jenkins.getNumExecutors(), numFreeExecutors);
+        AgentModel agentModel = new AgentModel(jenkins.getNumExecutors(), numFreeExecutors);
 
-        return new JenkinsModel(queueModel, slaveModel, jenkins.getDescription());
+        return new JenkinsModel(queueModel, agentModel, jenkins.getDescription());
     }
 
     public static BuildModel createBuildModel(Run build, PluginDescriptorImpl pluginDescriptor) {

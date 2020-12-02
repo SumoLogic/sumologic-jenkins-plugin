@@ -7,12 +7,12 @@ import com.google.gson.Gson;
  */
 public class JenkinsModel {
     protected QueueModel queue;
-    protected SlaveModel slaves;
+    protected AgentModel agents;
     protected String description;
 
-    public JenkinsModel(QueueModel queue, SlaveModel slaves, String description) {
+    public JenkinsModel(QueueModel queue, AgentModel agents, String description) {
         this.queue = queue;
-        this.slaves = slaves;
+        this.agents = agents;
         this.description = description;
     }
 
@@ -24,12 +24,12 @@ public class JenkinsModel {
         this.queue = queue;
     }
 
-    public SlaveModel getSlaves() {
-        return slaves;
+    public AgentModel getAgents() {
+        return agents;
     }
 
-    public void setSlaves(SlaveModel slaves) {
-        this.slaves = slaves;
+    public void setAgents(AgentModel agents) {
+        this.agents = agents;
     }
 
     public String getDescription() {

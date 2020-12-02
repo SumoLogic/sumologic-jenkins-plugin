@@ -23,6 +23,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.JENKINS_MAIN;
+
 /**
  * Sumo Logic plugin for Jenkins model.
  * <p>
@@ -69,7 +71,7 @@ public class ExecutionNodeExtractor extends ChunkVisitor {
                     execNodeName = workspaceAction.getNode();
                     execNodeStartId = nodeStep.getId();
                     if (StringUtils.isEmpty(execNodeName)) {
-                        execNodeName = "(master)";
+                        execNodeName = JENKINS_MAIN;
                     }
                 }
             }
