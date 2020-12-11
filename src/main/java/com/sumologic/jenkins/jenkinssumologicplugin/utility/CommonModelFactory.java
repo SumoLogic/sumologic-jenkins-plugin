@@ -12,13 +12,14 @@ import hudson.model.*;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.TimerTrigger;
+import hudson.util.VersionNumber;
+import jenkins.metrics.impl.TimeInQueueAction;
 import jenkins.model.CauseOfInterruption;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,7 +46,7 @@ public class CommonModelFactory {
 
     private static final Logger LOG = Logger.getLogger(CommonModelFactory.class.getName());
 
-    private static LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
+    private static final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
 
     public static void populateGeneric(BuildModel buildModel, Run buildInfo, PluginDescriptorImpl pluginDescriptor, boolean isSpecificJobFlagEnabled) {
 
@@ -53,15 +54,22 @@ public class CommonModelFactory {
         buildModel.setName(buildInfo.getParent().getFullName());
         buildModel.setNumber(buildInfo.getNumber());
         buildModel.setDescription(buildInfo.getParent().getDescription());
-        if (Hudson.getVersion() != null) {
-            buildModel.setHudsonVersion(Hudson.getVersion().toString());
+        if (Objects.nonNull(Hudson.getVersion())) {
+            VersionNumber version = Hudson.getVersion();
+            if (version != null) {
+                buildModel.setHudsonVersion(version.toString());
+            }
         }
         if (buildInfo.getParent() instanceof Describable) {
             String jobType = ((Describable) buildInfo.getParent()).getDescriptor().getDisplayName();
             buildModel.setJobType(jobType);
         }
-        String result = buildInfo.getResult() != null ? buildInfo.getResult().toString() : "Unknown";
-        buildModel.setResult(result);
+        if (Objects.nonNull(buildInfo.getResult())) {
+            Result result = buildInfo.getResult();
+            buildModel.setResult(result != null ? result.toString() : "Unknown");
+        } else {
+            buildModel.setResult("Unknown");
+        }
         buildModel.setUser(getUserId(buildInfo));
 
         //Backward compatibility duration
@@ -88,6 +96,20 @@ public class CommonModelFactory {
         Map<String, Object> parameters = getBuildVariables(buildInfo);
         if (!parameters.isEmpty()) {
             buildModel.setJobMetaData(parameters);
+        }
+
+        // Add Timing Info using TimeInQueueAction class.
+        TimeInQueueAction timeInQueueAction = buildInfo.getAction(TimeInQueueAction.class);
+        if (timeInQueueAction != null) {
+            Map<String, Float> timing = new LinkedHashMap<>();
+            timing.put("WaitingTime", timeInQueueAction.getWaitingTimeMillis() / 1000f);
+            timing.put("BlockedTime", timeInQueueAction.getBlockedTimeMillis() / 1000f);
+            timing.put("BuildableTime", timeInQueueAction.getBuildableTimeMillis() / 1000f);
+            timing.put("QueueTime", timeInQueueAction.getQueuingTimeMillis() / 1000f);
+            timing.put("ExecutingTime", timeInQueueAction.getExecutingTimeMillis() / 1000f);
+            timing.put("BuildingTime", timeInQueueAction.getBuildingDurationMillis() / 1000f);
+            timing.put("TotalTime", timeInQueueAction.getTotalDurationMillis() / 1000f);
+            buildModel.setTimingInformation(timing);
         }
     }
 
@@ -192,7 +214,7 @@ public class CommonModelFactory {
      * @return URL for the JOB
      */
     public static String getAbsoluteUrl(Run buildInfo) {
-        String rootUrl = Jenkins.getInstance().getRootUrl();
+        String rootUrl = Jenkins.get().getRootUrl();
         if (rootUrl == null) {
             return buildInfo.getUrl();
         } else {
@@ -222,20 +244,24 @@ public class CommonModelFactory {
         Executor executor = buildInfo.getExecutor();
 
         if (executor != null) {
-            if (executor.getOwner().getNode() != null) {
-                BuildModel.setLabel(executor.getOwner().getNode().getLabelString());
+            Computer owner = executor.getOwner();
+            if (Objects.nonNull(owner.getNode())) {
+                Node node = owner.getNode();
+                if (node != null) {
+                    BuildModel.setLabel(node.getLabelString());
+                }
             }
         }
         if (buildInfo instanceof AbstractBuild) {
             String builtOnStr = ((AbstractBuild) buildInfo).getBuiltOnStr();
             if ("".equals(builtOnStr)) {
-                BuildModel.setNodeName(MASTER);
+                BuildModel.setNodeName(MAIN);
             } else {
                 BuildModel.setNodeName(builtOnStr);
             }
         } else {
             if (executor != null && StringUtils.isEmpty(executor.getOwner().getName())) {
-                BuildModel.setNodeName(MASTER);
+                BuildModel.setNodeName(MAIN);
             }
         }
     }
@@ -291,7 +317,7 @@ public class CommonModelFactory {
     public static void captureItemAuditEvent(AuditEventTypeEnum auditEventTypeEnum, String itemName, String itemOldValue) {
         try {
             String userName = getUserId();
-            String message = "";
+            String message;
             if (AuditEventTypeEnum.COPIED.equals(auditEventTypeEnum) || AuditEventTypeEnum.LOCATION_CHANGED.equals(auditEventTypeEnum)) {
                 message = String.format(auditEventTypeEnum.getMessage(), userName, itemName, itemOldValue);
             } else {
@@ -319,7 +345,7 @@ public class CommonModelFactory {
 
     public static void captureAuditEvent(final String userId, final AuditEventTypeEnum auditEventTypeEnum,
                                          final String message, Map<String, Object> fileDetails) {
-        String userFullName = null;
+        String userFullName;
         try {
             User user = User.getById(userId, false);
             if (user != null) {
@@ -347,7 +373,7 @@ public class CommonModelFactory {
     }
 
     public static String getRelativeJenkinsHomePath(String configPath) {
-        String jenkinsHome = Jenkins.getInstance().getRootDir().getPath();
+        String jenkinsHome = Jenkins.get().getRootDir().getPath();
         String relativePath = configPath;
         if (configPath.startsWith(jenkinsHome)) {
             relativePath = configPath.substring(jenkinsHome.length() + 1);
@@ -357,31 +383,31 @@ public class CommonModelFactory {
 
     public static void updateStatus(Computer computer, String eventSource) {
         try {
-            SlaveModel slaveModel = new SlaveModel();
-            slaveModel.setLogType(LogTypeEnum.SLAVE_EVENT.getValue());
-            slaveModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
-            slaveModel.setEventSource(eventSource);
-            getComputerStatus(computer, slaveModel);
-            logSenderHelper.sendLogsToPeriodicSourceCategory(slaveModel.toString());
+            AgentModel agentModel = new AgentModel();
+            agentModel.setLogType(LogTypeEnum.AGENT_EVENT.getValue());
+            agentModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
+            agentModel.setEventSource(eventSource);
+            getComputerStatus(computer, agentModel);
+            logSenderHelper.sendLogsToPeriodicSourceCategory(agentModel.toString());
         } catch (Exception exception) {
-            LOG.log(Level.WARNING, "An error occurred while Capturing Slave Event", exception);
+            LOG.log(Level.WARNING, "An error occurred while Capturing Agent Event", exception);
         }
     }
 
-    public static List<SlaveModel> getNodeMonitorsDetails() {
-        List<SlaveModel> slaveModels = new ArrayList<>();
-        Computer[] computers = Jenkins.getInstance().getComputers();
+    public static List<AgentModel> getNodeMonitorsDetails() {
+        List<AgentModel> agentModels = new ArrayList<>();
+        Computer[] computers = Jenkins.get().getComputers();
 
         if (computers == null || computers.length == 0) {
-            return slaveModels;
+            return agentModels;
         }
         for (Computer computer : computers) {
             if (computer != null) {
-                SlaveModel slaveModel = new SlaveModel();
-                slaveModel.setLogType(LogTypeEnum.SLAVE_EVENT.getValue());
-                slaveModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
-                slaveModel.setEventSource(EventSourceEnum.PERIODIC_UPDATE.getValue());
-                getComputerStatus(computer, slaveModel);
+                AgentModel agentModel = new AgentModel();
+                agentModel.setLogType(LogTypeEnum.AGENT_EVENT.getValue());
+                agentModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
+                agentModel.setEventSource(EventSourceEnum.PERIODIC_UPDATE.getValue());
+                getComputerStatus(computer, agentModel);
 
                 computer.getMonitorData().forEach((key, value) -> {
                     String monitorName = key.split("\\.")[2];
@@ -403,23 +429,23 @@ public class CommonModelFactory {
                             monitorData = matcher.group(1);
                         }
                     }
-                    slaveModel.getMonitorData().put(monitorName, monitorData);
+                    agentModel.getMonitorData().put(monitorName, monitorData);
                 });
-                slaveModels.add(slaveModel);
+                agentModels.add(agentModel);
             }
         }
-        return slaveModels;
+        return agentModels;
     }
 
-    public static void getComputerStatus(Computer computer, SlaveModel slaveModel) {
-        slaveModel.setNodeName(getNodeName(computer));
-        Node slaveNode = computer.getNode();
-        if (slaveNode != null) {
-            slaveModel.setNodeLabel(slaveNode.getLabelString());
+    public static void getComputerStatus(Computer computer, AgentModel agentModel) {
+        agentModel.setNodeName(getNodeName(computer));
+        Node agentNode = computer.getNode();
+        if (agentNode != null) {
+            agentModel.setNodeLabel(agentNode.getLabelString());
         }
-        slaveModel.setNodeStatus("updated");
-        slaveModel.setNumberOfExecutors(computer.getNumExecutors());
-        slaveModel.setIdle(computer.isIdle());
+        agentModel.setNodeStatus("updated");
+        agentModel.setNumberOfExecutors(computer.getNumExecutors());
+        agentModel.setIdle(computer.isIdle());
         AtomicInteger countFreeExecutors = new AtomicInteger();
         if (computer.getExecutors() != null) {
             computer.getExecutors().forEach(executor -> {
@@ -428,19 +454,19 @@ public class CommonModelFactory {
                 }
             });
         }
-        slaveModel.setNumberOfFreeExecutors(countFreeExecutors.get());
-        slaveModel.setOnline(computer.isOnline());
+        agentModel.setNumberOfFreeExecutors(countFreeExecutors.get());
+        agentModel.setOnline(computer.isOnline());
         if (computer.isOffline()) {
-            slaveModel.setNumberOfExecutors(0);
-            slaveModel.setRemoved(true);
-            slaveModel.setReasonOffline(computer.getOfflineCauseReason());
-            slaveModel.setConnecting(computer.isConnecting());
+            agentModel.setNumberOfExecutors(0);
+            agentModel.setRemoved(true);
+            agentModel.setReasonOffline(computer.getOfflineCauseReason());
+            agentModel.setConnecting(computer.isConnecting());
         }
-        slaveModel.setNodeURL(getAbsoluteUrl(computer));
+        agentModel.setNodeURL(getAbsoluteUrl(computer));
     }
 
     private static String getAbsoluteUrl(Computer computer) {
-        String rootUrl = Jenkins.getInstance().getRootUrl();
+        String rootUrl = Jenkins.get().getRootUrl();
         if (rootUrl == null) {
             return computer.getUrl();
         } else {
@@ -450,7 +476,7 @@ public class CommonModelFactory {
 
     private static String getNodeName(Computer computer) {
         if (computer instanceof Jenkins.MasterComputer) {
-            return MASTER;
+            return MAIN;
         } else {
             return computer.getName();
         }
@@ -461,7 +487,7 @@ public class CommonModelFactory {
      * @return URL for the JOB
      */
     public static String getAbsoluteUrl(String relativeURL) {
-        String rootUrl = Jenkins.getInstance().getRootUrl();
+        String rootUrl = Jenkins.get().getRootUrl();
         if (rootUrl == null) {
             return relativeURL;
         } else {
@@ -469,10 +495,8 @@ public class CommonModelFactory {
         }
     }
 
-    public static void sendConsoleLogs(Run run, TaskListener listener) throws IOException {
-        BufferedReader bufferedReader = null;
-        try {
-            bufferedReader = new BufferedReader(run.getLogReader());
+    public static void sendConsoleLogs(Run run, TaskListener listener) {
+        try (BufferedReader bufferedReader = new BufferedReader(run.getLogReader())) {
             AtomicReference<StringBuilder> stringBuilder = new AtomicReference<>(new StringBuilder());
             AtomicInteger count = new AtomicInteger();
             count.addAndGet(1);
@@ -508,10 +532,6 @@ public class CommonModelFactory {
             String errorMessage = CONSOLE_ERROR + e.getMessage();
             LOG.log(Level.WARNING, errorMessage, e);
             listener.error(errorMessage);
-        } finally {
-            if (bufferedReader != null) {
-                bufferedReader.close();
-            }
         }
     }
 }

@@ -2,13 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
+        <!-- https://mvnrepository.com/artifact/org.jenkins-ci.plugins/plugin -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>3.0</version>
+        <version>4.10</version>
         <relativePath />
     </parent>
     <artifactId>sumologic-publisher</artifactId>
-    <version>2.1.2-SNAPSHOT</version>
+    <version>2.2.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
     <name>Sumologic Publisher</name>
@@ -23,6 +24,7 @@
 
     <properties>
         <java.level>8</java.level>
+        <jenkins.version>2.204.6</jenkins.version>
     </properties>
     <developers>
         <developer>
@@ -65,9 +67,10 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>findbugs-maven-plugin</artifactId>
-                <version>3.0.5</version>
+                <!-- https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-maven-plugin -->
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>4.1.3</version>
                 <configuration>
                     <effort>Max</effort>
                     <threshold>Low</threshold>
@@ -77,7 +80,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.2.0</version>
                 <configuration>
                     <source>8</source>
                 </configuration>
@@ -86,101 +89,97 @@
     </build>
 
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.8.5</version>
+            <version>2.8.6</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.8</version>
-        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.jenkins-ci.main/maven-plugin -->
         <dependency>
             <groupId>org.jenkins-ci.main</groupId>
             <artifactId>maven-plugin</artifactId>
-            <version>3.2</version>
+            <version>3.8</version>
         </dependency>
 
-        <!-- Plugin Dependency -->
+        <!-- Jenkins Plugin Dependency -->
+        <!-- https://mvnrepository.com/artifact/org.jenkins-ci.plugins/metrics -->
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>metrics</artifactId>
-            <version>3.0.0</version>
+            <version>4.0.2.6</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.jenkins-ci.plugins/git -->
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>git</artifactId>
-            <version>3.3.2</version>
+            <version>4.4.4</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.jenkins-ci.plugins/subversion -->
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>subversion</artifactId>
-            <version>2.9</version>
+            <version>2.12.0</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.jenkins-ci.plugins.pipeline-stage-view/pipeline-rest-api -->
         <dependency>
             <groupId>org.jenkins-ci.plugins.pipeline-stage-view</groupId>
             <artifactId>pipeline-rest-api</artifactId>
-            <version>2.8</version>
+            <version>2.17</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.jenkins-ci.plugins/apache-httpcomponents-client-4-api -->
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>junit</artifactId>
-            <version>1.18</version>
+            <artifactId>apache-httpcomponents-client-4-api</artifactId>
+            <version>4.5.10-2.0</version>
         </dependency>
 
-        <!-- Dependency Conflicts -->
+        <!-- Upper Bound Dependencies Issues-->
+        <!-- https://mvnrepository.com/artifact/org.jenkins-ci.plugins/jackson2-api -->
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>mailer</artifactId>
+            <artifactId>jackson2-api</artifactId>
+            <version>2.11.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.jenkins-ci.plugins/trilead-api -->
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>trilead-api</artifactId>
+            <version>1.0.11</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.jenkins-ci.plugins/matrix-project -->
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>matrix-project</artifactId>
             <version>1.18</version>
         </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-scm-step</artifactId>
-            <version>2.6</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-net</groupId>
-            <artifactId>commons-net</artifactId>
-            <version>3.6</version>
-        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.jenkins-ci.plugins/token-macro -->
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>script-security</artifactId>
-            <version>1.26</version>
+            <artifactId>token-macro</artifactId>
+            <version>2.12</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.jenkins-ci.plugins.workflow/workflow-api -->
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-api</artifactId>
+            <version>2.40</version>
         </dependency>
 
         <!--Test Dependency-->
+        <!-- https://mvnrepository.com/artifact/org.mockito/mockito-core -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>2.27.0</version>
+            <version>3.5.13</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.hamcrest</groupId>
-                    <artifactId>hamcrest-core</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.7</version>
+            <version>4.5.13</version>
             <classifier>tests</classifier>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.ui</groupId>
-            <artifactId>jquery-detached</artifactId>
-            <version>1.2.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>structs</artifactId>
-            <version>1.6</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

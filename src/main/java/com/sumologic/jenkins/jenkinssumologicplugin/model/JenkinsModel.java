@@ -2,49 +2,46 @@ package com.sumologic.jenkins.jenkinssumologicplugin.model;
 
 import com.google.gson.Gson;
 
-import java.util.Collection;
-import java.util.List;
-
 /**
  * Created by deven on 8/6/15.
  */
 public class JenkinsModel {
-  protected QueueModel queue;
-  protected SlaveModel slaves;
-  protected String description;
+    protected QueueModel queue;
+    protected AgentModel agents;
+    protected String description;
 
-  public JenkinsModel(QueueModel queue, SlaveModel slaves, String description) {
-    this.queue = queue;
-    this.slaves = slaves;
-    this.description = description;
-  }
+    public JenkinsModel(QueueModel queue, AgentModel agents, String description) {
+        this.queue = queue;
+        this.agents = agents;
+        this.description = description;
+    }
 
-  public QueueModel getQueue() {
-    return queue;
-  }
+    public QueueModel getQueue() {
+        return queue;
+    }
 
-  public void setQueue(QueueModel queue) {
-    this.queue = queue;
-  }
+    public void setQueue(QueueModel queue) {
+        this.queue = queue;
+    }
 
-  public SlaveModel getSlaves() {
-    return slaves;
-  }
+    public AgentModel getAgents() {
+        return agents;
+    }
 
-  public void setSlaves(SlaveModel slaves) {
-    this.slaves = slaves;
-  }
+    public void setAgents(AgentModel agents) {
+        this.agents = agents;
+    }
 
-  public String getDescription() {
-    return description;
-  }
+    public String getDescription() {
+        return description;
+    }
 
-  public String toJson() {
-    return new Gson().toJson(this);
-  }
+    public String toJson() {
+        return new Gson().toJson(this);
+    }
 
-  public void setDescription(String description) {
-    this.description = description;
-  }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 }

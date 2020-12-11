@@ -11,7 +11,6 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Logger;
 
 /**
  * Custom plugin extension step that can be used without a node and build wrapper.
@@ -19,8 +18,6 @@ import java.util.logging.Logger;
  * Created by - Sourabh Jain 5/2019
  */
 public class SumoPipelineLogCollection extends Step {
-
-    private final static Logger LOG = Logger.getLogger(SumoPipelineLogCollection.class.getName());
 
     @DataBoundConstructor
     public SumoPipelineLogCollection() {
@@ -82,6 +79,7 @@ public class SumoPipelineLogCollection extends Step {
     @Extension(optional = true)
     public static class StepDescriptorImpl extends StepDescriptor {
 
+        @Nonnull
         @Override
         public String getDisplayName() {
             return "SumoPipelineLogCollection";

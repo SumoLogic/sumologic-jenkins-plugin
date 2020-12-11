@@ -22,8 +22,8 @@ public enum AuditEventTypeEnum {
     LOCATION_CHANGED("Location_Changed", "%s changed the location of the item %s to %s."),
     CHANGES_IN_CONFIG("Config_Change", "%s changed configuration for the file %s.");
 
-    private String value;
-    private String message;
+    private final String value;
+    private final String message;
 
     AuditEventTypeEnum(final String value, final String message) {
         this.value = value;

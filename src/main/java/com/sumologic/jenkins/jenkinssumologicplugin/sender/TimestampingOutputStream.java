@@ -1,76 +1,64 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
-import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.console.LineTransformationOutputStream;
-import hudson.model.AbstractBuild;
-import org.apache.http.util.ByteArrayBuffer;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintStream;
-import java.nio.charset.Charset;
-import java.text.SimpleDateFormat;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.logging.Logger;
 
 import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.DATETIME_FORMATTER;
 
 /**
  * OutputStream decorator that for each new line in the stream additionally adds a consistent timestamp
  * and forwards the rest of the stream line without modifications.
- *
+ * <p>
  * Created by lukasz on 3/21/17.
  */
+@SuppressFBWarnings("DM_DEFAULT_ENCODING")
 public class TimestampingOutputStream extends LineTransformationOutputStream {
 
-  private static final Logger LOGGER = Logger.getLogger(TimestampingOutputStream.class.getName());
+    private final OutputStream wrappedStream;
 
-  private OutputStream wrappedStream;
-
-  public TimestampingOutputStream(OutputStream stream) {
-    super();
-    wrappedStream = stream;
-  }
-
-  /**
-   * Heuristic used for determining multiline log messages, e.g. stack traces.
-   * For Sumo Logic purposes only lines prefixed with timestamp will be considered a beginning of new log message.
-   *
-   * @param bytes - byte array containing single log line
-   * @param i - log line length (can be less that bytes.length)
-   * @return false if line starts with whitespace, true otherwise
-   */
-  public static boolean shouldPutTimestamp(byte[] bytes, int i) {
-    String prefix = new String(bytes, 0, i < 4 ? i : 4, Charset.forName("UTF-8"));
-
-    if (prefix.length() <= 0 || Character.isWhitespace(prefix.charAt(0))) {
-      return false;
+    public TimestampingOutputStream(OutputStream stream) {
+        super();
+        wrappedStream = stream;
     }
 
-    return true;
-  }
+    /**
+     * Heuristic used for determining multiline log messages, e.g. stack traces.
+     * For Sumo Logic purposes only lines prefixed with timestamp will be considered a beginning of new log message.
+     *
+     * @param bytes - byte array containing single log line
+     * @param i     - log line length (can be less that bytes.length)
+     * @return false if line starts with whitespace, true otherwise
+     */
+    public static boolean shouldPutTimestamp(byte[] bytes, int i) {
+        String prefix = new String(bytes, 0, Math.min(i, 4), StandardCharsets.UTF_8);
 
-  public static byte[] getTimestampAsByteArray(String jobName, String jobNumber) {
-    String timeStampStr = "[" + DATETIME_FORMATTER.format(new Date()) + "] "+" "+jobName+"#"+jobNumber+" ";
-    byte[] timestampBytes = timeStampStr.getBytes();
-
-    return timestampBytes;
-  }
-
-  public static byte[] getTimestampAsByteArray() {
-    String timeStampStr = "[" + DATETIME_FORMATTER.format(new Date()) + "] ";
-    byte[] timestampBytes = timeStampStr.getBytes();
-
-    return timestampBytes;
-  }
-
-  @Override
-  protected void eol(byte[] bytes, int i) throws IOException {
-    if (shouldPutTimestamp(bytes, i)) {
-      byte[] timestampBytes = getTimestampAsByteArray();
-      wrappedStream.write(timestampBytes, 0, timestampBytes.length);
+        return prefix.length() > 0 && !Character.isWhitespace(prefix.charAt(0));
     }
 
-    wrappedStream.write(bytes, 0, i);
-  }
+    public static byte[] getTimestampAsByteArray(String jobName, String jobNumber) {
+        String timeStampStr = "[" + DATETIME_FORMATTER.format(new Date()) + "] " + " " + jobName + "#" + jobNumber + " ";
+
+        return timeStampStr.getBytes();
+    }
+
+    public static byte[] getTimestampAsByteArray() {
+        String timeStampStr = "[" + DATETIME_FORMATTER.format(new Date()) + "] ";
+
+        return timeStampStr.getBytes();
+    }
+
+    @Override
+    protected void eol(byte[] bytes, int i) throws IOException {
+        if (shouldPutTimestamp(bytes, i)) {
+            byte[] timestampBytes = getTimestampAsByteArray();
+            wrappedStream.write(timestampBytes, 0, timestampBytes.length);
+        }
+
+        wrappedStream.write(bytes, 0, i);
+    }
 }

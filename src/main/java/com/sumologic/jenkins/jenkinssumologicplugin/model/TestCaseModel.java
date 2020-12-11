@@ -5,9 +5,9 @@ import java.util.List;
 
 /**
  * Sumo Logic plugin for Jenkins model.
- *
+ * <p>
  * Test case model
- *
+ * <p>
  * Created by Sourabh Jain on 5/2019.
  */
 public class TestCaseModel {
@@ -19,7 +19,7 @@ public class TestCaseModel {
     private List<TestCaseResultModel> testResults = new ArrayList<>();
 
     public List<TestCaseResultModel> getTestResults() {
-        if(this.testResults == null){
+        if (this.testResults == null) {
             testResults = new ArrayList<>();
         }
         return testResults;

@@ -30,6 +30,7 @@ public class BuildModel {
     private String nodeName;
     private TestCaseModel testResult;
     private Map<String, Object> jobMetaData;
+    private Map<String, Float> timingInformation;
 
     public String toJson() {
         Gson gson = new Gson();
@@ -202,5 +203,13 @@ public class BuildModel {
 
     public void setJobMetaData(Map<String, Object> jobMetaData) {
         this.jobMetaData = jobMetaData;
+    }
+
+    public Map<String, Float> getTimingInformation() {
+        return timingInformation;
+    }
+
+    public void setTimingInformation(Map<String, Float> timingInformation) {
+        this.timingInformation = timingInformation;
     }
 }

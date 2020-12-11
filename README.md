@@ -123,7 +123,7 @@ SumoUpload(file:'someFolder')
 SumoUpload(includePathPattern:'**/*', excludePathPattern:'**/*.log,**/*.json')
 ```
 
-- Upload file from master directory when Pipeline Stage is running on a slave. Below will send File.txt file present in Archive Folder of the job pipeline on master system.
+- Upload file from master directory when Pipeline Stage is running on a agent. Below will send File.txt file present in Archive Folder of the job pipeline on master system.
 ```groovy
 node('master')
 {

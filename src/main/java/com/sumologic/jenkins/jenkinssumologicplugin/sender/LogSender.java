@@ -1,17 +1,31 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.StatusLine;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
-import org.apache.commons.httpclient.methods.PostMethod;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.PluginConfiguration;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.config.SocketConfig;
+import org.apache.http.conn.ConnectionKeepAliveStrategy;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.*;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.protocol.HttpContext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -26,20 +40,45 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstan
  */
 public class LogSender {
     public final static Logger LOG = Logger.getLogger(LogSender.class.getName());
-
-    private final HttpClient httpClient;
+    CloseableHttpClient httpclient;
 
     private LogSender() {
-        MultiThreadedHttpConnectionManager connectionManager = new MultiThreadedHttpConnectionManager();
-        httpClient = new HttpClient(connectionManager);
-        httpClient.getParams().setParameter("http.protocol.max-redirects", 10);
+        LOG.log(Level.INFO, "Initializing Log Sender to Send Logs to Sumo Logic.");
+        // Creating the Client Connection Pool Manager by instantiating the PoolingHttpClientConnectionManager class.
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(-1L, TimeUnit.MINUTES);
+        // Increase max total connection to 200
+        connectionManager.setMaxTotal(200);
+        // Increase default max connection per route to 20
+        connectionManager.setDefaultMaxPerRoute(20);
+        //socket timeout for 2 minutes
+        SocketConfig defaultSocketConfig = SocketConfig.custom().setSoTimeout((int) TimeUnit.MINUTES.toMillis(3)).build();
+        connectionManager.setDefaultSocketConfig(defaultSocketConfig);
+
+        ConnectionKeepAliveStrategy myStrategy = new DefaultConnectionKeepAliveStrategy() {
+            @Override
+            public long getKeepAliveDuration(HttpResponse httpResponse, HttpContext httpContext) {
+                long keepAliveTime = super.getKeepAliveDuration(httpResponse, httpContext);
+                if (keepAliveTime == -1L) {
+                    keepAliveTime = TimeUnit.MINUTES.toMillis(2);
+                }
+                return keepAliveTime;
+            }
+        };
+
+        //Create a ClientBuilder Object by setting the connection manager
+        httpclient = HttpClients.custom()
+                .setConnectionManager(connectionManager)
+                .setKeepAliveStrategy(myStrategy)
+                .setDefaultRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build())
+                .useSystemProperties()
+                .build();
     }
 
-    private String getHost() {
+    private String getHost(PluginConfiguration pluginConfiguration) {
         String hostName = "unknown";
         try {
-            if (PluginDescriptorImpl.getInstance() != null && PluginDescriptorImpl.getInstance().getMetricDataPrefix() != null) {
-                hostName = PluginDescriptorImpl.getInstance().getMetricDataPrefix();
+            if (pluginConfiguration.getMetricDataPrefix() != null) {
+                hostName = pluginConfiguration.getMetricDataPrefix();
             } else {
                 hostName = InetAddress.getLocalHost().getHostName();
             }
@@ -57,26 +96,23 @@ public class LogSender {
         return LogSenderHolder.logSender;
     }
 
-    void sendLogs(String url, byte[] msg, String sumoName, String sumoCategory, String contentType, HashMap<String, String> fields, String host) {
-        PostMethod post = null;
-
-        if (StringUtils.isBlank(url)) {
-            LOG.log(Level.WARNING, "Trying to send logs with blank url. Update config first!");
-            return;
-        }
-
+    void sendLogs(byte[] msg, String sumoName, String contentType, HashMap<String, String> fields) {
+        HttpPost post = null;
+        CloseableHttpResponse response = null;
+        PluginConfiguration pluginConfiguration = PluginDescriptorImpl.getPluginConfiguration();
         try {
-            post = new PostMethod(url);
+            post = new HttpPost(pluginConfiguration.getSumoLogicEndpoint());
 
-            createHeaders(post, sumoName, sumoCategory, contentType, fields, host);
+            createHeaders(post, sumoName, contentType, fields, pluginConfiguration);
 
             byte[] compressedData = compress(msg);
+            post.setEntity(new ByteArrayEntity(compressedData));
 
-            post.setRequestEntity(new ByteArrayRequestEntity(compressedData));
-            httpClient.executeMethod(post);
-            int statusCode = post.getStatusCode();
-            if (statusCode != 200) {
-                LOG.log(Level.WARNING, String.format("Received HTTP error from Sumo Service: %d", statusCode));
+            response = httpclient.execute(post);
+
+            StatusLine statusLine = response.getStatusLine();
+            if (statusLine != null && statusLine.getStatusCode() != 200) {
+                LOG.log(Level.WARNING, String.format("Received HTTP error from Sumo Service: %d", statusLine.getStatusCode()));
             }
         } catch (Exception e) {
             LOG.log(Level.WARNING, String.format("Could not send log to Sumo Logic: %s", e.toString()));
@@ -84,15 +120,30 @@ public class LogSender {
             if (post != null) {
                 post.releaseConnection();
             }
+            if (response != null) {
+                try {
+                    response.close();
+                } catch (IOException e) {
+                    LOG.log(Level.WARNING, "Unable to Close Response");
+                }
+            }
         }
     }
 
-    public void sendLogs(String url, byte[] msg, String sumoName, String sumoCategory) {
-        sendLogs(url, msg, sumoName, sumoCategory, null, null, null);
+    public void sendLogs(byte[] msg) {
+        sendLogs(msg, null, null, null);
     }
 
-    public void sendLogs(String url, byte[] msg, String sumoName, String sumoCategory, String contentType) {
-        sendLogs(url, msg, sumoName, sumoCategory, contentType, null, null);
+    public void sendLogs(byte[] msg, String sumoName) {
+        sendLogs(msg, sumoName, null, null);
+    }
+
+    public void sendLogs(byte[] msg, String sumoName, String contentType) {
+        sendLogs(msg, sumoName, contentType, null);
+    }
+
+    public void sendLogs(byte[] msg, String sumoName, HashMap<String, String> fields) {
+        sendLogs(msg, sumoName, null, fields);
     }
 
     private byte[] compress(byte[] content) throws IOException {
@@ -104,35 +155,28 @@ public class LogSender {
         return byteArrayOutputStream.toByteArray();
     }
 
-    private void createHeaders(final PostMethod post, final String sumoName,
-                               final String sumoCategory, final String contentType,
-                               HashMap<String, String> fields, final String host) {
-        if (StringUtils.isNotEmpty(host)) {
-            post.addRequestHeader("X-Sumo-Host", host);
-        } else {
-            post.addRequestHeader("X-Sumo-Host", getHost());
-        }
+    private void createHeaders(final HttpPost post, final String sumoName, final String contentType,
+                               HashMap<String, String> fields, PluginConfiguration pluginConfiguration) {
+        post.addHeader("X-Sumo-Host", getHost(pluginConfiguration));
 
         if (StringUtils.isNotBlank(sumoName)) {
-            post.addRequestHeader("X-Sumo-Name", sumoName);
+            post.addHeader("X-Sumo-Name", sumoName);
         }
 
-        if (StringUtils.isNotBlank(sumoCategory)) {
-            post.addRequestHeader("X-Sumo-Category", sumoCategory);
-        }
+        post.addHeader("X-Sumo-Category", pluginConfiguration.getSourceCategory());
 
-        post.addRequestHeader("Content-Encoding", "gzip");
+        post.addHeader("Content-Encoding", "gzip");
 
         if (isValidContentType(contentType)) {
-            post.addRequestHeader("Content-Type", contentType);
+            post.addHeader("Content-Type", contentType);
         }
 
         if (fields != null && !fields.isEmpty()) {
             String field_string = fields.keySet().stream().map(key -> key + "=" + fields.get(key)).collect(Collectors.joining(","));
-            post.addRequestHeader("X-Sumo-Fields", field_string);
+            post.addHeader("X-Sumo-Fields", field_string);
         }
 
-        post.addRequestHeader("X-Sumo-Client", "sumologic-jenkins-plugin");
+        post.addHeader("X-Sumo-Client", "sumologic-jenkins-plugin");
     }
 
     private boolean isValidContentType(final String contentType) {
@@ -143,23 +187,28 @@ public class LogSender {
     }
 
     public StatusLine testHTTPUrl(String url) throws Exception {
-        PostMethod post = null;
-
-        if (StringUtils.isBlank(url)) {
-            throw new Exception("URL can not be empty.");
-        }
+        HttpPost post = null;
+        CloseableHttpResponse response = null;
 
         try {
-            post = new PostMethod(url);
-            byte[] compressedData = compress("testMessage".getBytes());
+            post = new HttpPost(url);
 
-            post.setRequestEntity(new ByteArrayRequestEntity(compressedData));
-            httpClient.executeMethod(post);
+            post.setEntity(new StringEntity("This is a Test Message from Jenkins Plugin."));
+
+            response = httpclient.execute(post);
+
+            return response.getStatusLine();
         } finally {
             if (post != null) {
                 post.releaseConnection();
             }
+            if (response != null) {
+                try {
+                    response.close();
+                } catch (IOException e) {
+                    LOG.log(Level.WARNING, "Unable to Close Response");
+                }
+            }
         }
-        return post.getStatusLine();
     }
 }

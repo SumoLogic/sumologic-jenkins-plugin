@@ -2,16 +2,11 @@ package com.sumologic.jenkins.jenkinssumologicplugin.pipeline;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
-import com.sumologic.jenkins.jenkinssumologicplugin.model.PipelineStageModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory;
 import hudson.model.Run;
-import org.apache.commons.collections.CollectionUtils;
 
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper.sendPipelineStages;
 
 /**
  * Sumo Logic plugin for Jenkins model.
@@ -31,10 +26,7 @@ public class SumoPipelineJobStatusGenerator {
 
         for (SumoPipelineJobIdentifier extendListener : SumoPipelineJobIdentifier.canApply(buildInfo)) {
             try {
-                List<PipelineStageModel> stages = extendListener.extractPipelineStages(buildInfo, pluginDescriptor);
-                if (CollectionUtils.isNotEmpty(stages) && (pluginDescriptor.isJobStatusLogEnabled() || isSpecificJobFlagEnabled)) {
-                    sendPipelineStages(stages, buildModel);
-                }
+                extendListener.sendPipelineStagesAndConsoleLogs(buildInfo, buildModel, pluginDescriptor, isSpecificJobFlagEnabled);
             } catch (Exception e) {
                 LOG.log(Level.SEVERE, "failed to extract job info", e);
             }

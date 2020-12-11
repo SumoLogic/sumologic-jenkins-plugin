@@ -11,6 +11,7 @@ import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.graph.FlowStartNode;
 import org.jenkinsci.plugins.workflow.graphanalysis.ForkScanner;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -22,21 +23,23 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstants.JENKINS_MAIN;
+
 /**
  * Sumo Logic plugin for Jenkins model.
  * <p>
- * Finds the parallel nodes if present.
+ * Finds the execution nodes.
  * <p>
  * Created by Sourabh Jain on 5/2019.
  */
-public class NodeDetailsExtractor extends ChunkVisitor {
-    private static final Logger LOG = Logger.getLogger(NodeDetailsExtractor.class.getName());
-    private Map<String, String> workspaceNodes = new HashMap<>();
-    private Map<String, Set<String>> parallelNodes = new HashMap<>();
+public class ExecutionNodeExtractor extends ChunkVisitor {
+    private static final Logger LOG = Logger.getLogger(ExecutionNodeExtractor.class.getName());
+    private final Map<String, String> workspaceNodes = new HashMap<>();
+    private final Map<String, Set<String>> parallelNodes = new HashMap<>();
     private String execNodeName = null;
     private String execNodeStartId = null;
 
-    NodeDetailsExtractor(@Nonnull WorkflowRun run) {
+    ExecutionNodeExtractor(@Nonnull WorkflowRun run) {
         super(run);
     }
 
@@ -54,21 +57,21 @@ public class NodeDetailsExtractor extends ChunkVisitor {
             findWhereCurrentNodeIsExecuting(atomNode);
             findParallelNode(scan, atomNode);
         } catch (Exception ex) {
-            LOG.log(Level.WARNING, "failed to extract pluginextension info", ex);
+            LOG.log(Level.WARNING, "failed to extract plugin extension info", ex);
         }
         super.atomNode(before, atomNode, after, scan);
     }
 
     private void findWhereCurrentNodeIsExecuting(FlowNode atomNode) {
         if (execNodeName == null) {
-            StepStartNode nodeStep = getPipelineBlockBoundaryStartNode(atomNode, "node");
+            StepStartNode nodeStep = getPipelineBlockBoundaryStartNode(atomNode);
             if (nodeStep != null) {
-                WorkspaceAction workspaceAction = nodeStep.getAction(WorkspaceAction.class);
+                WorkspaceAction workspaceAction = nodeStep.getPersistentAction(WorkspaceAction.class);
                 if (workspaceAction != null) {
                     execNodeName = workspaceAction.getNode();
                     execNodeStartId = nodeStep.getId();
                     if (StringUtils.isEmpty(execNodeName)) {
-                        execNodeName = "(master)";
+                        execNodeName = JENKINS_MAIN;
                     }
                 }
             }
@@ -85,35 +88,38 @@ public class NodeDetailsExtractor extends ChunkVisitor {
                 && ParallelNodeTypeEnum.PARALLEL_BRANCH_START.toString().equals(String.valueOf(scan.getNextType()))
                 && scan.getCurrentParallelStartNode() != null) {
             FlowNode currentParallelStartNode = scan.getCurrentParallelStartNode();
-            List<String> parentIds = currentParallelStartNode.getParents().stream().map(FlowNode::getId).collect(Collectors.toList());
-            Set<String> childrenInParallel = atomNode.getParents().stream().map(FlowNode::getId).collect(Collectors.toSet());
-            parentIds.forEach(parentId -> {
-                if (parallelNodes.containsKey(parentId)) {
-                    parallelNodes.get(parentId).addAll(childrenInParallel);
-                } else {
-                    parallelNodes.put(parentId, childrenInParallel);
-                }
-            });
+            if (currentParallelStartNode != null) {
+                List<String> parentIds = currentParallelStartNode.getParents().stream().map(FlowNode::getId).collect(Collectors.toList());
+                Set<String> childrenInParallel = atomNode.getParents().stream().map(FlowNode::getId).collect(Collectors.toSet());
+                parentIds.forEach(parentId -> {
+                    if (parallelNodes.containsKey(parentId)) {
+                        parallelNodes.get(parentId).addAll(childrenInParallel);
+                    } else {
+                        parallelNodes.put(parentId, childrenInParallel);
+                    }
+                });
+            }
         }
     }
 
-    private StepStartNode getPipelineBlockBoundaryStartNode(FlowNode atomNode, String functionName) {
+    private StepStartNode getPipelineBlockBoundaryStartNode(FlowNode atomNode) {
         StepStartNode startNode = null;
         if (atomNode instanceof StepEndNode) {
             StepEndNode stepEndNode = (StepEndNode) atomNode;
-            if (stepEndNode.getStartNode().getDescriptor() != null
-                    && stepEndNode.getStartNode().getDescriptor().getFunctionName() != null
-                    && functionName.equals(stepEndNode.getStartNode().getDescriptor().getFunctionName())) {
-                StepStartNode blockStart = stepEndNode.getStartNode();
-                if (blockStart.getParents().size() < 1) {
-                    return null;
-                }
-                FlowNode boundaryNode = blockStart.getParents().get(0);
-                if (boundaryNode instanceof StepStartNode) {
-                    startNode = (StepStartNode) boundaryNode;
-                } else if (boundaryNode instanceof FlowStartNode) {
-                    //special handling for stage node
-                    startNode = blockStart;
+            StepStartNode blockStart = stepEndNode.getStartNode();
+            if (blockStart.getDescriptor() != null) {
+                StepDescriptor descriptor = blockStart.getDescriptor();
+                if (descriptor != null && descriptor.getFunctionName() != null && "node".equals(descriptor.getFunctionName())) {
+                    if (blockStart.getParents().size() < 1) {
+                        return null;
+                    }
+                    FlowNode boundaryNode = blockStart.getParents().get(0);
+                    if (boundaryNode instanceof StepStartNode) {
+                        startNode = (StepStartNode) boundaryNode;
+                    } else if (boundaryNode instanceof FlowStartNode) {
+                        //special handling for stage node
+                        startNode = blockStart;
+                    }
                 }
             }
         }

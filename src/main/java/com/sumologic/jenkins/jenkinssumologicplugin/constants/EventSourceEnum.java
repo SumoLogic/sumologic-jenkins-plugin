@@ -19,7 +19,7 @@ public enum EventSourceEnum {
     LAUNCH_FAILURE("Launch_Failure"),
     SHUTDOWN("Shutdown");
 
-    private String value;
+    private final String value;
 
     EventSourceEnum(final String value) {
         this.value = value;
