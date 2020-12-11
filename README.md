@@ -13,7 +13,7 @@ Plugin can be installed and used with global configuration. Below are set of fea
 
 ## Prerequisite
 
-* `Sumologic-publisher 2.0.0` need [Pipeline Rest API(2.8)](https://plugins.jenkins.io/pipeline-rest-api), [GIT (3.3.2)](https://plugins.jenkins.io/git), [metrics (3.0.0)](https://plugins.jenkins.io/metrics), [subversion (2.9)](https://plugins.jenkins.io/subversion) and [junit (1.8)](https://plugins.jenkins.io/junit). If not present, `Sumologic-publisher` will install these plugins as a part of internal dependency.
+* `Sumologic-publisher` need [Pipeline Rest API](https://plugins.jenkins.io/pipeline-rest-api), [GIT](https://plugins.jenkins.io/git), [metrics](https://plugins.jenkins.io/metrics), [subversion](https://plugins.jenkins.io/subversion) and [junit](https://plugins.jenkins.io/junit). If not present, `Sumologic-publisher` will install these plugins as a part of internal dependency.
 * Hosted Collector and HTTP source on SumoLogic server.
 
 ## Installation
