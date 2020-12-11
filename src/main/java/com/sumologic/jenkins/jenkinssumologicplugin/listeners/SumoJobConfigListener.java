@@ -2,6 +2,7 @@ package com.sumologic.jenkins.jenkinssumologicplugin.listeners;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.AuditEventTypeEnum;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.XmlFile;
 import hudson.model.Item;
@@ -31,17 +32,21 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFa
  * Created by Sourabh Jain on 5/2019.
  */
 @Extension
-public class SumoJobConfigListener extends SaveableListener implements Serializable {
+@SuppressFBWarnings("DM_DEFAULT_ENCODING")
+public class SumoJobConfigListener extends SaveableListener {
 
     private static final Logger LOG = Logger.getLogger(SumoJobConfigListener.class.getName());
 
     private static final Pattern IGNORED = Pattern.compile(IGNORE_PATTERN, Pattern.CASE_INSENSITIVE);
-    private static final long serialVersionUID = 5460486907730404156L;
-    private WeakHashMap<String, Integer> cached = new WeakHashMap<>(512);
+    private final WeakHashMap<String, Integer> cached = new WeakHashMap<>(512);
 
     @Override
     public void onChange(Saveable saveable, XmlFile file) {
         try {
+            PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+            if (!pluginDescriptor.isAuditLogEnabled()){
+                return;
+            }
             String configPath = file.getFile().getAbsolutePath();
             if (saveable == null || IGNORED.matcher(configPath).find()
                     || "SYSTEM".equals(Jenkins.getAuthentication().getName())
@@ -55,10 +60,8 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
                 return;
             }
             cached.put(checkSum, 0);
-
             String encodeFileToString = Base64.getEncoder().encodeToString(file.asString().getBytes());
 
-            PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
             String oldFileAsString = null;
 
             if (pluginDescriptor.isKeepOldConfigData()) {
@@ -134,27 +137,4 @@ public class SumoJobConfigListener extends SaveableListener implements Serializa
         }
         return new byte[0];
     }
-
-    /*private static List<Map<String, Object>> compare(File oldFile, File newFile) throws Exception {
-        List<Map<String, Object>> diff = new ArrayList<>();
-
-        Diff build = DiffBuilder.compare(newFile).withTest(oldFile)
-                .ignoreComments().ignoreWhitespace().ignoreElementContentWhitespace().build();
-
-        Iterator<Difference> iter = build.getDifferences().iterator();
-        while(iter.hasNext()){
-            Difference next = iter.next();
-            if(ComparisonResult.DIFFERENT.equals(next.getResult())){
-                Map<String, Object> differences = new HashMap<>();
-                Object currentValue = next.getComparison().getControlDetails().getValue();
-                Object oldValue = next.getComparison().getTestDetails().getValue();
-                String nodeName = next.getComparison().getControlDetails().getTarget().getParentNode().getNodeName();
-                differences.put("nodeName", nodeName);
-                differences.put("currentValue", currentValue);
-                differences.put("oldValue", oldValue);
-                diff.add(differences);
-            }
-        }
-        return diff;
-    }*/
 }

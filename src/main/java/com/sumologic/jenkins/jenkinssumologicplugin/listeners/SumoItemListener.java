@@ -1,5 +1,6 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.listeners;
 
+import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.AuditEventTypeEnum;
 import hudson.Extension;
 import hudson.model.Item;
@@ -19,27 +20,42 @@ public class SumoItemListener extends ItemListener {
 
     @Override
     public void onCreated(Item item) {
-        captureItemAuditEvent(AuditEventTypeEnum.CREATED, getItemName(item), null);
+        PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+        if (pluginDescriptor.isAuditLogEnabled()){
+            captureItemAuditEvent(AuditEventTypeEnum.CREATED, getItemName(item), null);
+        }
     }
 
     @Override
     public void onCopied(Item src, Item item) {
-        captureItemAuditEvent(AuditEventTypeEnum.UPDATED, getItemName(item), getItemName(src));
+        PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+        if (pluginDescriptor.isAuditLogEnabled()){
+            captureItemAuditEvent(AuditEventTypeEnum.UPDATED, getItemName(item), getItemName(src));
+        }
     }
 
     @Override
     public void onDeleted(Item item) {
-        captureItemAuditEvent(AuditEventTypeEnum.DELETED, getItemName(item), null);
+        PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+        if (pluginDescriptor.isAuditLogEnabled()){
+            captureItemAuditEvent(AuditEventTypeEnum.DELETED, getItemName(item), null);
+        }
     }
 
     @Override
     public void onUpdated(Item item) {
-        captureItemAuditEvent(AuditEventTypeEnum.UPDATED, getItemName(item), null);
+        PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+        if (pluginDescriptor.isAuditLogEnabled()){
+            captureItemAuditEvent(AuditEventTypeEnum.UPDATED, getItemName(item), null);
+        }
     }
 
     @Override
     public void onLocationChanged(Item item, String oldFullName, String newFullName) {
-        captureItemAuditEvent(AuditEventTypeEnum.UPDATED, oldFullName, newFullName);
+        PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
+        if (pluginDescriptor.isAuditLogEnabled()){
+            captureItemAuditEvent(AuditEventTypeEnum.UPDATED, oldFullName, newFullName);
+        }
     }
 
     @Override

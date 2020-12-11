@@ -5,7 +5,7 @@ import com.sumologic.jenkins.jenkinssumologicplugin.constants.EventSourceEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.constants.LogTypeEnum;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.QueueModel;
-import com.sumologic.jenkins.jenkinssumologicplugin.model.SlaveModel;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.AgentModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory;
 import hudson.Extension;
 import hudson.model.Queue;
@@ -14,7 +14,6 @@ import hudson.model.queue.WorkUnit;
 import jenkins.model.Jenkins;
 import org.apache.commons.collections.CollectionUtils;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -36,23 +35,21 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
 
     private static final long recurrencePeriod = TimeUnit.MINUTES.toMillis(3);
     private static final Logger LOGGER = Logger.getLogger(SumoPeriodicPublisher.class.getName());
-    private LogSender logSender;
-    private LogSenderHelper logSenderHelper;
-    private static Set<String> slaveNames = new HashSet<>();
+    private final LogSenderHelper logSenderHelper;
+    private static Set<String> agentNames = new HashSet<>();
 
-    private static void setSlaves(Set<String> slaveNames) {
-        SumoPeriodicPublisher.slaveNames = slaveNames;
+    private static void setAgents(Set<String> agentNames) {
+        SumoPeriodicPublisher.agentNames = agentNames;
     }
 
     public SumoPeriodicPublisher() {
         super("Sumo Logic Periodic Data Publisher");
-        logSender = LogSender.getInstance();
         logSenderHelper = LogSenderHelper.getInstance();
         LOGGER.log(Level.FINE, "Sumo Logic status publishing period is {0} ms", recurrencePeriod);
     }
 
     @Override
-    protected void execute(TaskListener listener) throws IOException, InterruptedException {
+    protected void execute(TaskListener listener) {
         try {
             if (PluginDescriptorImpl.getInstance().isPeriodicLogEnabled()) {
                 sendNodeDetailsForJenkins();
@@ -73,7 +70,7 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
     }
 
     public void sendTasksInQueue() {
-        final Queue.Item[] items = Jenkins.getInstance().getQueue().getItems();
+        final Queue.Item[] items = Jenkins.get().getQueue().getItems();
         List<String> queueModels = new ArrayList<>();
         for (Queue.Item item : items) {
             QueueModel queueModel = new QueueModel();
@@ -96,35 +93,35 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
     }
 
     public void sendNodeDetailsForJenkins() {
-        List<SlaveModel> slaveModels = getNodeMonitorsDetails();
-        if (CollectionUtils.isNotEmpty(slaveModels)) {
+        List<AgentModel> agentModels = getNodeMonitorsDetails();
+        if (CollectionUtils.isNotEmpty(agentModels)) {
             List<String> messages = new ArrayList<>();
-            slaveModels.forEach(slaveModel -> messages.add(slaveModel.toString()));
+            agentModels.forEach(agentModel -> messages.add(agentModel.toString()));
             logSenderHelper.sendMultiplePeriodicLogs(messages);
         }
 
-        Set<String> slavesUp = slaveModels.stream().map(SlaveModel::getNodeName).collect(Collectors.toSet());
-        List<String> removedSlaves = new ArrayList<>();
-        slaveNames.forEach(slave -> {
-            if (!slavesUp.contains(slave)) {
-                SlaveModel slaveModel = new SlaveModel();
-                slaveModel.setLogType(LogTypeEnum.SLAVE_EVENT.getValue());
-                slaveModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
-                slaveModel.setEventSource(EventSourceEnum.PERIODIC_UPDATE.getValue());
-                slaveModel.setNodeStatus("removed");
-                slaveModel.setNodeName(slave);
-                removedSlaves.add(slaveModel.toString());
+        Set<String> agentsUp = agentModels.stream().map(AgentModel::getNodeName).collect(Collectors.toSet());
+        List<String> removedAgents = new ArrayList<>();
+        agentNames.forEach(agent -> {
+            if (!agentsUp.contains(agent)) {
+                AgentModel agentModel = new AgentModel();
+                agentModel.setLogType(LogTypeEnum.AGENT_EVENT.getValue());
+                agentModel.setEventTime(DATETIME_FORMATTER.format(new Date()));
+                agentModel.setEventSource(EventSourceEnum.PERIODIC_UPDATE.getValue());
+                agentModel.setNodeStatus("removed");
+                agentModel.setNodeName(agent);
+                removedAgents.add(agentModel.toString());
             }
         });
-        if (CollectionUtils.isNotEmpty(removedSlaves)) {
-            logSenderHelper.sendMultiplePeriodicLogs(removedSlaves);
+        if (CollectionUtils.isNotEmpty(removedAgents)) {
+            logSenderHelper.sendMultiplePeriodicLogs(removedAgents);
         }
-        setSlaves(slavesUp);
+        setAgents(agentsUp);
     }
 
     public void sendRunningJobDetails() {
         List<String> currentBuildDetails = new ArrayList<>();
-        for (Computer computer : Jenkins.getInstance().getComputers()) {
+        for (Computer computer : Jenkins.get().getComputers()) {
             List<Run> runList = new ArrayList<>();
             for (Executor executor : computer.getExecutors()) {
                 Run run = getRunningJob(executor);
@@ -163,7 +160,7 @@ public class SumoPeriodicPublisher extends AsyncPeriodicWork {
         if (executable == null && workUnit != null) {
             executable = workUnit.getExecutable();
         }
-        if (executable != null && executable instanceof Run) {
+        if (executable instanceof Run) {
             run = (Run) executable;
         }
         return run;

@@ -22,7 +22,9 @@ public class SumoConstants {
 
     public static final String SUMO_PIPELINE = "[Pipeline] SumoPipelineLogCollection";
     public static final String COMMA_SEPARATOR = ", ";
-    public static final String MASTER = "master";
+    // Changing the value has impact on APP. Also, jenkins calls its computer as master.
+    public static final String MAIN = "master";
+    public static final String JENKINS_MAIN = "(master)";
 
     public static final FastDateFormat DATETIME_FORMATTER
             = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss,SSS ZZZZ");
@@ -37,8 +39,7 @@ public class SumoConstants {
 
     public static final String CARBON_CONTENT_TYPE = "application/vnd.sumologic.carbon2";
 
-    public static final String IGNORE_PATTERN = "(queue|nodeMonitors|UpdateCenter|global-build-stats\" +\n" +
-            "            \"|fingerprint|build)(.*?xml)";
+    public static final String IGNORE_PATTERN = "(?:queue|nodeMonitors|UpdateCenter|global-build-stats).xml|/(?:fingerprint|builds|config-history)/.*?xml";
 
     public static final int DIVIDER_FOR_MESSAGES = 100;
 
