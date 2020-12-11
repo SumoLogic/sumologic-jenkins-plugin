@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 
 /**
  * Created by deven on 8/6/15.
- *
+ * <p>
  * Updates by Sourabh Jain 05/2019
  */
 public class QueueModel extends BaseModel {
@@ -23,45 +23,6 @@ public class QueueModel extends BaseModel {
 
     }
 
-    /*public QueueModel(int numItemsInQueue, int numBlockedItemsInQueue, long maxWaitingTime, long averageWaitingTime) {
-        this.numItemsInQueue = numItemsInQueue;
-        this.numBlockedItemsInQueue = numBlockedItemsInQueue;
-        this.maxWaitingTime = maxWaitingTime;
-        this.averageWaitingTime = averageWaitingTime;
-    }
-
-    public int getNumItemsInQueue() {
-        return numItemsInQueue;
-    }
-
-    public void setNumItemsInQueue(int numItemsInQueue) {
-        this.numItemsInQueue = numItemsInQueue;
-    }
-
-    public int getNumBlockedItemsInQueue() {
-        return numBlockedItemsInQueue;
-    }
-
-    public void setNumBlockedItemsInQueue(int numBlockedItemsInQueue) {
-        this.numBlockedItemsInQueue = numBlockedItemsInQueue;
-    }
-
-    public long getMaxWaitingTime() {
-        return maxWaitingTime;
-    }
-
-    public void setMaxWaitingTime(long maxWaitingTime) {
-        this.maxWaitingTime = maxWaitingTime;
-    }
-
-    public long getAverageWaitingTime() {
-        return averageWaitingTime;
-    }
-
-    public void setAverageWaitingTime(long averageWaitingTime) {
-        this.averageWaitingTime = averageWaitingTime;
-    }
-*/
     public void setQueueId(long queueId) {
         this.queueId = queueId;
     }

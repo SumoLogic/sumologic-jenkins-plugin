@@ -38,7 +38,7 @@ public class SumoLogHandler extends Handler {
 
     @Override
     public void publish(LogRecord record) {
-        try{
+        try {
             if (!pluginDescriptor.isHandlerStarted()) {
                 return;
             }
@@ -49,7 +49,7 @@ public class SumoLogHandler extends Handler {
                 String message = logRecordFormatter.formatRecord(record);
                 logSenderHelper.sendLogsToPeriodicSourceCategory(message);
             }
-        } catch (Exception exception){
+        } catch (Exception exception) {
             Logger.getLogger("").removeHandler(SumoLogHandler.getInstance());
         }
     }

@@ -1,7 +1,7 @@
 package com.sumologic.jenkins.jenkinssumologicplugin.pipeline;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
-import com.sumologic.jenkins.jenkinssumologicplugin.model.PipelineStageModel;
+import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Run;
@@ -30,7 +30,7 @@ public abstract class SumoPipelineJobIdentifier<R extends Run> implements Extens
             throw new IllegalStateException(getClass() + " uses the raw type for extending SumoPipelineJobIdentifier");
     }
 
-    public abstract List<PipelineStageModel> extractPipelineStages(R r, PluginDescriptorImpl pluginDescriptor);
+    public abstract void sendPipelineStagesAndConsoleLogs(R r, BuildModel buildModel, PluginDescriptorImpl pluginDescriptor, boolean isSpecificJobFlagEnabled);
 
     /**
      * @return Returns all the registered {@link SumoPipelineJobIdentifier}

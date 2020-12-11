@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## For 2.1.0 or newer versions
+
+Please visit [Releases](https://github.com/jenkinsci/sumologic-publisher-plugin/releases) page.
+
 ## v2.1.0 
 - Added Support to send text, KeyValueMap as JSON and Fields to X-Sumo-Fields using SumoUpload Step Function.
 - Converting URL to Secret instead of plain text string.

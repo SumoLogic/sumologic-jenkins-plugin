@@ -5,12 +5,11 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
 import hudson.model.Result;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.StringContains;
 import org.junit.Test;
 
 import java.util.GregorianCalendar;
-
-import static org.junit.Assert.assertThat;
 
 public class ModelFactoryTest extends BaseTest {
 
@@ -31,6 +30,6 @@ public class ModelFactoryTest extends BaseTest {
         String replace = jsonExpected.replace("?", Hudson.getVersion().toString());
         String json = ModelFactory.createBuildModel(build, (PluginDescriptorImpl) j.getInstance().getDescriptor(SumoBuildNotifier.class)).toJson();
 
-        assertThat(json, new StringContains(replace));
+        MatcherAssert.assertThat(json, new StringContains(replace));
     }
 }

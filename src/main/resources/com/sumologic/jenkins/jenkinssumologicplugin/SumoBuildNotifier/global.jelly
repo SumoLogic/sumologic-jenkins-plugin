@@ -24,7 +24,7 @@
 			<f:textbox name="sumoplugin.queryPortal" Default="service.sumologic.com"/>
 		</f:entry>
 
-		<f:entry title="Metric Data Prefix" field="metricDataPrefix" description="Provide a Metric data Prefix to Identify Metric for Jenkins Master.">
+		<f:entry title="Metric Data Prefix" field="metricDataPrefix" description="Provide a Metric data Prefix to Identify Metric for Jenkins Main.">
 			<f:textbox name="sumoplugin.metricDataPrefix" default="jenkinsMetricDataPrefix"/>
 		</f:entry>
 

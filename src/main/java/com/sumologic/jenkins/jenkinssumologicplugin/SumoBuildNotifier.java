@@ -4,7 +4,8 @@ import com.google.gson.Gson;
 import com.sumologic.jenkins.jenkinssumologicplugin.integration.SearchAction;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.BuildModel;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.ModelFactory;
-import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSender;
+import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.*;
@@ -16,7 +17,6 @@ import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,10 +31,11 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFa
  * <p>
  * Modified by Sourabh Jain 5/2019
  */
+@SuppressFBWarnings("DM_DEFAULT_ENCODING")
 public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
 
     private final static Logger LOG = Logger.getLogger(SumoBuildNotifier.class.getName());
-    private static LogSender logSender = LogSender.getInstance();
+    private static final LogSenderHelper logSenderHelper = LogSenderHelper.getInstance();
 
     @DataBoundConstructor
     public SumoBuildNotifier() {
@@ -54,7 +55,7 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
     }
 
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
         try {
             send(build, null);
         } catch (Exception e) {
@@ -66,7 +67,7 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
     }
 
     @Override
-    public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath filePath, @Nonnull Launcher launcher, @Nonnull TaskListener taskListener) throws InterruptedException, IOException {
+    public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath filePath, @Nonnull Launcher launcher, @Nonnull TaskListener taskListener) {
         try {
             send(run, taskListener);
         } catch (Exception e) {
@@ -88,14 +89,11 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
             BuildModel buildModel = ModelFactory.createBuildModel(build, descriptor);
             String json = gson.toJson(buildModel);
 
-
-            String url = descriptor.getUrl();
-            String category = descriptor.getSourceCategory();
             byte[] bytes = json.getBytes();
             if (StringUtils.isNotEmpty(buildModel.getJobType())) {
                 if (!descriptor.isJobStatusLogEnabled()) {
-                    LOG.info("Uploading build status to sumologic: " + json);
-                    logSender.sendLogs(url, bytes, null, category);
+                    LOG.info("Uploading build status to sumo logic: " + json);
+                    logSenderHelper.sendData(bytes);
                 }
                 if (!descriptor.isJobConsoleLogEnabled()) {
                     build.addAction(new SearchAction(build));
@@ -111,7 +109,6 @@ public class SumoBuildNotifier extends Notifier implements SimpleBuildStep {
 
     @Override
     public PluginDescriptorImpl getDescriptor() {
-        PluginDescriptorImpl result = (PluginDescriptorImpl) super.getDescriptor();
-        return result;
+        return (PluginDescriptorImpl) super.getDescriptor();
     }
 }

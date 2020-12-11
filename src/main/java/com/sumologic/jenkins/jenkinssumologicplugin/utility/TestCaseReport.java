@@ -31,7 +31,7 @@ public class TestCaseReport {
             if (abstractTestResultAction instanceof AggregatedTestResultAction) {
                 testResults.addAll(addTestResults((AggregatedTestResultAction) abstractTestResultAction));
             } else if (abstractTestResultAction instanceof TestResultAction) {
-                testResults.addAll(addTestResult(buildInfo, abstractTestResultAction, abstractTestResultAction.getResult()));
+                testResults.addAll(addTestResult(buildInfo, abstractTestResultAction.getResult()));
             }
         });
 
@@ -42,12 +42,12 @@ public class TestCaseReport {
         List<TestCaseResultModel> testResults = new ArrayList<>();
         List<AggregatedTestResultAction.ChildReport> childReports = testAction.getChildReports();
         for (AggregatedTestResultAction.ChildReport childReport : childReports) {
-            testResults.addAll(addTestResult(childReport.run, testAction, childReport.result));
+            testResults.addAll(addTestResult(childReport.run, childReport.result));
         }
         return testResults;
     }
 
-    private static List<TestCaseResultModel> addTestResult(Run run, AbstractTestResultAction testAction, Object result) {
+    private static List<TestCaseResultModel> addTestResult(Run run, Object result) {
         List<TestCaseResultModel> caseResults = new ArrayList<>();
         if (run == null || result == null) {
             return caseResults;
@@ -72,7 +72,7 @@ public class TestCaseReport {
         testCaseResultModel.setDuration(testCase.getDuration());
         testCaseResultModel.setTestName(testCase.getName());
         testCaseResultModel.setErrorDetails(testCase.getErrorDetails());
-        if(testCase.getErrorStackTrace() != null && testCase.getErrorStackTrace().length() > 1010){
+        if (testCase.getErrorStackTrace() != null && testCase.getErrorStackTrace().length() > 1010) {
             testCaseResultModel.setErrorStackTrace(testCase.getErrorStackTrace().substring(0, 1000));
         } else {
             testCaseResultModel.setErrorStackTrace(testCase.getErrorStackTrace());

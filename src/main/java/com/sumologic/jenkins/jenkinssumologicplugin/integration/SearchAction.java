@@ -37,7 +37,7 @@ public class SearchAction implements Action {
 
     @Override
     public String getUrlName() {
-        long queryFrom = build.getStartTimeInMillis() - (MILLIS_IN_MINUTE * 1);
+        long queryFrom = build.getStartTimeInMillis() - (MILLIS_IN_MINUTE);
         long queryTo;
         if (build.isBuilding()) {
             Calendar cal = Calendar.getInstance();

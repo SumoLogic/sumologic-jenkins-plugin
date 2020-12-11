@@ -5,7 +5,6 @@ import com.codahale.metrics.*;
 import com.sumologic.jenkins.jenkinssumologicplugin.listeners.SumoSCMListener;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -85,18 +84,18 @@ public class SumoMetricReporter extends ScheduledReporter {
         }
     }
 
-    private void reportGauge(String name, Gauge gauge, long timestamp, List<String> messages) throws IOException {
+    private void reportGauge(String name, Gauge gauge, long timestamp, List<String> messages) {
         final String value = format(gauge.getValue());
         if (value != null) {
             messages.add(buildMessage(prefix(name), value, timestamp));
         }
     }
 
-    private void reportCounter(String name, Counter counter, long timestamp, List<String> messages) throws IOException {
+    private void reportCounter(String name, Counter counter, long timestamp, List<String> messages) {
         messages.add(buildMessage(prefix(name, "count"), format(counter.getCount()), timestamp));
     }
 
-    private void reportTimer(String name, Timer timer, long timestamp, List<String> messages) throws IOException {
+    private void reportTimer(String name, Timer timer, long timestamp, List<String> messages) {
         double[] values = prepareDataFromSnapshotForStatistics(timer.getSnapshot());
         for (int i = 0; i < snapshotStatisticsKeys.length; i++) {
             messages.add(buildMessage(prefix(name, snapshotStatisticsKeys[i]), format(convertDuration(values[i])), timestamp));
