@@ -7,6 +7,7 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.model.Queue;
 import hudson.model.Run;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.workflow.actions.LabelAction;
 import org.jenkinsci.plugins.workflow.actions.StageAction;
 import org.jenkinsci.plugins.workflow.actions.ThreadNameAction;
@@ -16,14 +17,17 @@ import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.steps.*;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class SdoEventDeliveryStep extends Step {
 
+    private String eventType;
     private HashMap<String, Object> keyValueMap = new HashMap<>();
     private HashMap<String, String> fields = new HashMap<>();
 
@@ -31,6 +35,7 @@ public class SdoEventDeliveryStep extends Step {
         return keyValueMap;
     }
 
+    @DataBoundSetter
     public void setKeyValueMap(HashMap<String, Object> keyValueMap) {
         this.keyValueMap = keyValueMap;
     }
@@ -39,8 +44,18 @@ public class SdoEventDeliveryStep extends Step {
         return fields;
     }
 
+    @DataBoundSetter
     public void setFields(HashMap<String, String> fields) {
         this.fields = fields;
+    }
+
+    public String getEventType() {
+        return eventType;
+    }
+
+    @DataBoundSetter
+    public void setEventType(String eventType) {
+        this.eventType = eventType;
     }
 
     @DataBoundConstructor
@@ -88,14 +103,21 @@ public class SdoEventDeliveryStep extends Step {
         protected String run() throws Exception {
             final HashMap<String, Object> keyValueMap = this.step.getKeyValueMap();
             final HashMap<String, String> fields = this.step.getFields();
+            final String eventType = this.step.getEventType();
 
             EnvVars envVars = this.getContext().get(EnvVars.class);
             if (envVars != null && !envVars.isEmpty()) {
                 Map<String, Object> data = new HashMap<>();
                 Gson gson = new Gson();
                 envVars.forEach((key, value) -> {
-                    if (key.startsWith("Sumo_")) {
-                        data.put(key.replace("Sumo_", ""), value);
+                    if (key.toLowerCase().equals("sumo_event_type")) {
+                        if (StringUtils.isBlank(eventType)) {
+                            data.put("event_type", value);
+                        } else {
+                            data.put("event_type", eventType);
+                        }
+                    } else if (key.toLowerCase().startsWith("sumo_")) {
+                        data.put(key.replaceFirst("(?i)" + Pattern.quote("sumo_"), ""), value);
                     }
                 });
                 if (!keyValueMap.isEmpty()) {
@@ -112,7 +134,7 @@ public class SdoEventDeliveryStep extends Step {
                     data.put("jobBuildURL", CommonModelFactory.getAbsoluteUrl(run));
                     data.put("upstreamJobURL", CommonModelFactory.getUpStreamUrl(run));
                 }
-                LogSenderHelper.getInstance().sendDataWithFields(gson.toJson(data).getBytes(), fields);
+                logSenderHelper.sendDataWithFields(gson.toJson(data).getBytes(), fields);
             }
             return null;
         }
