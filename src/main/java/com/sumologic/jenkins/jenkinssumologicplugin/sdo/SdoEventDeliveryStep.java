@@ -3,6 +3,7 @@ package com.sumologic.jenkins.jenkinssumologicplugin.sdo;
 import com.google.gson.Gson;
 import com.sumologic.jenkins.jenkinssumologicplugin.sender.LogSenderHelper;
 import com.sumologic.jenkins.jenkinssumologicplugin.utility.CommonModelFactory;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.model.Queue;
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
 
+@SuppressFBWarnings("DM_DEFAULT_ENCODING")
 public class SdoEventDeliveryStep extends Step {
 
     private String eventType;
@@ -126,13 +128,15 @@ public class SdoEventDeliveryStep extends Step {
                 FlowNode parentStage = getParentStage();
                 if (parentStage != null) {
                     Run<?, ?> run = runFor(parentStage.getExecution());
-                    data.put("name", run.getParent().getFullName());
-                    data.put("number", run.getNumber());
-                    data.put("stageId", parentStage.getId());
-                    data.put("stageName", parentStage.getDisplayName());
-                    data.put("stageStartTime", getStartTime(parentStage));
-                    data.put("jobBuildURL", CommonModelFactory.getAbsoluteUrl(run));
-                    data.put("upstreamJobURL", CommonModelFactory.getUpStreamUrl(run));
+                    if (run != null){
+                        data.put("name", run.getParent().getFullName());
+                        data.put("number", run.getNumber());
+                        data.put("stageId", parentStage.getId());
+                        data.put("stageName", parentStage.getDisplayName());
+                        data.put("stageStartTime", getStartTime(parentStage));
+                        data.put("jobBuildURL", CommonModelFactory.getAbsoluteUrl(run));
+                        data.put("upstreamJobURL", CommonModelFactory.getUpStreamUrl(run));
+                    }
                 }
                 logSenderHelper.sendDataWithFields(gson.toJson(data).getBytes(), fields);
             }
