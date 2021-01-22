@@ -45,6 +45,10 @@ public class LogSenderHelper {
         LogSender.getInstance().sendLogs(bytes);
     }
 
+    public void sendDataWithFields(byte[] bytes, HashMap<String, String> fields){
+        LogSender.getInstance().sendLogs(bytes, null, fields);
+    }
+
     public void sendLogsToPeriodicSourceCategory(String data) {
 
         PluginDescriptorImpl pluginDescriptor = PluginDescriptorImpl.getInstance();
