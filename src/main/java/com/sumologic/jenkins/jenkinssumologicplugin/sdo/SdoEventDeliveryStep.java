@@ -128,7 +128,7 @@ public class SdoEventDeliveryStep extends Step {
                 FlowNode parentStage = getParentStage();
                 if (parentStage != null) {
                     Run<?, ?> run = runFor(parentStage.getExecution());
-                    if (run != null){
+                    if (run != null) {
                         data.put("name", run.getParent().getFullName());
                         data.put("number", run.getNumber());
                         data.put("stageId", parentStage.getId());
@@ -187,7 +187,6 @@ public class SdoEventDeliveryStep extends Step {
             }
             return 0;
         }
-
 
         private static @CheckForNull
         Run<?, ?> runFor(FlowExecution exec) {
