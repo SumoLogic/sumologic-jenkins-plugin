@@ -99,6 +99,13 @@ Download the [SumoLogicPublisherConfiguration.groovy](https://github.com/jenkins
 
 	![uploadPlugin.png](/src/main/webapp/uploadPlugin.png)
 
+- ### Debug locally
+	After success building the plugin through `mvn clean install` run :
+$ export MAVEN_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000,suspend=n"
+$ mvn hpi:run
+
+refer : https://wiki.jenkins-ci.org/display/JENKINS/Plugin+tutorial#Plugintutorial-DebuggingaPlugin
+
 #### SumoUpload
 The Function can be used in Jenkins Pipelines to send files data to Sumo Logic. Function allow below properties:-
 1. file - Provide a file path or a directory path. If the value is a directory then data from all files within the directory will be sent to Sumo Logic.
