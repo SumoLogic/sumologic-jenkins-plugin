@@ -68,7 +68,7 @@
                 title="Enable proxy settings."
                 field="enableProxy"
                 description="Check to enable proxy settings..">
-              <f:checkbox name="sumoplugin.enableProxy" default="true"/>
+              <f:checkbox name="sumoplugin.enableProxy" default="false"/>
             </f:entry>
           <f:entry
               title="Proxy Host"
@@ -86,7 +86,7 @@
                 title="Enable proxy authentication."
                 field="enableProxyAuth"
                 description="Check to enable authentication for the proxy.">
-              <f:checkbox name="sumoplugin.enableProxyAuth" default="true"/>
+              <f:checkbox name="sumoplugin.enableProxyAuth" default="false"/>
             </f:entry>
             <f:entry
                 title="Username"

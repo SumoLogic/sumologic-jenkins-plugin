@@ -48,7 +48,6 @@ Tested with Jenkins version `2.100 - 2.178`. Later version will be supported. In
 	* Select to send status for all jobs
 * **Enable Console Logs for All Jobs**
 	* Select to send console logs for all jobs.
-* **Enable Console Logs for All Jobs**
 **_`In case of specific Jobs`_**
 
 * For Freestyle and maven Project
