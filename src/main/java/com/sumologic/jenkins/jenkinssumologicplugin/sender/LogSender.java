@@ -2,19 +2,18 @@ package com.sumologic.jenkins.jenkinssumologicplugin.sender;
 
 import com.sumologic.jenkins.jenkinssumologicplugin.PluginDescriptorImpl;
 import com.sumologic.jenkins.jenkinssumologicplugin.model.PluginConfiguration;
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
 import org.apache.http.config.SocketConfig;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.*;
@@ -41,8 +40,12 @@ import static com.sumologic.jenkins.jenkinssumologicplugin.constants.SumoConstan
 public class LogSender {
     public final static Logger LOG = Logger.getLogger(LogSender.class.getName());
     CloseableHttpClient httpclient;
-
+    RequestConfig proxyConfig;
+    boolean enableProxy;
+    boolean enableProxyAuth;
+    
     private LogSender() {
+    	
         LOG.log(Level.INFO, "Initializing Log Sender to Send Logs to Sumo Logic.");
         // Creating the Client Connection Pool Manager by instantiating the PoolingHttpClientConnectionManager class.
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(-1L, TimeUnit.MINUTES);
@@ -64,6 +67,32 @@ public class LogSender {
                 return keepAliveTime;
             }
         };
+        
+        //proxy enablement
+        PluginDescriptorImpl descriptor = PluginDescriptorImpl.getInstance();
+        enableProxy = descriptor.getEnableProxy();
+		enableProxyAuth = descriptor.getEnableProxyAuth();
+		CredentialsProvider credsProvider = null;
+		if (this.enableProxy) {
+			String proxyHost = descriptor.getProxyHost();
+			int proxyPort = descriptor.getProxyPort();
+			if (enableProxyAuth) {
+				AuthScope authScope = new AuthScope(proxyHost, proxyPort);
+				// Setting the credentials
+				String proxyAuthUsername = descriptor.getProxyAuthUsername();
+				String proxyAuthPassword = descriptor.getProxyAuthPassword();
+				org.apache.http.auth.UsernamePasswordCredentials creds = new org.apache.http.auth.UsernamePasswordCredentials(
+						proxyAuthUsername, proxyAuthPassword);
+				credsProvider = new BasicCredentialsProvider();
+				credsProvider.setCredentials(authScope, creds);
+			}																								
+			HttpHost pHost = new HttpHost(proxyHost, proxyPort, "http");		
+			// Setting the proxy
+			RequestConfig.Builder reqconfigconbuilder = RequestConfig.custom();
+			reqconfigconbuilder = reqconfigconbuilder.setProxy(pHost);
+			proxyConfig = reqconfigconbuilder.build();
+			
+		}
 
         //Create a ClientBuilder Object by setting the connection manager
         httpclient = HttpClients.custom()
@@ -71,6 +100,7 @@ public class LogSender {
                 .setKeepAliveStrategy(myStrategy)
                 .setDefaultRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build())
                 .useSystemProperties()
+                .setDefaultCredentialsProvider(credsProvider)
                 .build();
     }
 
@@ -102,7 +132,9 @@ public class LogSender {
         PluginConfiguration pluginConfiguration = PluginDescriptorImpl.getPluginConfiguration();
         try {
             post = new HttpPost(pluginConfiguration.getSumoLogicEndpoint());
-
+             if(this.enableProxy) {
+             	post.setConfig(this.proxyConfig);
+             }
             createHeaders(post, sumoName, contentType, fields, pluginConfiguration);
 
             byte[] compressedData = compress(msg);
@@ -137,7 +169,7 @@ public class LogSender {
     public void sendLogs(byte[] msg, String sumoName) {
         sendLogs(msg, sumoName, null, null);
     }
-
+    
     public void sendLogs(byte[] msg, String sumoName, String contentType) {
         sendLogs(msg, sumoName, contentType, null);
     }
@@ -192,7 +224,9 @@ public class LogSender {
 
         try {
             post = new HttpPost(url);
-
+            if(this.enableProxy) {
+                post.setConfig(this.proxyConfig);
+            }
             post.setEntity(new StringEntity("This is a Test Message from Jenkins Plugin."));
 
             response = httpclient.execute(post);
