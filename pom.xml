@@ -23,7 +23,6 @@
     </licenses>
 
     <properties>
-        <java.level>11</java.level>
         <jenkins.version>2.361.4</jenkins.version>
     </properties>
     <developers>
