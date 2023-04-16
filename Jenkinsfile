@@ -1,4 +1,4 @@
-def minimumLTS = "2.361.4"
+def minimumLTS = "2.204.6"
 def configurations = [
 	// Linux 8
     [ platform: "linux", jdk: "8", jenkins: null ],
