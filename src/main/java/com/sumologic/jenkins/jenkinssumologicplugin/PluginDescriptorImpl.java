@@ -53,6 +53,15 @@ import static hudson.init.InitMilestone.JOB_LOADED;
 @Extension
 public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
+    // Proxy settings
+    private boolean enableProxy = false;
+    private String proxyHost = "";
+    private int proxyPort = -1;
+    private boolean enableProxyAuth = false;
+    private String proxyAuthUsername = "";
+    private String proxyAuthPassword = "";
+
+
     private Secret url;
     private transient SumoMetricDataPublisher sumoMetricDataPublisher;
     private static LogSenderHelper logSenderHelper = null;
@@ -119,6 +128,13 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         url = Secret.fromString(formData.getString("url"));
         queryPortal = StringUtils.isNotEmpty(formData.getString("queryPortal")) ? formData.getString("queryPortal") : "service.sumologic.com";
 
+        //proxy settings
+        enableProxy = formData.getBoolean("enableProxy");
+        proxyHost = formData.getString("proxyHost");
+        proxyPort = Integer.parseInt(formData.getString("proxyPort"));
+        enableProxyAuth = formData.getBoolean("enableProxyAuth");
+        proxyAuthUsername = formData.getString("proxyAuthUsername");
+        proxyAuthPassword = formData.getString("proxyAuthPassword");
         sourceCategory = StringUtils.isNotEmpty(formData.getString("sourceCategory")) ? formData.getString("sourceCategory") : "jenkinsSourceCategory";
 
         metricDataPrefix = StringUtils.isNotEmpty(formData.getString("metricDataPrefix")) ? formData.getString("metricDataPrefix") : "jenkinsMetricDataPrefix";
@@ -171,13 +187,11 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         if (value.isEmpty()) {
             return FormValidation.error("You must provide an URL.");
         }
-
         try {
             new URL(value);
         } catch (final MalformedURLException e) {
             return FormValidation.error("This is not a valid URL.");
         }
-
         return FormValidation.ok();
     }
 
@@ -240,6 +254,53 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
 
     public void setJobStatusLogEnabled(boolean jobStatusLogEnabled) {
         this.jobStatusLogEnabled = jobStatusLogEnabled;
+    }
+    public boolean getEnableProxy() { 
+        return enableProxy;
+    }
+
+    public void setEnableProxy(boolean enableProxy) {
+        this.enableProxy = enableProxy;
+    }
+
+    public String getProxyHost() {
+        return proxyHost;
+    }
+
+    public void setProxyHost(String proxyHost) {
+        this.proxyHost = proxyHost;
+    }
+
+    public int getProxyPort() {
+        return proxyPort;
+    }
+
+    public void setProxyPort(int proxyPort) {
+        this.proxyPort = proxyPort;
+    }
+
+    public boolean getEnableProxyAuth() {
+        return enableProxyAuth;
+    }
+
+    public void setEnableProxyAuth(boolean enableProxyAuth) {
+        this.enableProxyAuth = enableProxyAuth;
+    }
+
+    public String getProxyAuthUsername() { 
+        return proxyAuthUsername;
+    }
+
+    public void setProxyAuthUsername(String proxyAuthUsername) {
+        this.proxyAuthUsername = proxyAuthUsername;
+    }
+
+    public String getProxyAuthPassword() {
+        return proxyAuthPassword;
+    }
+
+    public void setProxyAuthPassword(String proxyAuthPassword) {
+        this.proxyAuthPassword = proxyAuthPassword;
     }
 
     public boolean isJobConsoleLogEnabled() {

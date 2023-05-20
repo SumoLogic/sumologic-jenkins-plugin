@@ -27,6 +27,12 @@ Tested with Jenkins version `2.361.4` and java version 11. In case of any issue,
 ![configuration](/src/main/webapp/Configuration.png)
 
 * **SumoLogic Portal Name** - Eg- service.sumologic.com (where hosted collector resides).
+* **Enable proxy settings** - Check to enable proxy settings
+* **Proxy Host** - Input the proxy server URL. e.g proxy.example.com
+* **Proxy Port** - Input the port for the proxy server.
+* **Enable Proxy Authentication** - Check to enable authentication for the proxy.
+* **Username** - Input the username to use for the proxy.
+* **Password** - Input the password to use for the proxy.
 * **Metric Data Prefix** - Can be the name of the Jenkins Master on which plugin is installed or name with you can distinguish Jenkins Master.
 * **HTTP Source URL** - URL of the HTTP Logs and Metrics Sumo Logic source.
 * **Source Category** - Source Category defined for the source provided in the **Http Source URL**.
@@ -42,7 +48,6 @@ Tested with Jenkins version `2.361.4` and java version 11. In case of any issue,
 	* Select to send status for all jobs
 * **Enable Console Logs for All Jobs**
 	* Select to send console logs for all jobs.
-	
 **_`In case of specific Jobs`_**
 
 * For Freestyle and maven Project
@@ -98,6 +103,13 @@ Download the [SumoLogicPublisherConfiguration.groovy](https://github.com/jenkins
 	Upload the `sumologic-publisher.hpi` in advanced section of **_manage plugin_** in Jenkins.
 
 	![uploadPlugin.png](/src/main/webapp/uploadPlugin.png)
+
+- ### Debug locally
+	After success building the plugin through `mvn clean install` run :
+$ export MAVEN_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000,suspend=n"
+$ mvn hpi:run
+
+refer : https://wiki.jenkins-ci.org/display/JENKINS/Plugin+tutorial#Plugintutorial-DebuggingaPlugin
 
 #### SumoUpload
 The Function can be used in Jenkins Pipelines to send files data to Sumo Logic. Function allow below properties:-
