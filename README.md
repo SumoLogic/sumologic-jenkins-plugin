@@ -18,9 +18,9 @@ Plugin can be installed and used with global configuration. Below are set of fea
 
 ## Installation
 
-In `manage plugins`, search for `sumologic-publisher` version `2.0` and install the plugin.
+In `manage plugins`, search for `sumologic-publisher` version `2.2.2` and install the plugin.
 
-Tested with Jenkins version `2.100 - 2.178`. Later version will be supported. In case of any issue, please raise a [issue](https://github.com/jenkinsci/sumologic-publisher-plugin/issues)
+Tested with Jenkins version `2.361.4` and java version 11. In case of any issue, please raise a [issue](https://github.com/jenkinsci/sumologic-publisher-plugin/issues).
 
 ## Configuration
 
@@ -90,7 +90,7 @@ Download the [SumoLogicPublisherConfiguration.groovy](https://github.com/jenkins
 
 	The following build environment is required to build the plugin
 
-	* `Java 1.8` and `Maven 3.6.x`.
+	* `Java 11` and `Maven 3.6.x`.
 
 - ### Build
 
