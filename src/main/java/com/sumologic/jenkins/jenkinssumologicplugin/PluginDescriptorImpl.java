@@ -29,6 +29,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -195,7 +196,9 @@ public final class PluginDescriptorImpl extends BuildStepDescriptor<Publisher> {
         return FormValidation.ok();
     }
 
+    @RequirePOST
     public FormValidation doTestURL(@QueryParameter("url") String url) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         try {
             StatusLine statusLine = LogSender.getInstance().testHTTPUrl(url);
             if (200 == statusLine.getStatusCode()) {
