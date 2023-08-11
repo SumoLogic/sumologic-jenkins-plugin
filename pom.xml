@@ -47,7 +47,7 @@
         <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
         <url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
-        <tag>sumologic-publisher-2.2.3</tag>
+        <tag>sumologic-publisher-2.2.4</tag>
     </scm>
 
     <repositories>

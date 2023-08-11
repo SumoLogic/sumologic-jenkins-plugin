@@ -4,10 +4,15 @@
 
 Please visit [Releases](https://github.com/jenkinsci/sumologic-publisher-plugin/releases) page.
 
-## v2.2.2
+## v2.2.4
+- Fixed [SECURITY-3117](https://issues.jenkins.io/browse/SECURITY-3117)
+- Upgrade htmlUnit from 2.x to 3.x
+- Vulnerable dependency upgrade
+
+## v2.2.3
 - Added Support for proxy
 - Vulnerable dependency upgrade
-- jenkins.version upgraded to 2.332.1
+- jenkins.version upgraded to 2.361.4
 
 ## v2.1.0 
 - Added Support to send text, KeyValueMap as JSON and Fields to X-Sumo-Fields using SumoUpload Step Function.
