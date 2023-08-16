@@ -1,5 +1,8 @@
 [![SumoLogic ICON](/src/main/webapp/SumoLogic_Logo.ico)](http://sumologic.com)
 
+# BRANCH ARCHIVED
+This repository is getting archived and the plugin will be maintained in [jenkins repo](https://github.com/jenkinsci/sumologic-publisher-plugin) itself as suggested by Jenkins open source team in [this](jenkins-infra/helpdesk#3670) ticket.
+
 # sumologic-publisher
 [![Build Status][jenkins-status]][jenkins-builds]
 [![Jenkins Plugin][plugin-version-badge]][plugin]
